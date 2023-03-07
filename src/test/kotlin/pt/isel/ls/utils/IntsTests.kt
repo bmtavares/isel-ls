@@ -47,4 +47,13 @@ class IntsTests {
         val ix: Int = indexOfBinary(v, 1, 1, 2)
         assertTrue(ix < 0)
     }
+
+    @Test
+    fun `test limits of the array`() {
+        val v = intArrayOf(1, 2, 3,4,5)
+        val ix: Int = indexOfBinary(v, 0, 5, 5)
+        val ix2: Int = indexOfBinary(v, 0, 5, 1)
+        assertEquals(ix ,4)
+        assertEquals(ix2 ,0)
+    }
 }

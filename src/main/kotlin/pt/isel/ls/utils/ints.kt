@@ -11,7 +11,7 @@ fun max(a: Int, b: Int): Int {
 }
 
 /**
- * Looks for an integer in an sub-array and returns its index, if found.
+ * Looks for an integer in a sub-array and returns its index, if found.
  * Otherwise, returns -1;
  * @param a the array containing the sub-array to search.
  * @param fromIndex the first index of the sub-array.
@@ -23,10 +23,10 @@ fun max(a: Int, b: Int): Int {
 fun indexOfBinary(a: IntArray, fromIndex: Int, toIndex: Int, n: Int): Int {
     require(fromIndex <= toIndex) { "from($fromIndex) > to($toIndex)" }
     var low = fromIndex
-    var high = toIndex - 1
+    var high = toIndex
     var mid: Int
     while (low < high) {
-        mid = high + low / 2 + 1
+        mid = (high + low) / 2
         if (n > a[mid]) {
             low = mid + 1
         } else if (n < a[mid]) {
