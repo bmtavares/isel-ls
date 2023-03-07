@@ -29,7 +29,20 @@ class DBTests {
 
     @Test
     fun insert_test() {
-
+        dataSource.connection.use {
+            it.autoCommit = false
+            var statement ="INSERT INTO students (name,number,course) VALUES ('John Doe', 999999, 1);"
+            var stm = it.prepareStatement(statement)
+            val rs = stm.execute()
+            assertEquals(rs,false)
+            statement = "SELECT * from students WHERE number=12347;"
+            stm = it.prepareStatement(statement)
+            val rs2 = stm.executeQuery()
+            rs2.next()
+            val number = rs2.getInt("number")
+            assertEquals(number,999999)
+            it.rollback()
+        }
     }
 /*
     @Test
