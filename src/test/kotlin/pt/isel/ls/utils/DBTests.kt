@@ -10,17 +10,13 @@ class DBTests {
         dataSource.setURL(jdbcDatabaseURL)
         return  dataSource
     }
+     private val dataSource : PGSimpleDataSource = createDataSource()
 
-    lateinit var dataSource : PGSimpleDataSource
-
-
-    init{
-        dataSource= createDataSource()
-    }
 
     @Test
     fun select_test() {
-        dataSource.getConnection().use {
+        dataSource.connection.use {
+            // assumption that students is not null
             val stm = it.prepareStatement("select * from students")
             val rs = stm.executeQuery()
             assert(rs != null)
@@ -35,7 +31,7 @@ class DBTests {
             var stm = it.prepareStatement(statement)
             val rs = stm.execute()
             assertEquals(rs,false)
-            statement = "SELECT * from students WHERE number=12347;"
+            statement = "SELECT * from students WHERE number=999999;"
             stm = it.prepareStatement(statement)
             val rs2 = stm.executeQuery()
             rs2.next()
@@ -53,7 +49,7 @@ class DBTests {
     @Test
     fun insert_and_delete_test() {
 
-    dataSource.getConnection().use {
+    dataSource.connection.use {
         it.autoCommit = false
         val stm = it.prepareStatement("insert into students(course, number, name) values (1, 12, 'mm')")
         stm.execute()
@@ -61,10 +57,8 @@ class DBTests {
         delt_stm.execute()
         val l_stm = it.prepareStatement("seltect * from students where name = 'mm'")
         assertFailsWith<org.postgresql.util.PSQLException>{
-            val l_rs = stm.executeQuery()
+            l_stm.executeQuery()
         }
-
-
         it.rollback()
     }
 
