@@ -26,6 +26,20 @@ class IntsTests {
         assertTrue(ix < 0)
     }
 
+
+    @Test
+    fun indexOfBinary_check_last_number_of_array() {
+        // Arrange
+        val v = intArrayOf(1, 2, 3,4,5)
+        // Act
+        val ix: Int = indexOfBinary(v, 0, 5, 5)
+        // Assert
+        assertTrue(ix == 4)
+    }
+
+
+
+
     @Test
     fun indexOfBinary_throws_IllegalArgumentException_if_indexes_are_not_valid() {
         assertFailsWith<IllegalArgumentException> {

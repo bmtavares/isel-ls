@@ -25,8 +25,8 @@ fun indexOfBinary(a: IntArray, fromIndex: Int, toIndex: Int, n: Int): Int {
     var low = fromIndex
     var high = toIndex - 1
     var mid: Int
-    while (low < high) {
-        mid = (high + low) / (2 + 1)
+    while (low <= high) {
+        mid = (high + low) / 2
         if (n > a[mid]) {
             low = mid + 1
         } else if (n < a[mid]) {
