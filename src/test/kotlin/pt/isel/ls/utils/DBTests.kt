@@ -73,10 +73,11 @@ class DBTests {
         stm.execute()
         val delt_stm = it.prepareStatement("delete from students where name = 'mm'")
         delt_stm.execute()
-        val l_stm = it.prepareStatement("seltect * from students where name = 'mm'")
-        assertFailsWith<org.postgresql.util.PSQLException>{
-            l_stm.executeQuery()
-        }
+        val l_stm = it.prepareStatement("SELECT * from students where name = 'mm'")
+
+        val wad = l_stm.executeQuery()
+        val r = wad.next()
+        assert(!r)
         it.rollback()
     }
 
