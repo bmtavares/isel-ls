@@ -4,6 +4,7 @@ import java.io.FileInputStream
 import java.io.FileNotFoundException
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class ExampleTest {
     @Test
@@ -18,12 +19,13 @@ class ExampleTest {
         // assert | then
         assertEquals(3, result)
     }
-
-  //  @Test
-   @Test(expected = FileNotFoundException::class)
+    @Test
    @Throws(FileNotFoundException::class)
     fun do_not_ignore_unexpected_exceptions_on_tests() {
         // test methods can have a non-empty `throws` exception list.
-        FileInputStream("does-not-exist")
+        assertFailsWith<FileNotFoundException>{
+            FileInputStream("does-not-exist")
+        }
+
     }
 }
