@@ -27,12 +27,12 @@ class DBTests {
     fun insert_test() {
         dataSource.connection.use {
             it.autoCommit = false
-            var statement ="INSERT INTO students (name,number,course) VALUES ('John Doe', 999999, 1);"
+            val statement ="INSERT INTO students (name,number,course) VALUES ('John Doe', 999999, 1);"
             var stm = it.prepareStatement(statement)
             val rs = stm.execute()
             assertEquals(rs,false)
-            statement = "SELECT * from students WHERE number=999999;"
-            stm = it.prepareStatement(statement)
+            val statement2 = "SELECT * from students WHERE number=999999;"
+            stm = it.prepareStatement(statement2)
             val rs2 = stm.executeQuery()
             rs2.next()
             val number = rs2.getInt("number")
@@ -45,17 +45,17 @@ class DBTests {
     fun insert_and_update_test() {
         dataSource.connection.use {
                 it.autoCommit = false
-                var statement ="INSERT INTO students (name,number,course) VALUES ('John Doe', 999999, 1);"
+                val statement ="INSERT INTO students (name,number,course) VALUES ('John Doe', 999999, 1);"
                 var stm = it.prepareStatement(statement)
                 val rs = stm.execute()
                 assertEquals(rs,false)
-                statement = "UPDATE students\n" +
+                val statement2 = "UPDATE students\n" +
                         "SET name = 'Sérgio'\n" +
                         "WHERE number = 999999;\n"
-                stm = it.prepareStatement(statement)
+                stm = it.prepareStatement(statement2)
                 val rs2 = stm.execute()
-                statement = "SELECT * from students WHERE number=999999;"
-                stm = it.prepareStatement(statement)
+                val statement3 = "SELECT * from students WHERE number=999999;"
+                stm = it.prepareStatement(statement3)
                 val rs3 = stm.executeQuery()
                 rs3.next()
                 val name = rs3.getString("name")
