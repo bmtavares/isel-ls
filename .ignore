@@ -1,0 +1,20 @@
+# Kotlin/Gradle specific files
+build/
+/build/
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Gradle files
+gradle/
+gradlew
+gradlew.bat
+.gradle
+
+# Compiled Kotlin files
+*.class
+*.jar
+
+# Local configuration file (sdk.dir)
+local.properties
