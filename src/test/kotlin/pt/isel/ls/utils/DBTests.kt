@@ -1,16 +1,28 @@
 package pt.isel.ls.utils
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
+import org.postgresql.ds.PGSimpleDataSource
+import kotlin.test.*
 
 class DBTests {
-    @Test
-    fun select_test() {
-
+    private fun createDataSource(): PGSimpleDataSource {
+        val dataSource = PGSimpleDataSource()
+        val jdbcDatabaseURL = System.getenv("JDBC_DATABASE_URL")
+        dataSource.setURL(jdbcDatabaseURL)
+        return  dataSource
     }
 
+    val dataSource = createDataSource()
+
+    @Test
+    fun select_test() {
+        dataSource.getConnection().use {
+            val stm = it.prepareStatement("select * from students")
+            val rs = stm.executeQuery()
+
+
+        }
+    }
+/*
     @Test
     fun insert_test() {
 
@@ -25,5 +37,5 @@ class DBTests {
     fun insert_and_delete_test() {
 
     }
-
+*/
 }
