@@ -10,6 +10,7 @@ import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
 import org.http4k.core.Request
 import org.http4k.core.Response
+import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.CREATED
 import org.http4k.core.Status.Companion.OK
 import org.http4k.routing.bind
@@ -21,8 +22,13 @@ import org.slf4j.LoggerFactory
 import pt.isel.ls.server.HeaderTypes
 import pt.isel.ls.server.User
 import pt.isel.ls.tasksServices.ServiceUsers
+import pt.isel.ls.tasksServices.TasksServices
 
 private val logger = LoggerFactory.getLogger("pt.isel.ls.http.HTTPServer")
+private val services = TasksServices()
+
+
+
 
 
 
@@ -59,7 +65,12 @@ fun postUser(request: Request): Response {
 
 fun postCreateUser(request: Request): Response {
     val user = Json.decodeFromString<User>(request.bodyString())
-    return Response(CREATED)
+
+    val (result,message) = services.users.create(user)
+    val resp = if(result == 1){  CREATED  }else{ BAD_REQUEST  }
+
+
+    return Response(resp)
         .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
         .body(Json.encodeToString(user))
 }
