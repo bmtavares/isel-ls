@@ -18,3 +18,9 @@ gradlew.bat
 
 # Local configuration file (sdk.dir)
 local.properties
+
+# VS Code configs
+.vscode/
+
+# Ignore bin
+bin/
