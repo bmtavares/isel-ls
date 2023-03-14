@@ -8,7 +8,7 @@ fun main() {
     dataSource.setURL(jdbcDatabaseURL)
     // dataSource.setURL("jdbc:postgresql://localhost/postgres?user=postgres&password=postgres")
 
-    dataSource.getConnection().use {
+    dataSource.connection.use {
         val stm = it.prepareStatement("select * from students")
         val rs = stm.executeQuery()
         while (rs.next()) {

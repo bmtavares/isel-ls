@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.http4k.core.ContentType
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
 import org.http4k.core.Request
@@ -17,34 +18,34 @@ import org.http4k.routing.routes
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
 import org.slf4j.LoggerFactory
+import pt.isel.ls.server.HeaderTypes
+import pt.isel.ls.server.User
 import pt.isel.ls.tasksServices.ServiceUsers
 
 private val logger = LoggerFactory.getLogger("pt.isel.ls.http.HTTPServer")
 
-@Serializable
-data class User(val name: String, val number: Int)
 
 
 val users = mutableListOf(
-    User("ff", 10),
-    User("ll", 20),
-    User("dd", 30)
+    User(1, "aa","aa@gmail.com"),
+    User(1,"ll", "ll@gmail.com"),
+    User(1,"dd", "dd@gmail.com")
 )
 
 fun getUsers(request: Request): Response {
     logRequest(request)
     val limit = request.query("limit")?.toInt() ?: 4
     return Response(OK)
-        .header("content-type", "application/json")
+        .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
         .body(Json.encodeToString(users.take(limit)))
 }
 
 fun getUser(request: Request): Response {
     logRequest(request)
-    val userNumber = request.path("number")?.toInt()
+    val email = request.path("email")
     return Response(OK)
-        .header("content-type", "application/json")
-        .body(Json.encodeToString(users.find { it.number == userNumber }))
+        .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
+        .body(Json.encodeToString(users.find { it.email == email }))
 }
 
 fun postUser(request: Request): Response {
@@ -52,16 +53,14 @@ fun postUser(request: Request): Response {
     val user = Json.decodeFromString<User>(request.bodyString())
     users.add(user)
     return Response(CREATED)
-        .header("content-type", "application/json")
+        .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
         .body(Json.encodeToString(user))
 }
 
 fun postCreateUser(request: Request): Response {
     val user = Json.decodeFromString<User>(request.bodyString())
-
-
     return Response(CREATED)
-        .header("content-type", "application/json")
+        .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
         .body(Json.encodeToString(user))
 }
 
@@ -87,10 +86,13 @@ fun logRequest(request: Request) {
 fun main() {
     val usersRoutes = routes(
         "users" bind GET to ::getUsers,
-        "users/{number}" bind GET to ::getUser,
+        "users/{id}" bind GET to ::getUser,
         "users" bind POST to ::postUser,
         "user" bind POST to ::postUser
     )
+//    val boardRoutes = routes(
+//        "board"
+//    )
 
     val app = routes(
         usersRoutes,
