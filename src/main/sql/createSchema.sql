@@ -8,7 +8,7 @@ drop table if exists Users;
 create table Users (
     id serial primary key,
     name varchar(255) not null,
-    email varchar(254) not null unique -- check para validar email?
+    email varchar(254) not null unique
 );
 
 create table Boards (
