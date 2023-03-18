@@ -66,7 +66,7 @@ fun postUser(request: Request): Response {
 fun postCreateUser(request: Request): Response {
     val user = Json.decodeFromString<User>(request.bodyString())
 
-    val (result,message) = services.users.create(user)
+    val (result,message) = services.users.createUser(user)
     val resp = if(result == 1){  CREATED  }else{ BAD_REQUEST  }
 
 
@@ -96,10 +96,8 @@ fun logRequest(request: Request) {
 */
 fun main() {
     val usersRoutes = routes(
-        "users" bind GET to ::getUsers,
-        "users/{id}" bind GET to ::getUser,
-        "users" bind POST to ::postUser,
-        "user" bind POST to ::postUser
+        "user" bind POST to ::postCreateUser,
+
     )
 //    val boardRoutes = routes(
 //        "board"
