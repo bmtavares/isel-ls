@@ -13,7 +13,7 @@ class PgSqlDataSource(private val connection : Connection) : DataSource {
     override val boards: BoardsData
         get() = PgSqlBoardsData(connection)
     override val lists: ListsData
-        get() = TODO("Not yet implemented")
+        get() = PgSqlListsData(connection)
     override val cards: CardsData
         get() = TODO("Not yet implemented")
 }
