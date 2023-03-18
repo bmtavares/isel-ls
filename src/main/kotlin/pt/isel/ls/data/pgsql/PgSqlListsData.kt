@@ -50,7 +50,7 @@ class PgSqlListsData(private val connection: Connection) : ListsData {
         val previousCommitState = connection.autoCommit
         connection.autoCommit = false
         val statement = connection.prepareStatement(
-            "insert into Lists (name, boardId) values (?, ?) returning name, boardId;"
+            "insert into Lists (name, boardId) values (?, ?) returning id, name, boardId;"
         )
         statement.setString(1, entity.name)
         statement.setInt(2, entity.boardId)
