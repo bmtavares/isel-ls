@@ -1,7 +1,6 @@
 package pt.isel.ls.tasksServices
 import org.http4k.lens.Invalid
 import org.http4k.lens.StringBiDiMappings.uuid
-import pt.isel.ls.data.TasksDataMem
 import pt.isel.ls.server.User
 import pt.isel.ls.storage.UserStorage
 import java.io.InvalidClassException
