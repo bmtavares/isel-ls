@@ -15,7 +15,14 @@ class DBBoard:BoardStorage {
     }
 
     override fun createBoard(name: String, description: String): Int {
-        TODO("Not yet implemented")
+        dataSource.connection.use {
+            val stm = it.prepareStatement("insert into boards (name, description)values ('$name','$description')")
+            stm.execute()
+            val stm2 = it.prepareStatement("select id from boards where name = '$name'")
+            val rs2 = stm2.executeQuery()
+            if (!rs2.next()){throw Exception("failed to insert board")}
+            return rs2.getInt("id")
+        }
     }
 
     override fun addUser(userId: Int, boardId: Int) {
@@ -49,7 +56,7 @@ class DBBoard:BoardStorage {
             val users = mutableListOf<User>()
             val stm = it.prepareStatement("SELECT u.* FROM users u " +
                     "JOIN usersboards ub ON u.id = ub.userid" +
-                    " WHERE ub.boardid= $boardId ")
+                    " WHERE ub.boardid= '$boardId' ")
             val rs = stm.executeQuery()
             while (rs.next()) {
                 val id = rs.getInt("id")

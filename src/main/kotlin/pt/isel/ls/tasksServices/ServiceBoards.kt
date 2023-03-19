@@ -15,6 +15,14 @@ class ServiceBoards(val boardRepository: BoardStorage) {
         }
     }
 
+    fun createBoard(name:String,description:String):Int?{
+        return try {
+             boardRepository.createBoard(name,description)
+        }catch (e:Exception){
+            null
+        }
+    }
+
     fun getUsersOnBoard(boardId:Int,user:User):List<User>?{
         return try {
             val users = boardRepository.getUsers(boardId,user)

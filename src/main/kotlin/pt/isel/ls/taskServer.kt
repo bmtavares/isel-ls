@@ -20,9 +20,10 @@ fun main() {
     val boardRoutes = webApi.authFilter.then(
         routes(
         "boards/{id}" bind Method.GET to webApi::getBoard,
+        "boards/" bind Method.POST to webApi::createBoard,
         "boards/{id}/user-list" bind Method.GET to webApi::getBoardUsers,
-        "boards/{id}/user-list/add" bind Method.PUT to webApi::getBoard,
-        "boards/{id}/user-list/del" bind Method.DELETE to webApi::getBoard,
+        "boards/{id}/user-list/{uid}" bind Method.PUT to webApi::getBoard,
+        "boards/{id}/user-list/{uid}" bind Method.DELETE to webApi::getBoard,
         "boards/{id}/lists" bind Method.GET to webApi::getBoard,
         "boards/{id}/lists" bind Method.POST to webApi::getBoard,
         "boards/{id}lists/{lid}" bind Method.POST to webApi::getBoard,

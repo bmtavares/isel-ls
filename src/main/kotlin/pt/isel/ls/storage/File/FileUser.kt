@@ -1,4 +1,4 @@
-package pt.isel.ls.storage.file
+package pt.isel.ls.storage.File
 
 import pt.isel.ls.server.User
 import pt.isel.ls.storage.UserStorage

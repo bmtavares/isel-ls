@@ -1,4 +1,4 @@
-package pt.isel.ls.storage.file
+package pt.isel.ls.storage.File
 
 import pt.isel.ls.server.Board
 import pt.isel.ls.server.BoardList

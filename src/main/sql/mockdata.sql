@@ -6,7 +6,7 @@ INSERT INTO UsersTokens (token, userId, creationDate)
 VALUES ('f52129ca-ccf1-42cc-a363-fdc89f71901b', 1, now()),('f52129ca-ccf1-4222-a363-fdc89f71901b', 2, now()),('f52129ca-ccf1-cccc-a363-fdc89f71901b', 3, now());
 --VALUES (uuid_generate_v4(), 1, now()),(uuid_generate_v4(), 2, now()),(uuid_generate_v4(), 3, now());
 
-
+delete from boards where name='board2';
 DELETE FROM userstokens;
  drop table userstokens;
 SELECT u.* FROM Users u JOIN UsersTokens ut ON u.id = ut.userId WHERE ut.token = 'f52129ca-ccf1-4222-a363-fdc89f71901b';

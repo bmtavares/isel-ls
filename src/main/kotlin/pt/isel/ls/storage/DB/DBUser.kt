@@ -42,7 +42,6 @@ class DBUser: UserStorage {
 
     override fun getUser(userId:Int): Pair<User?,UserResponses>? {
         dataSource.connection.use {
-            it.autoCommit = false
             val users = mutableListOf<User>()
             val stm = it.prepareStatement("select * from users where $userId = id")
             val rs = stm.executeQuery()
@@ -63,7 +62,7 @@ class DBUser: UserStorage {
     override fun getUserByToken(token: String): Pair<User?,UserResponses>?{
         dataSource.connection.use {
             val users = mutableListOf<User>()
-            val stm = it.prepareStatement("SELECT u.* FROM Users u JOIN UsersTokens ut ON u.id = ut.userId WHERE ut.token = '$token'")
+            val stm = it.prepareStatement("SELECT u.* FROM Users u JOIN UsersTokens ut ON u.id = ut.userId WHERE ut.token = $token")
             val rs = stm.executeQuery()
             while (rs.next()) {
                 val id = rs.getInt("id")

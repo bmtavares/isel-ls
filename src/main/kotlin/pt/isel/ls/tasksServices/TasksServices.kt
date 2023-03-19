@@ -3,8 +3,8 @@ package pt.isel.ls.tasksServices
 import pt.isel.ls.storage.BoardStorage
 import pt.isel.ls.storage.DB.DBBoard
 import pt.isel.ls.storage.DB.DBUser
-import pt.isel.ls.storage.file.FileBoard
-import pt.isel.ls.storage.file.FileUser
+import pt.isel.ls.storage.File.FileBoard
+import pt.isel.ls.storage.File.FileUser
 import pt.isel.ls.storage.UserStorage
 
 class TasksServices(private val file : Boolean = false) {

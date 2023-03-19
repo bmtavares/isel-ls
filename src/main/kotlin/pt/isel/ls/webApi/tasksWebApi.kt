@@ -3,6 +3,8 @@ package pt.isel.ls.http
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
+import kotlinx.serialization.json.jsonObject
 import org.http4k.core.*
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.CREATED
@@ -10,13 +12,10 @@ import org.http4k.core.Status.Companion.INTERNAL_SERVER_ERROR
 import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
 import org.http4k.routing.path
-import pt.isel.ls.server.HeaderTypes
-import pt.isel.ls.server.User
+import pt.isel.ls.server.*
 import pt.isel.ls.tasksServices.TasksServices
-
-
-
-
+import pt.isel.ls.tasksServices.UserResponses
+import java.io.InputStream
 
 class WebApi{
     private val services = TasksServices()
@@ -31,6 +30,17 @@ class WebApi{
             .body(Json.encodeToString(board))
     }
 
+
+    fun createBoard(request: Request):Response {
+        logRequest(request)
+        val user = Json.decodeFromString<User>(request.header("User").toString())
+        val board = Json.decodeFromString<NewBoard>(request.bodyString())
+        check(board.name.isNotEmpty()){ Response(BAD_REQUEST).body("Board name is mandatory") }
+        val rsp = services.boards.createBoard(board.name,board.description) ?: return Response(BAD_REQUEST).body("Failed to create board")
+        return Response(CREATED).header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
+            .body("boardId = $rsp")
+    }
+
     fun getUser(request: Request):Response{
         logRequest(request)
         val userId = request.path("id")?.toInt()
@@ -42,14 +52,13 @@ class WebApi{
     }
     fun createUser(request: Request):Response{
         logRequest(request)
-        val email = request.query("email")
-        val name = request.query("name")
-        checkNotNull(email)
-        checkNotNull(name)
-        val rsp = services.users.createUser(email,name)
+        val newUser = Json.decodeFromString<NewUser>(request.bodyString())
+        checkNotNull(newUser.email)
+        checkNotNull(newUser.name)
+        val rsp = services.users.createUser(newUser.email,newUser.name)
         val responseCode = when(rsp.code){
-            1-> CREATED
-            2-> BAD_REQUEST
+            UserResponses.Created.code-> CREATED
+            UserResponses.InvalidUser.code-> BAD_REQUEST
             else -> INTERNAL_SERVER_ERROR
         }
         return Response(responseCode)
@@ -76,8 +85,7 @@ class WebApi{
                 val userResponse = services.users.getUserByToken(token)
                 if (userResponse?.first != null) {
                     next(request
-                        .body(Json.encodeToString(userResponse.first))
-                        .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
+                        .header("User",Json.encodeToString(userResponse.first))
                     )
                 } else {
                     Response(Status.UNAUTHORIZED).body("Invalid token")
