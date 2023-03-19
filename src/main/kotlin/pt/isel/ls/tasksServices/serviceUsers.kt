@@ -1,13 +1,8 @@
 package pt.isel.ls.tasksServices
-import org.http4k.lens.Invalid
-import org.http4k.lens.StringBiDiMappings.uuid
 import pt.isel.ls.server.User
 import pt.isel.ls.storage.UserStorage
-import java.io.InvalidClassException
-import java.io.InvalidObjectException
-import java.util.*
 
-enum class UserResponses(val code:Int,val desc:String){
+enum class UserResponses(val code:Int,var desc:String){
     Ok(0,"Ok"),
     Created(1,"Created"),
     InvalidUser(2,"Invalid Email"),
@@ -18,10 +13,19 @@ enum class UserResponses(val code:Int,val desc:String){
 }
 
 class ServiceUsers(val userRepository: UserStorage) {
-    fun createUser(u : User):UserResponses{
-        if (!EmailValidator.isEmailValid(u.email)) return UserResponses.InvalidUser
+    fun createUser(email: String,name:String):UserResponses{
+        if (!EmailValidator.isEmailValid(email)) return UserResponses.InvalidUser
         try {
-            userRepository.createUser(u)
+           val rsp = userRepository.createUser(email,name)
+            if (rsp.second != null){
+                val rsp2 = UserResponses.Created
+                rsp.second.let {
+                    if (it != null) {
+                        rsp2.desc = it
+                    }
+                }
+                return rsp2
+            }
         }catch (e:Exception){
             return UserResponses.ServerError
         }
@@ -32,6 +36,14 @@ class ServiceUsers(val userRepository: UserStorage) {
         return UserResponses.Ok
 
 
+    }
+
+    fun getUser(userId:Int): Pair<User?,UserResponses>?{
+        return try {
+            return userRepository.getUser(userId)
+        } catch (e: Exception) {
+            null
+        }
     }
     fun getUserByToken(token: String):Pair<User?,UserResponses>?{
         return try {
@@ -46,9 +58,9 @@ class ServiceUsers(val userRepository: UserStorage) {
 
     class EmailValidator{
         companion object {
-            val EMAIL_REGEX = "^[A-Za-z](.*)([@]{1})(.{1,})(\\.)(.{1,})";
+            val EMAIL_REGEX = "^[A-Za-z](.*)([@]{1})(.{1,})(\\.)(.{1,})"
             fun isEmailValid(email: String): Boolean {
-                return EMAIL_REGEX.toRegex().matches(email);
+                return EMAIL_REGEX.toRegex().matches(email)
             }
         }
     }

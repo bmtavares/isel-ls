@@ -39,7 +39,7 @@ create table UsersBoards (
 );
 
 create table UsersTokens (
-    token uuid not null,
+    token varchar(128) not null,
     userId int references Users(id) not null,
     creationDate timestamp not null,
     primary key(token, userId, creationDate)
