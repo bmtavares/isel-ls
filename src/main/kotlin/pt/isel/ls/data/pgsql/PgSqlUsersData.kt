@@ -4,6 +4,7 @@ import pt.isel.ls.data.DataException
 import pt.isel.ls.data.UsersData
 import pt.isel.ls.data.entities.User
 import java.sql.Connection
+import java.sql.Timestamp
 import java.util.UUID
 
 class PgSqlUsersData(private val connection: Connection) : UsersData {
@@ -15,9 +16,9 @@ class PgSqlUsersData(private val connection: Connection) : UsersData {
             "insert into UsersTokens (token, userId, creationDate) values (?,?,?);"
         )
         val token = UUID.randomUUID()
-        statement.setString(1, token.toString())
+        statement.setObject(1, token)
         statement.setInt(2, user.id!!)
-        statement.setLong(3, System.currentTimeMillis())
+        statement.setTimestamp(3, Timestamp(System.currentTimeMillis()))
 
         val count = statement.executeUpdate()
 
@@ -36,7 +37,7 @@ class PgSqlUsersData(private val connection: Connection) : UsersData {
         val statement = connection.prepareStatement(
             "select id, name, email from Users u join UsersTokens ut on u.id = ut.userId where token = ?;"
         )
-        statement.setString(1, token.toString())
+        statement.setObject(1, token)
 
         val rs = statement.executeQuery()
         while (rs.next()) {
@@ -119,7 +120,7 @@ class PgSqlUsersData(private val connection: Connection) : UsersData {
         val previousCommitState = connection.autoCommit
         connection.autoCommit = false
         val statement = connection.prepareStatement(
-            "delete Users where id = ?;"
+            "delete from Users where id = ?;"
         )
         statement.setInt(1, entity.id!!)
 
@@ -146,9 +147,9 @@ class PgSqlUsersData(private val connection: Connection) : UsersData {
         statement.setInt(2, entity.id!!)
         statement.setInt(4, entity.id)
 
-        val counts = statement.executeBatch()
+        val count = statement.executeUpdate()
 
-        if (counts.size != counts.sum()) {
+        if (count == 0) {
             connection.rollback()
             throw DataException("Failed to edit user.")
         }
