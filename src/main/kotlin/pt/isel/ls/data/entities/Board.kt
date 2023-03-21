@@ -1,5 +1,8 @@
 package pt.isel.ls.data.entities
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Board(
     override val id: Int?,
     var name: String,
