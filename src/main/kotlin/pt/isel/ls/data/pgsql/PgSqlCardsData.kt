@@ -25,7 +25,7 @@ class PgSqlCardsData(private val connection: Connection) : CardsData {
                 rs.getString("name"),
                 rs.getString("description"),
                 rs.getTimestamp("dueDate"),
-                rs.getInt("listId"),
+                if (rs.wasNull()) null else rs.getInt("listId"),
                 rs.getInt("boardId")
             )
         }
@@ -49,7 +49,7 @@ class PgSqlCardsData(private val connection: Connection) : CardsData {
                 rs.getString("name"),
                 rs.getString("description"),
                 rs.getTimestamp("dueDate"),
-                rs.getInt("listId"),
+                if (rs.wasNull()) null else rs.getInt("listId"),
                 rs.getInt("boardId")
             )
         }
@@ -70,7 +70,7 @@ class PgSqlCardsData(private val connection: Connection) : CardsData {
                 rs.getString("name"),
                 rs.getString("description"),
                 rs.getTimestamp("dueDate"),
-                rs.getInt("listId"),
+                if (rs.wasNull()) null else rs.getInt("listId"),
                 rs.getInt("boardId")
             )
         }
@@ -94,7 +94,7 @@ class PgSqlCardsData(private val connection: Connection) : CardsData {
             val name = rs.getString("name")
             val description = rs.getString("description")
             val dueDate = rs.getTimestamp("dueDate")
-            val listId = rs.getInt("listId")
+            val listId = if (rs.wasNull()) null else rs.getInt("listId")
             val boardId = rs.getInt("boardId")
 
             connection.commit()
@@ -147,8 +147,7 @@ class PgSqlCardsData(private val connection: Connection) : CardsData {
         statement.setTimestamp(5, entity.dueDate)
         if (entity.listId == null) {
             statement.setNull(7, Types.INTEGER)
-        }
-        else {
+        } else {
             statement.setInt(7, entity.listId!!)
         }
         statement.setInt(2, entity.id!!)
@@ -156,9 +155,9 @@ class PgSqlCardsData(private val connection: Connection) : CardsData {
         statement.setInt(6, entity.id)
         statement.setInt(8, entity.id)
 
-        val counts = statement.executeBatch()
+        val count = statement.executeUpdate()
 
-        if (counts.size != counts.sum()) {
+        if (count == 0) {
             connection.rollback()
             throw DataException("Failed to edit card.")
         }

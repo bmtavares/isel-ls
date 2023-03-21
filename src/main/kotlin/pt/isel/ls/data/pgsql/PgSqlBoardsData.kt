@@ -124,9 +124,9 @@ class PgSqlBoardsData(private val connection: Connection) : BoardsData {
         statement.setInt(2, entity.id!!)
         statement.setInt(4, entity.id)
 
-        val counts = statement.executeBatch()
+        val count = statement.executeUpdate()
 
-        if (counts.size != counts.sum()) {
+        if (count == 0) {
             connection.rollback()
             throw DataException("Failed to edit board.")
         }

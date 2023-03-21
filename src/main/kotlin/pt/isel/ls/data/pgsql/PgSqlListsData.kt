@@ -104,9 +104,9 @@ class PgSqlListsData(private val connection: Connection) : ListsData {
         statement.setString(1, entity.name)
         statement.setInt(2, entity.id!!)
 
-        val counts = statement.executeUpdate()
+        val count = statement.executeUpdate()
 
-        if (counts == 0) {
+        if (count == 0) {
             connection.rollback()
             throw DataException("Failed to edit list.")
         }
