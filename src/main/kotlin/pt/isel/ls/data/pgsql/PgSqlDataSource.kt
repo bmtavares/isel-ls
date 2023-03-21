@@ -7,7 +7,7 @@ import pt.isel.ls.data.ListsData
 import pt.isel.ls.data.UsersData
 import java.sql.Connection
 
-class PgSqlDataSource(private val connection : Connection) : DataSource {
+class PgSqlDataSource(private val connection: Connection) : DataSource {
     override val users: UsersData
         get() = PgSqlUsersData(connection)
     override val boards: BoardsData

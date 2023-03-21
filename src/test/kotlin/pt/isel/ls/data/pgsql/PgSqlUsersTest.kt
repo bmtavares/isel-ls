@@ -11,16 +11,18 @@ class PgSqlUsersTest {
     @BeforeTest
     fun dropDatabase() {
         PgDataContext.getConnection().use {
-            it.prepareStatement("delete from UsersTokens;" +
-                    "delete from UsersBoards;" +
-                    "delete from Cards;" +
-                    "delete from Lists;" +
-                    "delete from Boards;" +
-                    "delete from Users;").execute()
+            it.prepareStatement(
+                "delete from UsersTokens;" +
+                        "delete from UsersBoards;" +
+                        "delete from Cards;" +
+                        "delete from Lists;" +
+                        "delete from Boards;" +
+                        "delete from Users;"
+            ).execute()
         }
     }
 
-    fun createTestUser(name:String = "Alberto") = User(null, name, "${name.lowercase()}@example.org")
+    fun createTestUser(name: String = "Alberto") = User(null, name, "${name.lowercase()}@example.org")
 
     @Test
     fun insertUser() {

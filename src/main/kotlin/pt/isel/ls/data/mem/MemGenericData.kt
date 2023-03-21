@@ -14,7 +14,7 @@ open class MemGenericData<T : Entity>(private val entitiesList: MutableList<T>) 
         return entitiesList.firstOrNull { e -> e.id == id }
     }
 
-    override fun add(entity: T) : T {
+    override fun add(entity: T): T {
         val newId = if (entitiesList.isEmpty()) 0 else entitiesList.maxBy { it.id!! }.id
         val completeEntity = entity.clone(
             id = newId!! + 1
