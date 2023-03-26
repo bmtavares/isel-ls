@@ -8,6 +8,9 @@ import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.CREATED
 import org.http4k.core.Status.Companion.OK
 import org.http4k.routing.path
+import pt.isel.ls.data.BoardsData
+import pt.isel.ls.data.UsersData
+import pt.isel.ls.data.entities.User
 import pt.isel.ls.data.DataException
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.http.logRequest
@@ -17,6 +20,9 @@ import pt.isel.ls.tasksServices.dtos.InputBoardDto
 import pt.isel.ls.tasksServices.dtos.InputUserDto
 import pt.isel.ls.tasksServices.dtos.OutputEntitiesDto
 
+class WebApi(val boardsRepo : BoardsData,val DataRepoUsers : UsersData){
+
+    private val services = TasksServices(boardsRepo,DataRepoUsers)
 class WebApi{
     private val services = TasksServices()
 val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))

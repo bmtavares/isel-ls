@@ -1,28 +1,29 @@
 package pt.isel.ls.tasksServices
 
-import pt.isel.ls.server.Board
-import pt.isel.ls.server.User
-import pt.isel.ls.storage.BoardStorage
+import pt.isel.ls.data.BoardsData
+import pt.isel.ls.data.entities.Board
+import pt.isel.ls.data.entities.User
 
-class ServiceBoards(val boardRepository: BoardStorage) {
+class ServiceBoards(val boardRepository: BoardsData) {
 
-    fun getBoard(boardId:Int,user:User):Board?{
+    fun getBoard(boardId:Int,user: User): Board?{
         return try {
-            val board = boardRepository.getBoardDetails(boardId,user)
+            val board = boardRepository.getById(boardId)
             board
         }catch (e:Exception){
             null
         }
     }
 
-    fun createBoard(name:String,description:String):Int?{
+    fun createBoard(name:String,description:String):Board?{
+
         return try {
-             boardRepository.createBoard(name,description)
+             boardRepository.add( Board(null,name,description) )
         }catch (e:Exception){
             null
         }
     }
-
+/*TODO
     fun getUsersOnBoard(boardId:Int,user:User):List<User>?{
         return try {
             val users = boardRepository.getUsers(boardId,user)
@@ -30,5 +31,5 @@ class ServiceBoards(val boardRepository: BoardStorage) {
         }catch (e:Exception){
             null
         }
-    }
+    }*/
 }

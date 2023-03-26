@@ -5,8 +5,14 @@ import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.data.entities.UserBoard
 
-class MemBoardsData(private val boardsList: MutableList<Board>, private val usersBoardsList: MutableList<UserBoard>) :
-    MemGenericData<Board>(boardsList), BoardsData {
+object MemBoardsData : MemGenericData<Board>(emptyList<Board>() as MutableList<Board>), BoardsData {
+    private val boardsList = mutableListOf<Board>()
+    private val usersBoardsList = mutableListOf<UserBoard>()
+
+    init {
+        // Initialization code here
+    }
+
     override fun getByName(name: String): Board? = boardsList.find { b -> b.name == name }
 
     override fun getUserBoards(user: User): List<Board> {
@@ -15,4 +21,9 @@ class MemBoardsData(private val boardsList: MutableList<Board>, private val user
             .map { it.boardId }
         return boardsList.filter { b -> b.id in boardIds }
     }
+
+    operator fun invoke(): BoardsData {
+        return this
+    }
+
 }
