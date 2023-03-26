@@ -1,57 +1,32 @@
 package pt.isel.ls.tasksServices
-import pt.isel.ls.server.User
-import pt.isel.ls.storage.UserStorage
+import pt.isel.ls.data.DataException
+import pt.isel.ls.data.UsersData
+import pt.isel.ls.data.entities.User
+import pt.isel.ls.tasksServices.dtos.OutputUserDto
 
-enum class UserResponses(val code:Int,var desc:String){
-    Ok(0,"Ok"),
-    Created(1,"Created"),
-    InvalidUser(2,"Invalid Email"),
-    NotAuthorized(3,"Not Authorized"),
-    ServerError(4,"Server Not Available"),
-    AlreadyExist(5,"User Already registered with this email"),
-    InvalidToken(6,"No user found with the current token")
-}
-
-class ServiceUsers(val userRepository: UserStorage) {
-    fun createUser(email: String,name:String):UserResponses{
-        if (!EmailValidator.isEmailValid(email)) return UserResponses.InvalidUser
-        try {
-           val rsp = userRepository.createUser(email,name)
-            if (rsp.second != null){
-                val rsp2 = UserResponses.Created
-                rsp.second.let {
-                    if (it != null) {
-                        rsp2.desc = it
-                    }
-                }
-                return rsp2
-            }
-        }catch (e:Exception){
-            return UserResponses.ServerError
+class ServiceUsers(val userRepository: UsersData) {
+    fun createUser(email: String,name:String):OutputUserDto{
+        if (!EmailValidator.isEmailValid(email)) throw DataException("Invalid Email")
+        return try {
+           // userRepository.add()
+            return OutputUserDto("",1)
+        } catch (e:Exception){
+            throw DataException("")
         }
-
-
-        // created
-        // alredy exist
-        return UserResponses.Ok
-
-
     }
 
-    fun getUser(userId:Int): Pair<User?,UserResponses>?{
+    fun getUser(userId:Int): User{
         return try {
-            return userRepository.getUser(userId)
+             userRepository.getById(userId)
         } catch (e: Exception) {
-            null
+            throw DataException("")
         }
     }
-    fun getUserByToken(token: String):Pair<User?,UserResponses>?{
+    fun getUserByToken(token: String):User{
         return try {
-            val rsp = userRepository.getUserByToken(token)
-            if (rsp?.first != null) rsp
-            else Pair(null,UserResponses.InvalidToken)
+            userRepository.getByToken(token)
         }catch (e:Exception){
-            null
+           throw DataException("")
         }
 
     }

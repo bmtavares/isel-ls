@@ -7,7 +7,7 @@ import org.http4k.routing.routes
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
 import org.slf4j.LoggerFactory
-import pt.isel.ls.http.*
+import pt.isel.ls.webApi.WebApi
 
 fun main() {
     val logger = LoggerFactory.getLogger("pt.isel.ls.http.HTTPServer")
