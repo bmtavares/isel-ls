@@ -6,7 +6,7 @@ import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.User
 import java.sql.Connection
 
-class PgSqlBoardsData : BoardsData {
+object PgSqlBoardsData : BoardsData {
     override fun getByName(name: String): Board? {
         PgDataContext.getConnection().use {
             val statement = it.prepareStatement(

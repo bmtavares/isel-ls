@@ -7,7 +7,7 @@ import java.sql.Connection
 import java.sql.Timestamp
 import java.util.UUID
 
-class PgSqlUsersData : UsersData {
+object PgSqlUsersData : UsersData {
     override fun createToken(user: User): UUID? {
         PgDataContext.getConnection().use {
             it.autoCommit = false
