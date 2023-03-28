@@ -5,7 +5,7 @@ import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.data.entities.UserBoard
 
-object MemBoardsData : MemGenericData<Board>(emptyList<Board>() as MutableList<Board>), BoardsData {
+object MemBoardsData : MemGenericData<Board>(mutableListOf<Board>()), BoardsData {
     private val boardsList = mutableListOf<Board>()
     private val usersBoardsList = mutableListOf<UserBoard>()
 

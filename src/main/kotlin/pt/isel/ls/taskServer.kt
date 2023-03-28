@@ -1,6 +1,5 @@
 package pt.isel.ls
 
-import org.eclipse.jetty.server.Authentication.User
 import org.http4k.core.Method
 import org.http4k.core.then
 import org.http4k.routing.bind
@@ -11,22 +10,21 @@ import org.slf4j.LoggerFactory
 import pt.isel.ls.webApi.WebApi
 import pt.isel.ls.data.BoardsData
 import pt.isel.ls.data.UsersData
-import pt.isel.ls.http.*
 
 fun main() {
     val logger = LoggerFactory.getLogger("pt.isel.ls.http.HTTPServer")
 
 
     val DataRepoBoards : BoardsData = if (true){
-        pt.isel.ls.data.mem.MemBoardsData()
+        pt.isel.ls.data.mem.MemBoardsData
     }else{
-        pt.isel.ls.data.pgsql.PgSqlBoardsData()
+        pt.isel.ls.data.pgsql.PgSqlBoardsData
     }
 
     val DataRepoUsers : UsersData = if (true){
-        pt.isel.ls.data.mem.MemUsersData()
+        pt.isel.ls.data.mem.MemUsersData
     }else{
-        pt.isel.ls.data.pgsql.PgSqlUsersData()
+        pt.isel.ls.data.pgsql.PgSqlUsersData
     }
 
     val webApi = WebApi(DataRepoBoards,DataRepoUsers)
@@ -40,16 +38,17 @@ fun main() {
         "boards/{id}" bind Method.GET to webApi::getBoard,
         "boards/" bind Method.POST to webApi::createBoard,
         "boards/{id}/user-list" bind Method.GET to webApi::getBoardUsers,
-        "boards/{id}/user-list/{uid}" bind Method.PUT to webApi::getBoard,
-        "boards/{id}/user-list/{uid}" bind Method.DELETE to webApi::getBoard,
-        "boards/{id}/lists" bind Method.GET to webApi::getBoard,
-        "boards/{id}/lists" bind Method.POST to webApi::getBoard,
-        "boards/{id}lists/{lid}" bind Method.POST to webApi::getBoard,
-        "boards/{id}/lists/{lid}" bind Method.GET to webApi::getBoard,
-        "boards/{id}/lists/{lid}/cards" bind Method.GET to webApi::getBoard,
-        "boards/{id}/lists/{lid}/cards" bind Method.POST to webApi::getBoard,
-        "boards/{id}/cards/{cid}" bind Method.GET to webApi::getBoard,
-        "boards/{id}/cards/{cid}/move" bind Method.GET to webApi::getBoard,
+        "boards/{id}/user-list/{uid}" bind Method.PUT to webApi::alterUsersOnBoard,
+        "boards/{id}/user-list/{uid}" bind Method.DELETE to webApi::deleteUsersFromBoard,
+        "boards/{id}/lists" bind Method.GET to webApi::getLists,
+        "boards/{id}/lists" bind Method.POST to webApi::createList,
+        "boards/{id}/lists/{lid}" bind Method.PUT to webApi::editList,
+        "boards/{id}/lists/{lid}" bind Method.GET to webApi::getList,
+        "boards/{id}/lists/{lid}/move" bind Method.PUT to webApi::moveList,
+        "boards/{id}/lists/{lid}/cards" bind Method.GET to webApi::getCardsFromList,
+        "boards/{id}/lists/{lid}/cards" bind Method.POST to webApi::createCard,
+        "boards/{id}/cards/{cid}" bind Method.GET to webApi::getAllCards,
+        "boards/{id}/cards/{cid}/move" bind Method.GET to webApi::alterListPosition,
     )
     )
     val app = routes(

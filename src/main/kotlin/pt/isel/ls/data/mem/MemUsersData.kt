@@ -8,7 +8,7 @@ import pt.isel.ls.data.entities.UserToken
 import java.sql.Timestamp
 import java.util.*
 
-object MemUsersData : MemGenericData<User>(emptyList<User>() as MutableList<User>), UsersData {
+object MemUsersData : MemGenericData<User>(mutableListOf<User>()), UsersData {
     private val usersList = mutableListOf<User>()
     private val userTokensList = mutableListOf<UserToken>()
 
