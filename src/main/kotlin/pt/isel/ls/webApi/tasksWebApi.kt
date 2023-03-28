@@ -36,7 +36,6 @@ val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))
             .body(Json.encodeToString(board))
     }
 
-
     fun createBoard(request: Request):Response {
         logRequest(request)
         val user = Json.decodeFromString<User>(request.header("User").toString())
@@ -59,6 +58,7 @@ val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))
             return Response(BAD_REQUEST)
         }
     }
+
     fun createUser(request: Request):Response{
         logRequest(request)
         val newUser = Json.decodeFromString<InputUserDto>(request.bodyString())
@@ -83,6 +83,50 @@ val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))
         return Response(OK)
             .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
             .body(Json.encodeToString(users))
+    }
+
+    fun alterUsersOnBoard(request: Request): Response {
+        return TODO("Provide the return value")
+    }
+
+    fun deleteUsersFromBoard(request: Request): Response {
+        return TODO("Provide the return value")
+    }
+
+    fun getLists(request: Request): Response {
+        return TODO("Provide the return value")
+    }
+
+    fun createList(request: Request): Response {
+        return TODO("Provide the return value")
+    }
+
+    fun getCardsFromList(request: Request): Response {
+        return TODO("Provide the return value")
+    }
+
+    fun createCard(request: Request): Response {
+        return TODO("Provide the return value")
+    }
+
+    fun getAllCards(request: Request): Response {
+        return TODO("Provide the return value")
+    }
+
+    fun editList(request: Request): Response {
+        return TODO("Provide the return value")
+    }
+
+    fun getList(request: Request): Response {
+        return TODO("Provide the return value")
+    }
+
+    fun alterListPosition(request: Request): Response {
+        return TODO("Provide the return value")
+    }
+
+    fun moveList(request: Request): Response {
+        return TODO("Provide the return value")
     }
 
     val authFilter = Filter { next ->

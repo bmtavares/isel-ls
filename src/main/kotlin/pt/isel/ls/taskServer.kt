@@ -53,6 +53,23 @@ fun main() {
         "boards/{id}/cards/{cid}" bind Method.GET to webApi::getBoard,
         "boards/{id}/cards/{cid}/move" bind Method.GET to webApi::getBoard,
     )
+//        val boardRoutes = webApi.authFilter.then(
+//            routes(
+//                "boards/{id}" bind Method.GET to webApi::getBoard,
+//                "boards/" bind Method.POST to webApi::createBoard,
+//                "boards/{id}/user-list" bind Method.GET to webApi::getBoardUsers,
+//                "boards/{id}/user-list/{uid}" bind Method.PUT to webApi::alterUsersOnBoard,
+//                "boards/{id}/user-list/{uid}" bind Method.DELETE to webApi::deleteUsersFromBoard,
+//                "boards/{id}/lists" bind Method.GET to webApi::getLists,
+//                "boards/{id}/lists" bind Method.POST to webApi::createList,
+//                "boards/{id}/lists/{lid}" bind Method.PUT to webApi::editList,
+//                "boards/{id}/lists/{lid}" bind Method.GET to webApi::getList,
+//                "boards/{id}/lists/{lid}/move" bind Method.PUT to webApi::moveList,
+//                "boards/{id}/lists/{lid}/cards" bind Method.GET to webApi::getCardsFromList,
+//                "boards/{id}/lists/{lid}/cards" bind Method.POST to webApi::createCard,
+//                "boards/{id}/cards/{cid}" bind Method.GET to webApi::getAllCards,
+//                "boards/{id}/cards/{cid}/move" bind Method.GET to webApi::alterListPosition,
+//            )
     )
     val app = routes(
         usersRoutes,
