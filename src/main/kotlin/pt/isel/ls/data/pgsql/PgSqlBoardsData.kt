@@ -4,6 +4,8 @@ import pt.isel.ls.data.BoardsData
 import pt.isel.ls.data.DataException
 import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.User
+import pt.isel.ls.tasksServices.dtos.EditBoardDto
+import pt.isel.ls.tasksServices.dtos.InputBoardDto
 import java.sql.Connection
 import kotlin.math.E
 
@@ -71,14 +73,14 @@ object PgSqlBoardsData : BoardsData {
         }
     }
 
-    override fun add(entity: Board): Board {
+    override fun add(newBoard: InputBoardDto): Board {
         PgDataContext.getConnection().use {
             it.autoCommit = false
             val statement = it.prepareStatement(
-                "insert into Board (name, description) values (?, ?);"
+                "insert into Boards (name, description) values (?, ?);"
             )
-            statement.setString(1, entity.name)
-            statement.setString(2, entity.description)
+            statement.setString(1, newBoard.name)
+            statement.setString(2, newBoard.description)
 
             val count = statement.executeUpdate()
 
@@ -87,27 +89,27 @@ object PgSqlBoardsData : BoardsData {
                 throw DataException("Failed to add board.")
             }
 
-            val newBoard = getByName(entity.name)
+            val board = getByName(newBoard.name)
 
-            if (newBoard == null) {
+            if (board == null) {
                 it.rollback()
                 throw DataException("Failed to retrieve board after adding.")
             }
 
             it.commit()
 
-            return newBoard
+            return board
         }
 
     }
 
-    override fun delete(entity: Board) {
+    override fun delete(id: Int) {
         PgDataContext.getConnection().use {
             it.autoCommit = false
             val statement = it.prepareStatement(
-                "delete Boards where id = ?;"
+                "delete from Boards where id = ?;"
             )
-            statement.setInt(1, entity.id!!)
+            statement.setInt(1, id)
 
             val count = statement.executeUpdate()
 
@@ -120,17 +122,14 @@ object PgSqlBoardsData : BoardsData {
         }
     }
 
-    override fun edit(entity: Board) {
+    override fun edit(editBoard: EditBoardDto) {
         PgDataContext.getConnection().use {
             it.autoCommit = false
             val statement = it.prepareStatement(
-                "update Boards set name = ? where id = ?;" +
-                        "update Boards set description = ? where id = ?;"
+                "update Boards set description = ? where id = ?;"
             )
-            statement.setString(1, entity.name)
-            statement.setString(3, entity.description)
-            statement.setInt(2, entity.id!!)
-            statement.setInt(4, entity.id)
+            statement.setString(1, editBoard.description)
+            statement.setInt(2, editBoard.id)
 
             val count = statement.executeUpdate()
 
@@ -143,12 +142,12 @@ object PgSqlBoardsData : BoardsData {
         }
     }
 
-    override fun exists(entity: Board): Boolean {
+    override fun exists(id:Int): Boolean {
         PgDataContext.getConnection().use {
             val statement = it.prepareStatement(
                 "select count(*) exists from Boards where id = ?;"
             )
-            statement.setInt(1, entity.id!!)
+            statement.setInt(1, id)
 
             val rs = statement.executeQuery()
             while (rs.next()) {
@@ -157,6 +156,10 @@ object PgSqlBoardsData : BoardsData {
 
             return false
         }
+    }
+
+    override fun getUsers(boardId: Int, user: User): List<User> {
+        TODO("Not yet implemented")
     }
 
     operator fun invoke(): BoardsData {

@@ -11,25 +11,27 @@ import org.slf4j.LoggerFactory
 import pt.isel.ls.webApi.WebApi
 import pt.isel.ls.data.BoardsData
 import pt.isel.ls.data.UsersData
-import pt.isel.ls.http.*
+import pt.isel.ls.data.pgsql.PgSqlBoardsData
+import pt.isel.ls.data.pgsql.PgSqlUsersData
+
 
 fun main() {
     val logger = LoggerFactory.getLogger("pt.isel.ls.http.HTTPServer")
+    val dataRepoBoards : BoardsData = PgSqlBoardsData
+    val dataRepoUsers : UsersData = PgSqlUsersData
+//    val dataRepoBoards : BoardsData = if (true){
+//        pt.isel.ls.data.mem.MemBoardsData()
+//    }else{
+//        pt.isel.ls.data.pgsql.PgSqlBoardsData()
+//    }
+//
+//    val dataRepoUsers : UsersData = if (true){
+//        pt.isel.ls.data.mem.MemUsersData()
+//    }else{
+//        pt.isel.ls.data.pgsql.PgSqlUsersData()
+//    }
 
-
-    val DataRepoBoards : BoardsData = if (true){
-        pt.isel.ls.data.mem.MemBoardsData()
-    }else{
-        pt.isel.ls.data.pgsql.PgSqlBoardsData()
-    }
-
-    val DataRepoUsers : UsersData = if (true){
-        pt.isel.ls.data.mem.MemUsersData()
-    }else{
-        pt.isel.ls.data.pgsql.PgSqlUsersData()
-    }
-
-    val webApi = WebApi(DataRepoBoards,DataRepoUsers)
+    val webApi = WebApi(dataRepoBoards,dataRepoUsers)
 
     val usersRoutes = routes(
         "users/{id}" bind Method.GET to webApi::getUser,

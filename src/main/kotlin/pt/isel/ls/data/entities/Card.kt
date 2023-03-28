@@ -6,12 +6,12 @@ import java.sql.Timestamp
 
 @Serializable
 data class Card(
-    override val id: Int?,
-    var name: String,
-    var description: String,
+    override val id: Int,
+    val name: String,
+    val description: String,
     @Serializable(with = TimestampAsLongSerializer::class)
-    var dueDate: Timestamp,
-    var listId: Int?,
+    val dueDate: Timestamp?,
+    val listId: Int?,
     val boardId: Int
 ) : Entity {
     override fun clone(id: Int): Card = this.copy(id = id)

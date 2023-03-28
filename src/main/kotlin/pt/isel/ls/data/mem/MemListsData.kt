@@ -8,9 +8,9 @@ import pt.isel.ls.data.entities.User
 import pt.isel.ls.data.entities.UserToken
 
 
-    object MemListsData : MemGenericData<BoardList>(emptyList<BoardList>() as MutableList<BoardList>), ListsData {
-        private val listsList = mutableListOf<BoardList>()
-
-
-        override fun getListsByBoard(board: Board): List<BoardList> = listsList.filter { l -> l.boardId == board.id }
-}
+//    object MemListsData : MemGenericData<BoardList>(emptyList<BoardList>() as MutableList<BoardList>), ListsData {
+//        private val listsList = mutableListOf<BoardList>()
+//
+//
+//        override fun getListsByBoard(board: Board): List<BoardList> = listsList.filter { l -> l.boardId == board.id }
+//}

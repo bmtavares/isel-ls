@@ -5,7 +5,10 @@ import pt.isel.ls.data.DataException
 import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.BoardList
 import pt.isel.ls.data.entities.Card
+import pt.isel.ls.tasksServices.dtos.EditCardDto
+import pt.isel.ls.tasksServices.dtos.InputCardDto
 import java.sql.Connection
+import java.sql.Timestamp
 import java.sql.Types
 
 object PgSqlCardsData : CardsData {
@@ -84,15 +87,22 @@ object PgSqlCardsData : CardsData {
         }
     }
 
-    override fun add(entity: Card): Card {
+    override fun add(newCard: InputCardDto,boardId:Int,listId:Int?): Card {
         PgDataContext.getConnection().use {
             val previousCommitState = it.autoCommit
             it.autoCommit = false
             val statement = it.prepareStatement(
                 "insert into Cards (name, description, dueDate, listId, boardId) values (?, ?, ?, ?, ?) returning id, name, description, dueDate, listId, boardId;"
             )
-            statement.setString(1, entity.name)
-            statement.setInt(2, entity.boardId)
+            statement.setString(1, newCard.name)
+            statement.setString(2, newCard.description)
+            statement.setString(3, newCard.dueDate)
+            if (listId != null)
+                statement.setInt(4, listId)
+            else
+                statement.setNull(4,Types.INTEGER)
+
+            statement.setInt(5, boardId)
 
             val rs = statement.executeQuery()
 
@@ -101,8 +111,8 @@ object PgSqlCardsData : CardsData {
                 val name = rs.getString("name")
                 val description = rs.getString("description")
                 val dueDate = rs.getTimestamp("dueDate")
-                val listId = if (rs.wasNull()) null else rs.getInt("listId")
-                val boardId = rs.getInt("boardId")
+                val lId = if (rs.wasNull()) null else rs.getInt("listId")
+                val bId = rs.getInt("boardId")
 
                 it.commit()
                 it.autoCommit = previousCommitState
@@ -112,8 +122,8 @@ object PgSqlCardsData : CardsData {
                     name,
                     description,
                     dueDate,
-                    listId,
-                    boardId
+                    lId,
+                    bId
                 )
             }
 
@@ -122,13 +132,13 @@ object PgSqlCardsData : CardsData {
         }
     }
 
-    override fun delete(entity: Card) {
+    override fun delete(id: Int) {
         PgDataContext.getConnection().use {
             it.autoCommit = false
             val statement = it.prepareStatement(
-                "delete Cards where id = ?;"
+                "delete from Cards where id = ?;"
             )
-            statement.setInt(1, entity.id!!)
+            statement.setInt(1, id)
 
             val count = statement.executeUpdate()
 
@@ -141,7 +151,7 @@ object PgSqlCardsData : CardsData {
         }
     }
 
-    override fun edit(entity: Card) {
+    override fun edit(editCardDto: EditCardDto, boardId: Int, cardId:Int) {
         PgDataContext.getConnection().use {
             it.autoCommit = false
             val statement = it.prepareStatement(
@@ -150,18 +160,23 @@ object PgSqlCardsData : CardsData {
                         "update Cards set dueDate = ? where id = ?;" +
                         "update Cards set listId = ? where id = ?;"
             )
-            statement.setString(1, entity.name)
-            statement.setString(3, entity.name)
-            statement.setTimestamp(5, entity.dueDate)
-            if (entity.listId == null) {
+            statement.setString(1, editCardDto.name)
+            statement.setString(3, editCardDto.description)
+            if (editCardDto.dueDate == null) {
+                statement.setNull(5, Types.TIMESTAMP)
+            } else {
+                statement.setTimestamp(5, editCardDto.dueDate)
+            }
+
+            if (editCardDto.listId == null) {
                 statement.setNull(7, Types.INTEGER)
             } else {
-                statement.setInt(7, entity.listId!!)
+                statement.setInt(7, editCardDto.listId)
             }
-            statement.setInt(2, entity.id!!)
-            statement.setInt(4, entity.id)
-            statement.setInt(6, entity.id)
-            statement.setInt(8, entity.id)
+            statement.setInt(2, cardId)
+            statement.setInt(4, cardId)
+            statement.setInt(6, cardId)
+            statement.setInt(8, cardId)
 
             val count = statement.executeUpdate()
 
@@ -174,12 +189,12 @@ object PgSqlCardsData : CardsData {
         }
     }
 
-    override fun exists(entity: Card): Boolean {
+    override fun exists(id: Int): Boolean {
         PgDataContext.getConnection().use {
             val statement = it.prepareStatement(
                 "select count(*) exists from Cards where id = ?;"
             )
-            statement.setInt(1, entity.id!!)
+            statement.setInt(1, id)
 
             val rs = statement.executeQuery()
             while (rs.next()) {

@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class BoardList(
-    override val id: Int?,
+    override val id: Int,
     var name: String,
     val boardId: Int
 ) : Entity {

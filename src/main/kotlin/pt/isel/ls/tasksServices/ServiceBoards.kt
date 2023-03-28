@@ -3,6 +3,7 @@ package pt.isel.ls.tasksServices
 import pt.isel.ls.data.BoardsData
 import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.User
+import pt.isel.ls.tasksServices.dtos.InputBoardDto
 
 class ServiceBoards(val boardRepository: BoardsData) {
 
@@ -15,10 +16,10 @@ class ServiceBoards(val boardRepository: BoardsData) {
         }
     }
 
-    fun createBoard(name:String,description:String):Board?{
+    fun createBoard(newBoard:InputBoardDto):Board?{
 
         return try {
-             boardRepository.add( Board(null,name,description) )
+             boardRepository.add(newBoard)
         }catch (e:Exception){
             null
         }
@@ -26,9 +27,8 @@ class ServiceBoards(val boardRepository: BoardsData) {
 
     fun getUsersOnBoard(boardId:Int,user:User):List<User>?{
         return try {
-          //  val users = boardRepository.getUsers(boardId,user) // TODO
-          //  users
-            emptyList<User>()
+           val users = boardRepository.getUsers(boardId,user)
+           users
         }catch (e:Exception){
             null
         }

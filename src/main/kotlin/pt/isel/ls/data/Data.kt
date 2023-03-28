@@ -1,11 +1,10 @@
 package pt.isel.ls.data
 
 import pt.isel.ls.data.entities.Entity
+import pt.isel.ls.tasksServices.dtos.Dto
 
-interface Data<T : Entity> {
-    fun getById(id: Int): T
-    fun add(entity: T): T
-    fun delete(entity: T)
-    fun edit(entity: T)
-    fun exists(entity: T): Boolean
+interface Data<K:Entity> {
+    fun getById(id: Int): K
+    fun delete(id: Int)
+    fun exists(id: Int): Boolean
 }

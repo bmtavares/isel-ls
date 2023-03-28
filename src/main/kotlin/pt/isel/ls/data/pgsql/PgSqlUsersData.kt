@@ -3,6 +3,8 @@ package pt.isel.ls.data.pgsql
 import pt.isel.ls.data.DataException
 import pt.isel.ls.data.UsersData
 import pt.isel.ls.data.entities.User
+import pt.isel.ls.tasksServices.dtos.EditUserDto
+import pt.isel.ls.tasksServices.dtos.InputUserDto
 import java.sql.Connection
 import java.sql.Timestamp
 import java.util.UUID
@@ -69,7 +71,7 @@ object PgSqlUsersData : UsersData {
                 )
             }
 
-            throw Exception("awdwa") // TODO
+            throw Exception("failed to get by email") // TODO
         }
     }
 
@@ -89,46 +91,40 @@ object PgSqlUsersData : UsersData {
                 )
             }
 
-            throw Exception("awdwa") // TODO
+            throw Exception("failed to get by id") // TODO
         }
     }
 
-    override fun add(entity: User): User {
+    override fun add(newUser: InputUserDto): User {
         PgDataContext.getConnection().use {
             it.autoCommit = false
             val statement = it.prepareStatement(
-                "insert into Users (name, email) values (?, ?);"
+                "insert into Users (name, email) values (?, ?) returning id,name,email;"
             )
-            statement.setString(1, entity.name)
-            statement.setString(2, entity.email)
+            statement.setString(1, newUser.name)
+            statement.setString(2, newUser.email)
 
-            val count = statement.executeUpdate()
-
-            if (count == 0) {
+            val rs = statement.executeQuery()
+            while (rs.next()){
+             val id = rs.getInt("id")
+             val name = rs.getString("name")
+             val email = rs.getString("email")
+                it.commit()
+                return User(id,name,email)
+            }
                 it.rollback()
                 throw DataException("Failed to add user.")
             }
-
-            val newUser = getByEmail(entity.email)
-
-            if (newUser == null) {
-                it.rollback()
-                throw DataException("Failed to retrieve user after adding.")
-            }
-
-            it.commit()
-
-            return newUser
         }
-    }
 
-    override fun delete(entity: User) {
+
+    override fun delete(id:Int) {
         PgDataContext.getConnection().use {
             it.autoCommit = false
             val statement = it.prepareStatement(
                 "delete from Users where id = ?;"
             )
-            statement.setInt(1, entity.id!!)
+            statement.setInt(1, id)
 
             val count = statement.executeUpdate()
 
@@ -141,17 +137,14 @@ object PgSqlUsersData : UsersData {
         }
     }
 
-    override fun edit(entity: User) {
+    override fun edit(editUser: EditUserDto) {
         PgDataContext.getConnection().use {
             it.autoCommit = false
             val statement = it.prepareStatement(
-                "update Users set name = ? where id = ?;" +
-                        "update Users set email = ? where id = ?;"
-            )
-            statement.setString(1, entity.name)
-            statement.setString(3, entity.email)
-            statement.setInt(2, entity.id!!)
-            statement.setInt(4, entity.id)
+                "update Users set name = ? where id = ?;")
+            statement.setString(1, editUser.name)
+            statement.setInt(2, editUser.id)
+
 
             val count = statement.executeUpdate()
 
@@ -164,12 +157,12 @@ object PgSqlUsersData : UsersData {
         }
     }
 
-    override fun exists(entity: User): Boolean {
+    override fun exists(id: Int): Boolean {
         PgDataContext.getConnection().use {
             val statement = it.prepareStatement(
                 "select count(*) exists from Users where id = ?;"
             )
-            statement.setInt(1, entity.id!!)
+            statement.setInt(1, id)
 
             val rs = statement.executeQuery()
             while (rs.next()) {

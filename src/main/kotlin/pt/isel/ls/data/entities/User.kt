@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class User(
-    override val id: Int?,
+    override val id: Int,
     var name: String,
     var email: String
 ) : Entity {

@@ -3,4 +3,4 @@ package pt.isel.ls.tasksServices.dtos
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class OutputIdDto(val id :Int):Dto
+data class EditBoardDto(val id:Int,val description:String):Dto

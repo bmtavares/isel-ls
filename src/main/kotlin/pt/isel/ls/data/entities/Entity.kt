@@ -4,6 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 sealed interface Entity {
-    val id: Int?
+    val id: Int
     fun clone(id: Int): Entity
 }

@@ -2,14 +2,17 @@ package pt.isel.ls.tasksServices
 import pt.isel.ls.data.DataException
 import pt.isel.ls.data.UsersData
 import pt.isel.ls.data.entities.User
+import pt.isel.ls.tasksServices.dtos.InputUserDto
 import pt.isel.ls.tasksServices.dtos.OutputUserDto
 
 class ServiceUsers(val userRepository: UsersData) {
-    fun createUser(email: String,name:String):OutputUserDto{
-        if (!EmailValidator.isEmailValid(email)) throw DataException("Invalid Email")
+    fun createUser(newUser: InputUserDto):OutputUserDto{
+        if (!EmailValidator.isEmailValid(newUser.email)) throw DataException("Invalid Email")
         return try {
-           // userRepository.add()
-            return OutputUserDto("",1)
+            val user =  userRepository.add(newUser)
+            val token = userRepository.createToken(user)
+            OutputUserDto(token,user.id)
+
         } catch (e:Exception){
             throw DataException("")
         }
