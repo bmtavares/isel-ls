@@ -12,7 +12,7 @@ import pt.isel.ls.data.BoardsData
 import pt.isel.ls.data.UsersData
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.data.DataException
-import pt.isel.ls.data.entities.User
+
 import pt.isel.ls.http.logRequest
 import pt.isel.ls.server.*
 import pt.isel.ls.tasksServices.TasksServices
@@ -23,8 +23,7 @@ import pt.isel.ls.tasksServices.dtos.OutputEntitiesDto
 class WebApi(val boardsRepo : BoardsData,val DataRepoUsers : UsersData){
 
     private val services = TasksServices(boardsRepo,DataRepoUsers)
-class WebApi{
-    private val services = TasksServices()
+
 val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))
     fun getBoard(request: Request):Response {
         logRequest(request)

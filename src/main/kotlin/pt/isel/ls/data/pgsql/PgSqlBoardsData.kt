@@ -5,6 +5,7 @@ import pt.isel.ls.data.DataException
 import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.User
 import java.sql.Connection
+import kotlin.math.E
 
 object PgSqlBoardsData : BoardsData {
     override fun getByName(name: String): Board? {
@@ -23,7 +24,7 @@ object PgSqlBoardsData : BoardsData {
                 )
             }
 
-            return null
+            throw Exception("awdwa") // TODO
         }
     }
 
@@ -50,7 +51,7 @@ object PgSqlBoardsData : BoardsData {
         }
     }
 
-    override fun getById(id: Int): Board? {
+    override fun getById(id: Int): Board{
         PgDataContext.getConnection().use {
             val statement = it.prepareStatement(
                 "select * from Boards where id = ?;"
@@ -66,7 +67,7 @@ object PgSqlBoardsData : BoardsData {
                 )
             }
 
-            return null
+            throw Exception("awda") // TODO
         }
     }
 
@@ -156,5 +157,9 @@ object PgSqlBoardsData : BoardsData {
 
             return false
         }
+    }
+
+    operator fun invoke(): BoardsData {
+        return this
     }
 }

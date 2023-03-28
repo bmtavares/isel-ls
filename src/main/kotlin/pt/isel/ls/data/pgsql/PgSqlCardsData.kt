@@ -61,7 +61,7 @@ object PgSqlCardsData : CardsData {
         }
     }
 
-    override fun getById(id: Int): Card? {
+    override fun getById(id: Int): Card {
         PgDataContext.getConnection().use {
             val statement = it.prepareStatement(
                 "select * from Cards where id = ?;"
@@ -80,7 +80,7 @@ object PgSqlCardsData : CardsData {
                 )
             }
 
-            return null
+            throw Exception("awdwa") // TODO
         }
     }
 
