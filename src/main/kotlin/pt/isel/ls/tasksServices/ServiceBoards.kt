@@ -23,7 +23,7 @@ class ServiceBoards(val boardRepository: BoardsData) {
             null
         }
     }
-/*TODO
+
     fun getUsersOnBoard(boardId:Int,user:User):List<User>?{
         return try {
           //  val users = boardRepository.getUsers(boardId,user) // TODO
@@ -32,5 +32,5 @@ class ServiceBoards(val boardRepository: BoardsData) {
         }catch (e:Exception){
             null
         }
-    }*/
+    }
 }
