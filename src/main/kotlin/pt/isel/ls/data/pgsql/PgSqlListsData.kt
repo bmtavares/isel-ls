@@ -30,7 +30,7 @@ object PgSqlListsData : ListsData {
         }
     }
 
-    override fun getById(id: Int): BoardList? {
+    override fun getById(id: Int): BoardList {
         PgDataContext.getConnection().use {
             val statement = it.prepareStatement(
                 "select * from Lists where id = ?;"
@@ -46,7 +46,7 @@ object PgSqlListsData : ListsData {
                 )
             }
 
-            return null
+            throw Exception("awdwa") // TODO
         }
     }
 

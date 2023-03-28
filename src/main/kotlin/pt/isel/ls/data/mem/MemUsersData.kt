@@ -16,21 +16,20 @@ object MemUsersData : MemGenericData<User>(emptyList<User>() as MutableList<User
         // Initialization code here
     }
 
-    override fun createToken(user: User): UUID? {
-        if (user.id == null)
-            return null
-
-        val newToken = UserToken(UUID.randomUUID(), user.id, Timestamp(System.currentTimeMillis()))
+    override fun createToken(user: User): String {
+        val newToken = UserToken(UUID.randomUUID(), user.id!!, Timestamp(System.currentTimeMillis()))
         userTokensList.add(newToken)
-        return newToken.token
+        return newToken.token.toString()
     }
 
-    override fun getByToken(token: UUID): User? {
-        val uId = userTokensList.find { ut -> ut.token == token } ?: return null
-        return usersList.find { u -> u.id == uId.userId }
+
+
+    override fun getByToken(token: String): User {
+        val uId = userTokensList.first { it.toString() == token }
+        return usersList.first { u -> u.id == uId.userId }
     }
 
-    override fun getByEmail(email: String): User? = usersList.find { u -> u.email == email }
+    override fun getByEmail(email: String): User = usersList.first { u -> u.email == email }
 
     operator fun invoke(): UsersData {
         return this

@@ -8,7 +8,7 @@ import java.sql.Timestamp
 import java.util.UUID
 
 object PgSqlUsersData : UsersData {
-    override fun createToken(user: User): UUID? {
+    override fun createToken(user: User): String {
         PgDataContext.getConnection().use {
             it.autoCommit = false
 
@@ -29,11 +29,11 @@ object PgSqlUsersData : UsersData {
 
             it.commit()
 
-            return token
+            return token.toString()
         }
     }
 
-    override fun getByToken(token: UUID): User? {
+    override fun getByToken(token: String): User {
         PgDataContext.getConnection().use {
             val statement = it.prepareStatement(
                 "select id, name, email from Users u join UsersTokens ut on u.id = ut.userId where token = ?;"
@@ -49,11 +49,11 @@ object PgSqlUsersData : UsersData {
                 )
             }
 
-            return null
+            throw Exception("awdwa") // TODO
         }
     }
 
-    override fun getByEmail(email: String): User? {
+    override fun getByEmail(email: String): User {
         PgDataContext.getConnection().use {
             val statement = it.prepareStatement(
                 "select * from Users where email = ?;"
@@ -69,11 +69,11 @@ object PgSqlUsersData : UsersData {
                 )
             }
 
-            return null
+            throw Exception("awdwa") // TODO
         }
     }
 
-    override fun getById(id: Int): User? {
+    override fun getById(id: Int): User {
         PgDataContext.getConnection().use {
             val statement = it.prepareStatement(
                 "select * from Users where id = ?;"
@@ -89,7 +89,7 @@ object PgSqlUsersData : UsersData {
                 )
             }
 
-            return null
+            throw Exception("awdwa") // TODO
         }
     }
 
@@ -178,5 +178,9 @@ object PgSqlUsersData : UsersData {
 
             return false
         }
+    }
+
+    operator fun invoke(): UsersData {
+        return this
     }
 }

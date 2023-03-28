@@ -26,8 +26,9 @@ class ServiceBoards(val boardRepository: BoardsData) {
 /*TODO
     fun getUsersOnBoard(boardId:Int,user:User):List<User>?{
         return try {
-            val users = boardRepository.getUsers(boardId,user)
-            users
+          //  val users = boardRepository.getUsers(boardId,user) // TODO
+          //  users
+            emptyList<User>()
         }catch (e:Exception){
             null
         }

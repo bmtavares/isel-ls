@@ -10,8 +10,8 @@ open class MemGenericData<T : Entity>(private val entitiesList: MutableList<T>) 
         lastId = 1
     }
 
-    override fun getById(id: Int): T? {
-        return entitiesList.firstOrNull { e -> e.id == id }
+    override fun getById(id: Int): T {
+        return entitiesList.first { e -> e.id == id }
     }
 
     override fun add(entity: T): T {
