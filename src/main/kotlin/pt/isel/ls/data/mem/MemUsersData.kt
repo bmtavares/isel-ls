@@ -1,13 +1,21 @@
 package pt.isel.ls.data.mem
 
+import pt.isel.ls.data.BoardsData
 import pt.isel.ls.data.UsersData
+import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.data.entities.UserToken
 import java.sql.Timestamp
 import java.util.*
 
-class MemUsersData(private val usersList: MutableList<User>, private val userTokensList: MutableList<UserToken>) :
-    MemGenericData<User>(usersList), UsersData {
+object MemUsersData : MemGenericData<User>(emptyList<User>() as MutableList<User>), UsersData {
+    private val usersList = mutableListOf<User>()
+    private val userTokensList = mutableListOf<UserToken>()
+
+    init {
+        // Initialization code here
+    }
+
     override fun createToken(user: User): UUID? {
         if (user.id == null)
             return null
@@ -23,4 +31,8 @@ class MemUsersData(private val usersList: MutableList<User>, private val userTok
     }
 
     override fun getByEmail(email: String): User? = usersList.find { u -> u.email == email }
+
+    operator fun invoke(): UsersData {
+        return this
+    }
 }

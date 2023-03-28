@@ -8,7 +8,7 @@ import pt.isel.ls.data.entities.Card
 import java.sql.Connection
 import java.sql.Types
 
-class PgSqlCardsData : CardsData {
+object PgSqlCardsData : CardsData {
     override fun getByList(list: BoardList): List<Card> {
         PgDataContext.getConnection().use {
             val statement = it.prepareStatement(

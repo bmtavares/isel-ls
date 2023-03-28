@@ -6,7 +6,7 @@ import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.BoardList
 import java.sql.Connection
 
-class PgSqlListsData : ListsData {
+object PgSqlListsData : ListsData {
     override fun getListsByBoard(board: Board): List<BoardList> {
         PgDataContext.getConnection().use {
             val statement = it.prepareStatement(

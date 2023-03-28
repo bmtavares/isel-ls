@@ -1,4 +1,6 @@
 package pt.isel.ls.tasksServices
+import pt.isel.ls.data.UsersData
+import pt.isel.ls.data.entities.User
 import pt.isel.ls.server.User
 import pt.isel.ls.storage.UserStorage
 
@@ -12,11 +14,11 @@ enum class UserResponses(val code:Int,var desc:String){
     InvalidToken(6,"No user found with the current token")
 }
 
-class ServiceUsers(val userRepository: UserStorage) {
+class ServiceUsers(private val usersRepo : UsersData) {
     fun createUser(email: String,name:String):UserResponses{
         if (!EmailValidator.isEmailValid(email)) return UserResponses.InvalidUser
         try {
-           val rsp = userRepository.createUser(email,name)
+           val rsp = usersRepo.add(User(null,name,email))
             if (rsp.second != null){
                 val rsp2 = UserResponses.Created
                 rsp.second.let {
@@ -40,14 +42,14 @@ class ServiceUsers(val userRepository: UserStorage) {
 
     fun getUser(userId:Int): Pair<User?,UserResponses>?{
         return try {
-            return userRepository.getUser(userId)
+            return usersRepo.getById(userId)
         } catch (e: Exception) {
             null
         }
     }
     fun getUserByToken(token: String):Pair<User?,UserResponses>?{
         return try {
-            val rsp = userRepository.getUserByToken(token)
+            val rsp = usersRepo.getByToken(token)
             if (rsp?.first != null) rsp
             else Pair(null,UserResponses.InvalidToken)
         }catch (e:Exception){

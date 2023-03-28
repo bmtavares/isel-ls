@@ -12,13 +12,17 @@ import org.http4k.core.Status.Companion.INTERNAL_SERVER_ERROR
 import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
 import org.http4k.routing.path
+import pt.isel.ls.data.BoardsData
+import pt.isel.ls.data.UsersData
+import pt.isel.ls.data.entities.User
 import pt.isel.ls.server.*
 import pt.isel.ls.tasksServices.TasksServices
 import pt.isel.ls.tasksServices.UserResponses
 import java.io.InputStream
 
-class WebApi{
-    private val services = TasksServices()
+class WebApi(val boardsRepo : BoardsData,val DataRepoUsers : UsersData){
+
+    private val services = TasksServices(boardsRepo,DataRepoUsers)
     fun getBoard(request: Request):Response {
         logRequest(request)
         val boardId = request.path("id")?.toInt()
@@ -29,7 +33,6 @@ class WebApi{
             .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
             .body(Json.encodeToString(board))
     }
-
 
     fun createBoard(request: Request):Response {
         logRequest(request)
@@ -50,6 +53,7 @@ class WebApi{
             .body(Json.encodeToString(rsp.first))
         else Response(NOT_FOUND)
     }
+
     fun createUser(request: Request):Response{
         logRequest(request)
         val newUser = Json.decodeFromString<NewUser>(request.bodyString())
@@ -95,6 +99,5 @@ class WebApi{
             }
         }
     }
-
 }
 
