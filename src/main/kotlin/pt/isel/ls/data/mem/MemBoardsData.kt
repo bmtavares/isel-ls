@@ -1,9 +1,6 @@
 package pt.isel.ls.data.mem
 
-import pt.isel.ls.data.BoardsData
-import pt.isel.ls.data.DataException
-import pt.isel.ls.data.EntityAlreadyExistsException
-import pt.isel.ls.data.EntityNotFoundException
+import pt.isel.ls.data.*
 import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.data.entities.UserBoard
@@ -13,6 +10,9 @@ import pt.isel.ls.tasksServices.dtos.InputBoardDto
 object MemBoardsData : BoardsData {
     private val CASCADE_DELETE = false
 
+    override val boardLists=MemListsData
+
+    override val cards=MemCardsData
     override fun getByName(name: String): Board? =
         MemDataSource.boards.firstOrNull { it.name == name }
             ?: throw EntityNotFoundException("Board not found.", Board::class)
@@ -30,18 +30,19 @@ object MemBoardsData : BoardsData {
         MemDataSource.boards.add(newBoard)
     }
 
-    override fun add(inputBoardDto: InputBoardDto): Board {
-        if (!MemDataSource.boards.any { it.name == inputBoardDto.name }) {
+    override fun add(newBoard: InputBoardDto): Board {
+        if (!MemDataSource.boards.any { it.name == newBoard.name }) {
             throw EntityAlreadyExistsException(
                 "Name already in use.",
                 Board::class
             )
         }
         val newId = if (MemDataSource.boards.isEmpty()) 1 else MemDataSource.boards.maxOf { it.id } + 1
-        val board = Board(newId, inputBoardDto.name, inputBoardDto.description)
+        val board = Board(newId, newBoard.name, newBoard.description)
         MemDataSource.boards.add(board)
         return board
     }
+
 
     override fun getUsers(boardId: Int, user: User): List<User> {
         val usersIds = MemDataSource.usersBoards.filter { it.boardId == boardId }.map { it.userId }

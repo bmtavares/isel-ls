@@ -7,6 +7,7 @@ import pt.isel.ls.tasksServices.dtos.OutputUserDto
 
 class ServiceUsers(val userRepository: UsersData) {
     fun createUser(newUser: InputUserDto):OutputUserDto{
+        checkNotNull(newUser.email)
         if (!EmailValidator.isEmailValid(newUser.email)) throw DataException("Invalid Email")
         return try {
             val user =  userRepository.add(newUser)

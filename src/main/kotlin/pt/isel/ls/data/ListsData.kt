@@ -9,5 +9,5 @@ interface ListsData : Data<BoardList> {
     fun getListsByBoard(board: Board): List<BoardList>
 
     fun edit(editList: EditBoardListDto,listId:Int)
-    fun add(inputListDto: InputBoardListDto,boardId:Int): BoardList
+    fun add(newBoardList: InputBoardListDto,boardId:Int): BoardList
 }

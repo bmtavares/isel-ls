@@ -22,3 +22,6 @@ delete from users where name='sergio';
 insert into boards (name, description)values ('board1','some description1');
 
 insert into usersboards values (1,1),(2,1),(3,1);
+
+
+delete from boards

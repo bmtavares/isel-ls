@@ -6,10 +6,11 @@ import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.tasksServices.dtos.EditBoardDto
 import pt.isel.ls.tasksServices.dtos.InputBoardDto
-import java.sql.Connection
-import kotlin.math.E
 
 object PgSqlBoardsData : BoardsData {
+
+    override val boardLists = PgSqlListsData
+    override val cards = PgSqlCardsData
     override fun getByName(name: String): Board? {
         PgDataContext.getConnection().use {
             val statement = it.prepareStatement(
@@ -29,13 +30,18 @@ object PgSqlBoardsData : BoardsData {
             throw Exception("awdwa") // TODO
         }
     }
+    fun getUserBoards(id:Int){
+        PgDataContext.getConnection().use {
+
+        }
+    }
 
     override fun getUserBoards(user: User): List<Board> {
         PgDataContext.getConnection().use {
             val statement = it.prepareStatement(
                 "select id, name, description from Boards b join UsersBoards ub on b.id = ub.boardId where ub.userId = ?;"
             )
-            statement.setInt(1, user.id!!)
+            statement.setInt(1, user.id)
 
             val rs = statement.executeQuery()
 
@@ -77,28 +83,26 @@ object PgSqlBoardsData : BoardsData {
         PgDataContext.getConnection().use {
             it.autoCommit = false
             val statement = it.prepareStatement(
-                "insert into Boards (name, description) values (?, ?);"
+                "insert into Boards (name, description) values (?, ?) returning id;"
             )
             statement.setString(1, newBoard.name)
             statement.setString(2, newBoard.description)
 
-            val count = statement.executeUpdate()
+            val rs = statement.executeQuery()
 
-            if (count == 0) {
-                it.rollback()
-                throw DataException("Failed to add board.")
+            while (rs.next()) {
+                val id = rs.getInt("id")
+                it.commit()
+                return Board(id,newBoard.name,newBoard.description)
             }
 
-            val board = getByName(newBoard.name)
 
-            if (board == null) {
+
                 it.rollback()
-                throw DataException("Failed to retrieve board after adding.")
-            }
+                throw DataException("Failed to insert board.")
 
-            it.commit()
 
-            return board
+
         }
 
     }
@@ -156,6 +160,20 @@ object PgSqlBoardsData : BoardsData {
 
             return false
         }
+    }
+
+    override fun addUserToBoard(user: User,board: Board){
+        PgDataContext.getConnection().use {
+            it.autoCommit = false
+            val statement = it.prepareStatement(
+                "insert into usersboards (userid, boardid) values (?,?);"
+            )
+            statement.setInt(1, user.id)
+            statement.setInt(2, board.id)
+            statement.execute()
+            it.commit()
+        }
+
     }
 
     override fun getUsers(boardId: Int, user: User): List<User> {

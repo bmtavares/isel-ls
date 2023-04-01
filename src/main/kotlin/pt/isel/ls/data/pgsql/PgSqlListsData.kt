@@ -51,13 +51,13 @@ object PgSqlListsData : ListsData {
         }
     }
 
-    override fun add(inputListDto: InputBoardListDto,boardId:Int): BoardList {
+    override fun add(newBoardList: InputBoardListDto, boardId:Int): BoardList {
         PgDataContext.getConnection().use {
             it.autoCommit = false
             val statement = it.prepareStatement(
                 "insert into Lists (name, boardId) values (?, ?) returning id, name, boardId;"
             )
-            statement.setString(1, inputListDto.name)
+            statement.setString(1, newBoardList.name)
             statement.setInt(2, boardId)
 
             val rs = statement.executeQuery()

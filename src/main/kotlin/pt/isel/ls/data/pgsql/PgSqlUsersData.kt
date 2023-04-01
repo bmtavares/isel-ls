@@ -40,7 +40,7 @@ object PgSqlUsersData : UsersData {
             val statement = it.prepareStatement(
                 "select id, name, email from Users u join UsersTokens ut on u.id = ut.userId where token = ?;"
             )
-            statement.setObject(1, token)
+            statement.setString(1, token)
 
             val rs = statement.executeQuery()
             while (rs.next()) {
@@ -107,10 +107,8 @@ object PgSqlUsersData : UsersData {
             val rs = statement.executeQuery()
             while (rs.next()){
              val id = rs.getInt("id")
-             val name = rs.getString("name")
-             val email = rs.getString("email")
                 it.commit()
-                return User(id,name,email)
+                return User(id,newUser.name,newUser.email)
             }
                 it.rollback()
                 throw DataException("Failed to add user.")

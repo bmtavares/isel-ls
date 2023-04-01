@@ -6,6 +6,7 @@ import kotlinx.serialization.json.Json
 import org.http4k.core.*
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.CREATED
+import org.http4k.core.Status.Companion.INTERNAL_SERVER_ERROR
 import org.http4k.core.Status.Companion.OK
 import org.http4k.routing.path
 import pt.isel.ls.data.BoardsData
@@ -16,9 +17,7 @@ import pt.isel.ls.data.DataException
 import pt.isel.ls.http.logRequest
 import pt.isel.ls.server.*
 import pt.isel.ls.tasksServices.TasksServices
-import pt.isel.ls.tasksServices.dtos.InputBoardDto
-import pt.isel.ls.tasksServices.dtos.InputUserDto
-import pt.isel.ls.tasksServices.dtos.OutputEntitiesDto
+import pt.isel.ls.tasksServices.dtos.*
 
 class WebApi(val boardsRepo : BoardsData,val DataRepoUsers : UsersData){
 
@@ -29,7 +28,7 @@ val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))
         logRequest(request)
         val boardId = request.path("id")?.toInt()
         checkNotNull(boardId)
-        val user = Json.decodeFromString<User>(request.body.toString())
+        val user = Json.decodeFromString<User>(request.header("User").toString())
         val board = services.boards.getBoard(boardId,user)
         return Response(OK)
             .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
@@ -41,34 +40,50 @@ val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))
         val user = Json.decodeFromString<User>(request.header("User").toString())
         val board = Json.decodeFromString<InputBoardDto>(request.bodyString())
         check(board.name.isNotEmpty()){ Response(BAD_REQUEST).body("Board name is mandatory") }
-        val rsp = services.boards.createBoard(board) ?: return Response(BAD_REQUEST).body("Failed to create board")
+        val rsp = services.boards.createBoard(board,user) ?: return Response(BAD_REQUEST).body("Failed to create board")
+        val returnValue = OutputIdDto(rsp.id)
         return Response(CREATED).header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
-            .body("boardId = $rsp")
+            .body(Json.encodeToString(returnValue))
     }
 
     fun getUser(request: Request):Response{
         logRequest(request)
         val userId = request.path("id")?.toInt()
         checkNotNull(userId)
-        try {
-        val user = services.users.getUser(userId)
-        return  Response(OK).header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
-            .body(Json.encodeToString(user))
+        return try {
+            val user = services.users.getUser(userId)
+            Response(OK).header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(user))
         }catch (e:DataException){
-            return Response(BAD_REQUEST)
+            Response(BAD_REQUEST)
         }
     }
 
     fun createUser(request: Request):Response{
         logRequest(request)
         val newUser = Json.decodeFromString<InputUserDto>(request.bodyString())
-        try {
-        val user = services.users.createUser(newUser)
-        return Response(CREATED)
-            .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
-            .body(Json.encodeToString(user))
+        return try {
+            val user = services.users.createUser(newUser)
+            Response(CREATED)
+                .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(user))
         }catch (e:DataException){
-            return Response(BAD_REQUEST)
+            Response(BAD_REQUEST)
+                .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(e.message))
+        }
+    }
+
+    fun getUserBoards(request: Request):Response{
+        logRequest(request)
+        val user = Json.decodeFromString<User>(request.header("User").toString())
+     return try {
+            val boards = services.boards.getUserBoards(user)
+            Response(OK)
+                .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(boards))
+        }catch (e:DataException){
+            Response(INTERNAL_SERVER_ERROR)
                 .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
         }
@@ -98,7 +113,21 @@ val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))
     }
 
     fun createList(request: Request): Response {
-        return TODO("Provide the return value")
+        logRequest(request)
+        val boardId = request.path("id")?.toInt()
+        checkNotNull(boardId){"Board Id must not be null"}
+        val listInput = Json.decodeFromString<InputBoardListDto>(request.bodyString())
+        return try {
+           val boardList = services.boards.createBoardList(boardId,listInput)
+            Response(CREATED)
+                .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(OutputIdDto(boardList.id)))
+
+        }catch (e:DataException){
+            Response(BAD_REQUEST)
+                .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(e.message))
+        }
     }
 
     fun getCardsFromList(request: Request): Response {
