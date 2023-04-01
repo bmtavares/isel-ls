@@ -7,20 +7,20 @@ import pt.isel.ls.data.entities.User
 import pt.isel.ls.data.entities.UserBoard
 import pt.isel.ls.data.entities.UserToken
 
-//object MemDataSource {
-//    val usersList = mutableListOf<User>()
-//    val userTokensList = mutableListOf<UserToken>()
-//    val boardsList = mutableListOf<Board>()
-//    val usersBoardsList = mutableListOf<UserBoard>()
-//    val listsList = mutableListOf<BoardList>()
-//    val cardsList = mutableListOf<Card>()
-//
-//    fun clearStorage() {
-//        usersList.clear()
-//        userTokensList.clear()
-//        boardsList.clear()
-//        usersBoardsList.clear()
-//        listsList.clear()
-//        cardsList.clear()
-//    }
-//}
+object MemDataSource {
+    val users = mutableListOf<User>()
+    val usersTokens = mutableListOf<UserToken>()
+    val boards = mutableListOf<Board>()
+    val usersBoards = mutableListOf<UserBoard>()
+    val lists = mutableListOf<BoardList>()
+    val cards = mutableListOf<Card>()
+
+    fun clearStorage() {
+        users.clear()
+        usersTokens.clear()
+        boards.clear()
+        usersBoards.clear()
+        lists.clear()
+        cards.clear()
+    }
+}
