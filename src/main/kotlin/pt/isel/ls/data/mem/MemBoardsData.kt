@@ -6,6 +6,7 @@ import pt.isel.ls.data.EntityAlreadyExistsException
 import pt.isel.ls.data.EntityNotFoundException
 import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.User
+import pt.isel.ls.data.entities.UserBoard
 import pt.isel.ls.tasksServices.dtos.EditBoardDto
 import pt.isel.ls.tasksServices.dtos.InputBoardDto
 
@@ -47,6 +48,15 @@ object MemBoardsData : BoardsData {
         return MemDataSource.users.filter { it.id in usersIds }
     }
 
+    override fun addUserToBoard(user: User, board: Board) {
+        val pair = UserBoard(user.id, board.id)
+        if (MemDataSource.usersBoards.any { it == pair }) throw EntityAlreadyExistsException(
+            "User already in board.",
+            Board::class
+        )
+        MemDataSource.usersBoards.add(pair)
+    }
+
     override fun getById(id: Int): Board =
         MemDataSource.boards.firstOrNull { it.id == id } ?: throw EntityNotFoundException(
             "Board not found.",
@@ -59,15 +69,15 @@ object MemBoardsData : BoardsData {
             Board::class
         )
 
-        if (MemDataSource.lists.any{it.boardId == id}) {
-            if(CASCADE_DELETE)
+        if (MemDataSource.lists.any { it.boardId == id }) {
+            if (CASCADE_DELETE)
                 MemDataSource.lists.removeAll { it.boardId == id }
             else
                 throw DataException("Cannot delete a board that has lists.")
         }
 
-        if (MemDataSource.cards.any{it.boardId == id}) {
-            if(CASCADE_DELETE)
+        if (MemDataSource.cards.any { it.boardId == id }) {
+            if (CASCADE_DELETE)
                 MemDataSource.cards.removeAll { it.listId == id }
             else
                 throw DataException("Cannot delete a board that has cards.")
@@ -80,4 +90,6 @@ object MemBoardsData : BoardsData {
 
     override fun exists(id: Int): Boolean =
         MemDataSource.boards.any { it.id == id }
+
+
 }

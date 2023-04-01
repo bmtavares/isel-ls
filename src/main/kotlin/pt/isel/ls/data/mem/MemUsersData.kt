@@ -30,7 +30,7 @@ object MemUsersData : UsersData {
             ?: throw EntityNotFoundException("User not found.", User::class)
 
     override fun add(newUser: InputUserDto): User {
-        if (!MemDataSource.users.any { it.email == newUser.email }) throw EntityAlreadyExistsException("Email already in use.", User::class)
+        if (MemDataSource.users.any { it.email == newUser.email }) throw EntityAlreadyExistsException("Email already in use.", User::class)
         val newId = if (MemDataSource.users.isEmpty()) 1 else MemDataSource.users.maxOf { it.id } + 1
         val user = User(newId, newUser.name, newUser.email)
         MemDataSource.users.add(user)
