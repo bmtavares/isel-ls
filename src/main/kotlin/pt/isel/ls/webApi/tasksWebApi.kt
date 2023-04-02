@@ -74,7 +74,7 @@ val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))
         }
     }
 
-    fun getUserBoards(request: Request):Response{
+    fun getBoards(request: Request):Response{
         logRequest(request)
         val user = Json.decodeFromString<User>(request.header("User").toString())
      return try {
@@ -104,8 +104,20 @@ val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))
         return TODO("Provide the return value")
     }
 
-    fun deleteUsersFromBoard(request: Request): Response {
-        return TODO("Provide the return value")
+    fun deleteUserFromBoard(request: Request): Response {
+        logRequest(request)
+        val boardId = request.path("id")?.toInt()
+        val userId = request.path("uid")?.toInt()
+        checkNotNull(boardId){"Board Id must not be null"}
+        checkNotNull(userId){"User Id must not be null"}
+        return try {
+            services.boards.deleteUserOnBoard(boardId,userId)
+            Response(OK)
+                .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
+        }catch (e:DataException){
+            Response(OK)
+                .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
+        }
     }
 
     fun getLists(request: Request): Response {
@@ -188,7 +200,21 @@ val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))
     }
 
     fun editList(request: Request): Response {
-        return TODO("Provide the return value")
+        logRequest(request)
+        val boardId = request.path("id")?.toInt()
+        val boardListId = request.path("lid")?.toInt()
+        checkNotNull(boardId){"Board Id must not be null"}
+        checkNotNull(boardListId){"List Id must not be null"}
+        val editList = Json.decodeFromString<EditBoardListDto>(request.bodyString())
+        return try {
+            services.boards.editBoardList(editList,boardListId, boardId)
+            Response(OK)
+        }catch (e:DataException){
+            Response(BAD_REQUEST)
+                .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(e.message))
+        }
+
     }
 
     fun getList(request: Request): Response {
@@ -209,8 +235,21 @@ val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))
         }
     }
 
-    fun alterListPosition(request: Request): Response {
-        return TODO("Provide the return value")
+    fun alterCardListPosition(request: Request): Response {
+        logRequest(request)
+        val boardId = request.path("id")?.toInt()
+        val cardId = request.path("cid")?.toInt()
+        checkNotNull(boardId){"Board Id must not be null"}
+        checkNotNull(cardId){"List Id must not be null"}
+        val inputList = Json.decodeFromString<InputMoveCardDto>(request.bodyString())
+        return try {
+            services.boards.moveCard(inputList,boardId, cardId)
+            Response(OK)
+        }catch (e:Exception){
+            Response(BAD_REQUEST)
+                .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(e.message))
+        }
     }
 
     fun moveList(request: Request): Response {
@@ -246,6 +285,23 @@ val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))
                 .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(card))
         }catch (e:DataException){
+            Response(BAD_REQUEST)
+                .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(e.message))
+        }
+    }
+
+    fun editCard(request: Request): Response {
+        logRequest(request)
+        val boardId = request.path("id")?.toInt()
+        val cardId = request.path("cid")?.toInt()
+        checkNotNull(boardId){"Board Id must not be null"}
+        checkNotNull(cardId){"List Id must not be null"}
+        val editCard = Json.decodeFromString<EditCardDto>(request.bodyString())
+        return try {
+            services.boards.editCard(editCard,boardId, cardId)
+            Response(OK)
+        }catch (e:Exception){
             Response(BAD_REQUEST)
                 .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))

@@ -6,6 +6,7 @@ import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.Card
 import pt.isel.ls.tasksServices.dtos.EditCardDto
 import pt.isel.ls.tasksServices.dtos.InputCardDto
+import pt.isel.ls.tasksServices.dtos.InputMoveCardDto
 import java.sql.Types
 
 object PgSqlCardsData : CardsData {
@@ -59,6 +60,28 @@ object PgSqlCardsData : CardsData {
             }
 
             return results
+        }
+    }
+
+    override fun move(inputList: InputMoveCardDto, boardId: Int, cardId: Int) {
+        PgDataContext.getConnection().use {
+            it.autoCommit = false
+            val statement = it.prepareStatement(
+                "update Cards set listid = ? where id = ? and boardid = ?;"
+
+            )
+            statement.setInt(1, inputList.lid)
+            statement.setInt(2, cardId)
+            statement.setInt(3, boardId)
+
+            val count = statement.executeUpdate()
+
+            if (count == 0) {
+                it.rollback()
+                throw DataException("Failed to edit card.")
+            }
+
+            it.commit()
         }
     }
 
@@ -159,8 +182,8 @@ object PgSqlCardsData : CardsData {
             val statement = it.prepareStatement(
                 "update Cards set name = ? where id = ?;" +
                         "update Cards set description = ? where id = ?;" +
-                        "update Cards set dueDate = ? where id = ?;" +
-                        "update Cards set listId = ? where id = ?;"
+                        "update Cards set dueDate = ? where id = ?;"
+
             )
             statement.setString(1, editCardDto.name)
             statement.setString(3, editCardDto.description)
@@ -168,12 +191,6 @@ object PgSqlCardsData : CardsData {
                 statement.setNull(5, Types.TIMESTAMP)
             } else {
                 statement.setTimestamp(5, editCardDto.dueDate)
-            }
-
-            if (editCardDto.listId == null) {
-                statement.setNull(7, Types.INTEGER)
-            } else {
-                statement.setInt(7, editCardDto.listId)
             }
             statement.setInt(2, cardId)
             statement.setInt(4, cardId)

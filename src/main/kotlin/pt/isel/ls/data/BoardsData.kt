@@ -13,5 +13,6 @@ interface BoardsData : Data<Board> {
     fun edit(editBoard: EditBoardDto)
     fun add(newBoard: InputBoardDto): Board
     fun addUserToBoard(userId: Int,boardId: Int)
+    fun deleteUserFromBoard(userId: Int,boardId: Int)
     fun getUsers(boardId:Int,user: User):List<User>
 }

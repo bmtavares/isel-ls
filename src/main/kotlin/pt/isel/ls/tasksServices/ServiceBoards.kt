@@ -6,9 +6,7 @@ import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.BoardList
 import pt.isel.ls.data.entities.Card
 import pt.isel.ls.data.entities.User
-import pt.isel.ls.tasksServices.dtos.InputBoardDto
-import pt.isel.ls.tasksServices.dtos.InputBoardListDto
-import pt.isel.ls.tasksServices.dtos.InputCardDto
+import pt.isel.ls.tasksServices.dtos.*
 
 class ServiceBoards(val boardRepository: BoardsData) {
 
@@ -90,5 +88,32 @@ class ServiceBoards(val boardRepository: BoardsData) {
         boardRepository.addUserToBoard(userId,boardId)
     }catch (_:Exception){
 
+    }
+    fun deleteUserOnBoard(boardId: Int,userId:Int)=try {
+        boardRepository.deleteUserFromBoard(userId,boardId)
+    }catch (_:Exception){
+
+    }
+
+    fun editBoardList(editList:EditBoardListDto,boardListId: Int,boardId: Int){
+       return try {
+            boardRepository.boardLists.edit(editList.name,boardListId,boardId)
+        }catch (_:Exception){
+
+       }
+    }
+    fun editCard(editCard: EditCardDto, boardId: Int, cardId: Int){
+        return try {
+            boardRepository.cards.edit(editCard,boardId,cardId)
+        }catch (_:Exception){
+
+        }
+    }
+    fun moveCard(moveList:InputMoveCardDto, boardId: Int, cardId: Int){
+        return try {
+            boardRepository.cards.move(moveList,boardId, cardId)
+        }catch (_:Exception){
+
+        }
     }
 }

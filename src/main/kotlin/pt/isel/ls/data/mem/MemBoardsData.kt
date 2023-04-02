@@ -57,6 +57,10 @@ object MemBoardsData : BoardsData {
         )
         MemDataSource.usersBoards.add(pair)
     }
+    override fun deleteUserFromBoard(userId: Int, boardId: Int){
+        val pair = UserBoard(userId, boardId)
+        MemDataSource.usersBoards.remove(pair)
+    }
 
     override fun getById(id: Int): Board =
         MemDataSource.boards.firstOrNull { it.id == id } ?: throw EntityNotFoundException(

@@ -100,14 +100,15 @@ object PgSqlListsData : ListsData {
         }
     }
 
-    override fun edit(editList: EditBoardListDto, listId:Int) {
+    override fun edit(editName: String, listId:Int,boardId: Int) {
         PgDataContext.getConnection().use {
             it.autoCommit = false
             val statement = it.prepareStatement(
-                "update Lists set name = ? where id = ?;"
+                "update Lists set name = ? where id = ? and boardid = ?;"
             )
-            statement.setString(1, editList.name)
+            statement.setString(1, editName)
             statement.setInt(2,listId)
+            statement.setInt(3,boardId)
 
             val count = statement.executeUpdate()
 

@@ -8,6 +8,6 @@ import pt.isel.ls.tasksServices.dtos.InputBoardListDto
 interface ListsData : Data<BoardList> {
     fun getListsByBoard(boardId: Int): List<BoardList>
 
-    fun edit(editList: EditBoardListDto,listId:Int)
+    fun edit(editName: String,listId:Int,boardId: Int)
     fun add(newBoardList: InputBoardListDto,boardId:Int): BoardList
 }

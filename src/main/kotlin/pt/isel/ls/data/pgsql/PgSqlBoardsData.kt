@@ -193,6 +193,19 @@ object PgSqlBoardsData : BoardsData {
         }
     }
 
+    override fun deleteUserFromBoard(userId: Int, boardId: Int){
+        PgDataContext.getConnection().use {
+            it.autoCommit = false
+            val statement = it.prepareStatement(
+                "delete from usersboards where userid=? and boardid=?;"
+            )
+            statement.setInt(1, userId)
+            statement.setInt(2, boardId)
+            statement.execute()
+            it.commit()
+        }
+    }
+
     operator fun invoke(): BoardsData {
         return this
     }

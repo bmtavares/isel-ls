@@ -7,6 +7,7 @@ import pt.isel.ls.data.entities.BoardList
 import pt.isel.ls.data.entities.Card
 import pt.isel.ls.tasksServices.dtos.EditCardDto
 import pt.isel.ls.tasksServices.dtos.InputCardDto
+import pt.isel.ls.tasksServices.dtos.InputMoveCardDto
 import java.sql.Timestamp
 
 object MemCardsData : CardsData {
@@ -52,8 +53,8 @@ object MemCardsData : CardsData {
             oldCard.id,
             editCardDto.name,
             editCardDto.description,
-            editCardDto.dueDate,
-            editCardDto.listId,
+            editCardDto.dueDate ?: oldCard.dueDate,
+            oldCard.listId,
             boardId
         )
         MemDataSource.cards.remove(oldCard)
@@ -62,6 +63,10 @@ object MemCardsData : CardsData {
 
     override fun getByBoard(board: Board): List<Card> =
         MemDataSource.cards.filter { it.boardId == board.id }
+
+    override fun move(inputList: InputMoveCardDto, boardId: Int, cardId: Int) {
+        TODO("Not yet implemented")
+    }
 
     override fun getById(id: Int): Card =
         MemDataSource.cards.firstOrNull { it.id == id } ?: throw EntityNotFoundException(

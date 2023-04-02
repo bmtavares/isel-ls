@@ -9,6 +9,5 @@ import java.sql.Timestamp
 data class EditCardDto(val name:String,
                        val description:String,
                        @Serializable(with = TimestampAsLongSerializer::class)
-                       val dueDate: Timestamp?=null,
-                       val listId:Int?=null
+                       val dueDate: Timestamp?=null
                        )

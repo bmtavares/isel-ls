@@ -14,10 +14,10 @@ object MemListsData : ListsData {
     override fun getListsByBoard(boardId: Int): List<BoardList> =
         MemDataSource.lists.filter { it.boardId == boardId }
 
-    override fun edit(editList: EditBoardListDto, listId: Int) {
-        val oldList = MemDataSource.lists.firstOrNull { it.id == listId }
+    override fun edit(editName: String, listId: Int,boardId: Int) {
+        val oldList = MemDataSource.lists.firstOrNull { it.id == listId && it.boardId == boardId }
             ?: throw EntityNotFoundException("List not found.", BoardList::class)
-        val newList = BoardList(oldList.id, editList.name, oldList.boardId)
+        val newList = BoardList(oldList.id, editName, oldList.boardId)
         MemDataSource.lists.remove(oldList)
         MemDataSource.lists.add(newList)
     }
