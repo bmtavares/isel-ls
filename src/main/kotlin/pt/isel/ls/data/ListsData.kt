@@ -6,7 +6,7 @@ import pt.isel.ls.tasksServices.dtos.EditBoardListDto
 import pt.isel.ls.tasksServices.dtos.InputBoardListDto
 
 interface ListsData : Data<BoardList> {
-    fun getListsByBoard(board: Board): List<BoardList>
+    fun getListsByBoard(boardId: Int): List<BoardList>
 
     fun edit(editList: EditBoardListDto,listId:Int)
     fun add(newBoardList: InputBoardListDto,boardId:Int): BoardList

@@ -11,8 +11,8 @@ import pt.isel.ls.tasksServices.dtos.InputBoardListDto
 object MemListsData : ListsData {
     private val CASCADE_DELETE = false
 
-    override fun getListsByBoard(board: Board): List<BoardList> =
-        MemDataSource.lists.filter { it.boardId == board.id }
+    override fun getListsByBoard(boardId: Int): List<BoardList> =
+        MemDataSource.lists.filter { it.boardId == boardId }
 
     override fun edit(editList: EditBoardListDto, listId: Int) {
         val oldList = MemDataSource.lists.firstOrNull { it.id == listId }

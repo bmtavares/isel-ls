@@ -7,7 +7,7 @@ import pt.isel.ls.tasksServices.dtos.EditCardDto
 import pt.isel.ls.tasksServices.dtos.InputCardDto
 
 interface CardsData : Data<Card> {
-    fun getByList(list: BoardList): List<Card>
+    fun getByList(boardId: Int,listId: Int): List<Card>
 
     fun add(newCard:InputCardDto,boardId:Int,listId:Int?):Card
 

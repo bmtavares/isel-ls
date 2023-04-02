@@ -3,21 +3,19 @@ package pt.isel.ls.data.pgsql
 import pt.isel.ls.data.CardsData
 import pt.isel.ls.data.DataException
 import pt.isel.ls.data.entities.Board
-import pt.isel.ls.data.entities.BoardList
 import pt.isel.ls.data.entities.Card
 import pt.isel.ls.tasksServices.dtos.EditCardDto
 import pt.isel.ls.tasksServices.dtos.InputCardDto
-import java.sql.Connection
-import java.sql.Timestamp
 import java.sql.Types
 
 object PgSqlCardsData : CardsData {
-    override fun getByList(list: BoardList): List<Card> {
+    override fun getByList(boardId: Int, listId: Int): List<Card> {
         PgDataContext.getConnection().use {
             val statement = it.prepareStatement(
-                "select * from Cards where listId = ?;"
+                "select * from Cards where listId = ? and boardid = ?;"
             )
-            statement.setInt(1, list.id!!)
+            statement.setInt(1, listId)
+            statement.setInt(2, boardId)
 
             val rs = statement.executeQuery()
 
@@ -29,8 +27,8 @@ object PgSqlCardsData : CardsData {
                     rs.getString("name"),
                     rs.getString("description"),
                     rs.getTimestamp("dueDate"),
-                    if (rs.wasNull()) null else rs.getInt("listId"),
-                    rs.getInt("boardId")
+                    rs.getInt("listId"),
+                    rs.getInt("boardId"),
                 )
             }
 
@@ -78,7 +76,7 @@ object PgSqlCardsData : CardsData {
                     rs.getString("name"),
                     rs.getString("description"),
                     rs.getTimestamp("dueDate"),
-                    if (rs.wasNull()) null else rs.getInt("listId"),
+                    rs.getInt("listId"),
                     rs.getInt("boardId")
                 )
             }
@@ -96,7 +94,11 @@ object PgSqlCardsData : CardsData {
             )
             statement.setString(1, newCard.name)
             statement.setString(2, newCard.description)
-            statement.setString(3, newCard.dueDate)
+            if (newCard.dueDate == null) {
+                statement.setNull(3, Types.TIMESTAMP)
+            } else {
+                statement.setTimestamp(3, newCard.dueDate)
+            }
             if (listId != null)
                 statement.setInt(4, listId)
             else

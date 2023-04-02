@@ -49,8 +49,8 @@ object MemBoardsData : BoardsData {
         return MemDataSource.users.filter { it.id in usersIds }
     }
 
-    override fun addUserToBoard(user: User, board: Board) {
-        val pair = UserBoard(user.id, board.id)
+    override fun addUserToBoard(userId: Int, boardId: Int) {
+        val pair = UserBoard(userId, boardId)
         if (MemDataSource.usersBoards.any { it == pair }) throw EntityAlreadyExistsException(
             "User already in board.",
             Board::class

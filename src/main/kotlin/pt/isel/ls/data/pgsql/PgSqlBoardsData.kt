@@ -30,11 +30,6 @@ object PgSqlBoardsData : BoardsData {
             throw Exception("awdwa") // TODO
         }
     }
-    fun getUserBoards(id:Int){
-        PgDataContext.getConnection().use {
-
-        }
-    }
 
     override fun getUserBoards(user: User): List<Board> {
         PgDataContext.getConnection().use {
@@ -162,14 +157,14 @@ object PgSqlBoardsData : BoardsData {
         }
     }
 
-    override fun addUserToBoard(user: User,board: Board){
+    override fun addUserToBoard(userId: Int,boardId: Int){
         PgDataContext.getConnection().use {
             it.autoCommit = false
             val statement = it.prepareStatement(
                 "insert into usersboards (userid, boardid) values (?,?);"
             )
-            statement.setInt(1, user.id)
-            statement.setInt(2, board.id)
+            statement.setInt(1, userId)
+            statement.setInt(2, boardId)
             statement.execute()
             it.commit()
         }
@@ -177,7 +172,25 @@ object PgSqlBoardsData : BoardsData {
     }
 
     override fun getUsers(boardId: Int, user: User): List<User> {
-        TODO("Not yet implemented")
+        PgDataContext.getConnection().use {
+            val statement = it.prepareStatement(
+                "select u.id, u.name, u.email from Users u join UsersBoards ub on u.id = ub.userid where ub.boardid = ?;"
+            )
+            statement.setInt(1, boardId)
+
+            val rs = statement.executeQuery()
+
+            val results = mutableListOf<User>()
+
+            while (rs.next()) {
+                results += User(
+                    rs.getInt("id"),
+                    rs.getString("name"),
+                    rs.getString("email")
+                )
+            }
+            return results
+        }
     }
 
     operator fun invoke(): BoardsData {

@@ -10,8 +10,8 @@ import pt.isel.ls.tasksServices.dtos.InputCardDto
 import java.sql.Timestamp
 
 object MemCardsData : CardsData {
-    override fun getByList(list: BoardList): List<Card> =
-        MemDataSource.cards.filter { it.listId == list.id }
+    override fun getByList(boardId: Int,listId: Int): List<Card> =
+        MemDataSource.cards.filter { it.listId == listId && it.boardId==boardId }
 
     override fun add(newCard: InputCardDto, boardId: Int, listId: Int?): Card {
         if (!MemDataSource.boards.any { it.id == boardId }) {
@@ -30,10 +30,7 @@ object MemCardsData : CardsData {
         }
         val newId = if (MemDataSource.cards.isEmpty()) 1 else MemDataSource.cards.maxOf { it.id } + 1
 
-        val ts = if (newCard.dueDate != null)
-        // Requires that timestamp string is in JDBC format yyyy-m[m]-d[d] hh:mm:ss[.f…]
-            Timestamp.valueOf(newCard.dueDate)
-        else null
+        val ts = newCard.dueDate
 
         val card = Card(
             newId,

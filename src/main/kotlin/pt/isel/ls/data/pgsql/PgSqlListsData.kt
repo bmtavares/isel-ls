@@ -8,12 +8,12 @@ import pt.isel.ls.tasksServices.dtos.EditBoardListDto
 import pt.isel.ls.tasksServices.dtos.InputBoardListDto
 
 object PgSqlListsData : ListsData {
-    override fun getListsByBoard(board: Board): List<BoardList> {
+    override fun getListsByBoard(boardId: Int): List<BoardList> {
         PgDataContext.getConnection().use {
             val statement = it.prepareStatement(
-                "select l.id id, l.name name, l.boardId boardId from Lists l join Boards b on l.boardId = b.id where b.id = ?;"
+                "select l.id , l.name , l.boardId  from Lists l join Boards b on l.boardId = b.id where b.id = ?;"
             )
-            statement.setInt(1, board.id!!)
+            statement.setInt(1, boardId)
 
             val rs = statement.executeQuery()
 

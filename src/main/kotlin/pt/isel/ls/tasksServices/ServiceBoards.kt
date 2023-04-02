@@ -4,9 +4,11 @@ import pt.isel.ls.data.BoardsData
 import pt.isel.ls.data.DataException
 import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.BoardList
+import pt.isel.ls.data.entities.Card
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.tasksServices.dtos.InputBoardDto
 import pt.isel.ls.tasksServices.dtos.InputBoardListDto
+import pt.isel.ls.tasksServices.dtos.InputCardDto
 
 class ServiceBoards(val boardRepository: BoardsData) {
 
@@ -28,7 +30,7 @@ class ServiceBoards(val boardRepository: BoardsData) {
     fun createBoard(newBoard:InputBoardDto,user: User):Board?{
         return try {
              val board = boardRepository.add(newBoard)
-                                boardRepository.addUserToBoard(user,board)
+                                boardRepository.addUserToBoard(user.id,board.id)
                     return board
         }catch (e:Exception){
             null
@@ -50,5 +52,43 @@ class ServiceBoards(val boardRepository: BoardsData) {
         }catch (e:Exception){
             throw DataException("")
         }
+    }
+
+    fun getBoardLists(boardId: Int)= try {
+        boardRepository.boardLists.getListsByBoard(boardId)
+    }catch (e:Exception){
+        throw DataException("Failed to retrieve board Lists")
+    }
+
+    fun createCard(newCard: InputCardDto,boardId: Int,boardListId: Int):Card{
+
+       return try {
+            boardRepository.cards.add(newCard,boardId,boardListId)
+        }catch (e:Exception){
+            throw DataException("Failed to create the card")
+        }
+    }
+
+    fun getCardsOnList(boardId: Int,boardListId: Int):List<Card> =try {
+        boardRepository.cards.getByList(boardId,boardListId)
+    }catch (e:Exception){
+        throw DataException("Failed to retrieve Cards")
+    }
+
+    fun getBoardList(boardId: Int,boardListId: Int):BoardList=try {
+        boardRepository.boardLists.getById(boardListId)
+    }catch (e:Exception){
+        throw DataException("Failed to retrieve List")
+    }
+    fun getCard(boardId: Int,cardId:Int):Card=try {
+     boardRepository.cards.getById(cardId)
+    }catch (e:Exception){
+        throw DataException("Failed to retrieve List")
+    }
+
+    fun addUserOnBoard(boardId: Int,userId:Int)=try {
+        boardRepository.addUserToBoard(userId,boardId)
+    }catch (_:Exception){
+
     }
 }
