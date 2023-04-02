@@ -8,7 +8,7 @@ This document contains the relevant design and implementation aspects of LS proj
 
 The following diagram holds the Entity-Relationship model for the information managed by the system.
 
-(_include an image or a link to the conceptual diagram_)
+![Entity-Relationship Model Diagram](./er-diagram.svg)
 
 We highlight the following aspects:
 
@@ -20,7 +20,7 @@ The conceptual model has the following restrictions:
 
 ### Physical Model ###
 
-The physical model of the database is available in (_link to the SQL script with the schema definition_).
+The physical model of the database is available [here](../src/main/sql/createSchema.sql).
 
 We highlight the following aspects of this model:
 
@@ -30,7 +30,10 @@ We highlight the following aspects of this model:
 
 ### Open-API Specification ###
 
-(_include a link to the YAML file containing the Open-API Specification_)
+The specification of the API is available:
+
+* [As a JSON file](../open-api.json)
+* [As a Postman documentation webpage](https://documenter.getpostman.com/view/26358395/2s93RRvsbv)
 
 In our Open-API specification, we highlight the following aspects:
 
@@ -46,11 +49,26 @@ In our Open-API specification, we highlight the following aspects:
 
 ### Connection Management
 
-(_describe how connections are created, used and disposed_, namely its relation with transaction scopes).
+At the time of writing, connections are created based on a connection string stored as an environment variable under the name ``JDBC_DATABASE_URL``.
+
+During each of the single units defined for our database interface, a connection is created and managed in the scope of the function via ``.use``, ensuring automatic disposal of the connection once the scope exits.
+
+If the work being done with the connection may alter the database in any way, transactions are handled by disabling the connection's ``autoCommit``. If any error occurs, we issue a ``rollback()`` and throw an exception to the calling function. In all other cases we issue a ``commit()`` and if needed the correct return value.
 
 ### Data Access
 
-(_describe any created classes to help on data access_).
+To access the data, we created 4 significant interfaces:
+
+* UsersData
+* BoardsData
+* ListsData
+* CardsData
+
+These represent our 4 strong entities and their related tables. With each of them, one is able to access CRUD operations via ``getById()``, ``add()``, ``delete()`` and ``edit()``.
+
+Each of these also has entity specific operations like ``getByEmail()`` or ``createToken()`` for ``Users``.
+
+By the use of these interfaces, implementations were created for in-memory data storage and for PostgresSQL (located in [data\mem](../src/main/kotlin/pt/isel/ls/data/mem/) and [data\pgsql](../src/main/kotlin/pt/isel/ls/data/pgsql/) respectively).
 
 (_identify any non-trivial used SQL statements_).
 
