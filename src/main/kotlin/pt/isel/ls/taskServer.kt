@@ -1,8 +1,7 @@
 package pt.isel.ls
 
-import org.eclipse.jetty.server.Authentication.User
-import org.http4k.core.Method
-import org.http4k.core.then
+import org.http4k.core.*
+import org.http4k.core.Status.Companion.OK
 import org.http4k.routing.bind
 import org.http4k.routing.routes
 import org.http4k.server.Jetty
@@ -15,6 +14,7 @@ import pt.isel.ls.data.mem.MemBoardsData
 import pt.isel.ls.data.mem.MemUsersData
 import pt.isel.ls.data.pgsql.PgSqlBoardsData
 import pt.isel.ls.data.pgsql.PgSqlUsersData
+import java.io.File
 
 
 fun main() {
@@ -59,9 +59,13 @@ fun main() {
                 "boards/{id}/cards/{cid}/move" bind Method.GET to webApi::alterCardListPosition,//working
             )
     )
-    val app = routes(
+        val app = routes(
         usersRoutes,
-        boardRoutes
+        boardRoutes,
+            "/open-api" bind Method.GET to { _: Request ->
+                val fileContents = File("./open-api.json").readText()
+                Response(OK).body(fileContents)
+            }
     )
     val jettyServer = app.asServer(Jetty(9000)).start()
     logger.info("server started listening")
