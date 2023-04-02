@@ -7,61 +7,68 @@ This document contains the relevant design and implementation aspects of LS proj
 ## Modeling the database
 
 ### Conceptual model ###
-
 The following diagram holds the Entity-Relationship model for the information managed by the system.
 
-(_include an image or a link to the conceptual diagram_)
+(include an image or a link to the conceptual diagram)
 
 We highlight the following aspects:
 
-* (_include a list of relevant design issues_)
-
+The conceptual model includes entities for users, boards, lists, and cards, each with their corresponding attributes.
+Each board can be associated with one or several users, and each list must belong to a specific board.
+Cards are always associated with a board and must belong to a list, except if they are archived.
 The conceptual model has the following restrictions:
 
-* (_include a list of relevant design issues_)
+A card cannot be associated with multiple boards/lists.
+A list must belong to one board only.
 
 ### Physical Model ###
 
-The physical model of the database is available in (_link to the SQL script with the schema definition_).
+The physical model of the database is available in (link to the SQL script with the schema definition).
 
 We highlight the following aspects of this model:
 
-* (_include a list of relevant design issues_)
+The schema defines tables for users, boards, lists, and cards, each with their corresponding columns and constraints.
+Relationships between tables are enforced through foreign keys.
 
 ## Software organization
 
 ### Open-API Specification ###
 
-(_include a link to the YAML file containing the Open-API Specification_)
+(include a link to the YAML file containing the Open-API Specification)
 
 In our Open-API specification, we highlight the following aspects:
 
-(_include a list of relevant issues or details in your specification_)
+The API includes endpoints for creating and managing users, boards, lists, and cards.
+Requests and responses follow the JSON format.
+Authorization is required for some endpoints with the token key.
 
 ### Request Details
 
-(_describe how a request goes through the different elements of your solution_)
+Requests follow a RESTFUL architecture, where each endpoint corresponds to a specific action, such as creating a new user or retrieving a specific card.
 
-(_describe the relevant classes/functions used internally in a request_)
+Internally, requests are processed by relevant classes and functions, such as UserController and CardService.
 
-(_describe how and where request parameters are validated_)
+Request parameters are validated using token validation.
 
 ### Connection Management
 
-(_describe how connections are created, used and disposed_, namely its relation with transaction scopes).
+Database connections are created and managed by a connection pool. Transactions are used to ensure atomicity and consistency in database operations.
 
 ### Data Access
 
-(_describe any created classes to help on data access_).
+Data access is managed through a DataAccess class, which handles basic CRUD operations on database entities.
 
-(_identify any non-trivial used SQL statements_).
+Non-trivial SQL statements are used to perform complex queries or updates, such as fetching all cards belonging to a specific board and list.
 
 ### Error Handling/Processing
 
-(_describe how errors are handled and their effects on the application behavior_).
 
 ## Critical Evaluation
+defects:
+missing error messages / proper error handeling
 
-(_enumerate the functionality that is not concluded and the identified defects_)
+Improvements for the next phase include:
 
-(_identify improvements to be made on the next phase_)
+Improved error handling and data validation.
+Implementation of missing functionality.
+Optimization of database queries for performance.
