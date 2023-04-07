@@ -2,8 +2,10 @@ package pt.isel.ls
 
 import org.http4k.core.*
 import org.http4k.core.Status.Companion.OK
+import org.http4k.routing.ResourceLoader
 import org.http4k.routing.bind
 import org.http4k.routing.routes
+import org.http4k.routing.singlePageApp
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
 import org.slf4j.LoggerFactory
@@ -62,6 +64,7 @@ fun main() {
         val app = routes(
         usersRoutes,
         boardRoutes,
+            singlePageApp(ResourceLoader.Directory("static-content")),
             "/open-api" bind Method.GET to { _: Request ->
                 val fileContents = File("./open-api.json").readText()
                 Response(OK).body(fileContents)
