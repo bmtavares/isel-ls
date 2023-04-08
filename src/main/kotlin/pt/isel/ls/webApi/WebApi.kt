@@ -9,44 +9,47 @@ import org.http4k.core.Status.Companion.CREATED
 import org.http4k.core.Status.Companion.INTERNAL_SERVER_ERROR
 import org.http4k.core.Status.Companion.OK
 import org.http4k.routing.path
-import pt.isel.ls.data.BoardsData
-import pt.isel.ls.data.UsersData
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.data.DataException
-
 import pt.isel.ls.http.logRequest
-import pt.isel.ls.server.*
+import pt.isel.ls.server.HeaderTypes
 import pt.isel.ls.tasksServices.TasksServices
-import pt.isel.ls.tasksServices.dtos.*
+import pt.isel.ls.tasksServices.dtos.EditBoardListDto
+import pt.isel.ls.tasksServices.dtos.EditCardDto
+import pt.isel.ls.tasksServices.dtos.InputBoardDto
+import pt.isel.ls.tasksServices.dtos.InputBoardListDto
+import pt.isel.ls.tasksServices.dtos.InputCardDto
+import pt.isel.ls.tasksServices.dtos.InputMoveCardDto
+import pt.isel.ls.tasksServices.dtos.InputUserDto
+import pt.isel.ls.tasksServices.dtos.OutputIdDto
 
-class WebApi(val boardsRepo : BoardsData,val DataRepoUsers : UsersData){
-
-    private val services = TasksServices(boardsRepo,DataRepoUsers)
-
-val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))
-    fun getBoard(request: Request):Response {
+class WebApi(
+    private val services: TasksServices
+) {
+    fun getBoard(request: Request): Response {
         logRequest(request)
         val boardId = request.path("id")?.toInt()
         checkNotNull(boardId)
         val user = Json.decodeFromString<User>(request.header("User").toString())
-        val board = services.boards.getBoard(boardId,user)
+        val board = services.boards.getBoard(boardId, user)
         return Response(OK)
             .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
             .body(Json.encodeToString(board))
     }
 
-    fun createBoard(request: Request):Response {
+    fun createBoard(request: Request): Response {
         logRequest(request)
         val user = Json.decodeFromString<User>(request.header("User").toString())
         val board = Json.decodeFromString<InputBoardDto>(request.bodyString())
-        check(board.name.isNotEmpty()){ Response(BAD_REQUEST).body("Board name is mandatory") }
-        val rsp = services.boards.createBoard(board,user) ?: return Response(BAD_REQUEST).body("Failed to create board")
+        check(board.name.isNotEmpty()) { Response(BAD_REQUEST).body("Board name is mandatory") }
+        val rsp =
+            services.boards.createBoard(board, user) ?: return Response(BAD_REQUEST).body("Failed to create board")
         val returnValue = OutputIdDto(rsp.id)
         return Response(CREATED).header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
             .body(Json.encodeToString(returnValue))
     }
 
-    fun getUser(request: Request):Response{
+    fun getUser(request: Request): Response {
         logRequest(request)
         val userId = request.path("id")?.toInt()
         checkNotNull(userId)
@@ -54,12 +57,12 @@ val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))
             val user = services.users.getUser(userId)
             Response(OK).header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(user))
-        }catch (e:DataException){
+        } catch (e: DataException) {
             Response(BAD_REQUEST)
         }
     }
 
-    fun createUser(request: Request):Response{
+    fun createUser(request: Request): Response {
         logRequest(request)
         val newUser = Json.decodeFromString<InputUserDto>(request.bodyString())
         return try {
@@ -67,34 +70,34 @@ val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))
             Response(CREATED)
                 .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(user))
-        }catch (e:DataException){
+        } catch (e: DataException) {
             Response(BAD_REQUEST)
                 .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
         }
     }
 
-    fun getBoards(request: Request):Response{
+    fun getBoards(request: Request): Response {
         logRequest(request)
         val user = Json.decodeFromString<User>(request.header("User").toString())
-     return try {
+        return try {
             val boards = services.boards.getUserBoards(user)
             Response(OK)
                 .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(boards))
-        }catch (e:DataException){
+        } catch (e: DataException) {
             Response(INTERNAL_SERVER_ERROR)
                 .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
         }
     }
 
-    fun getBoardUsers(request: Request):Response{
+    fun getBoardUsers(request: Request): Response {
         logRequest(request)
         val boardId = request.path("id")?.toInt()
         checkNotNull(boardId)
         val user = Json.decodeFromString<User>(request.header("User").toString())
-        val users = services.boards.getUsersOnBoard(boardId,user)
+        val users = services.boards.getUsersOnBoard(boardId, user)
         return Response(OK)
             .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
             .body(Json.encodeToString(users))
@@ -108,13 +111,13 @@ val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))
         logRequest(request)
         val boardId = request.path("id")?.toInt()
         val userId = request.path("uid")?.toInt()
-        checkNotNull(boardId){"Board Id must not be null"}
-        checkNotNull(userId){"User Id must not be null"}
+        checkNotNull(boardId) { "Board Id must not be null" }
+        checkNotNull(userId) { "User Id must not be null" }
         return try {
-            services.boards.deleteUserOnBoard(boardId,userId)
+            services.boards.deleteUserOnBoard(boardId, userId)
             Response(OK)
                 .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
-        }catch (e:DataException){
+        } catch (e: DataException) {
             Response(OK)
                 .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
         }
@@ -123,14 +126,14 @@ val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))
     fun getLists(request: Request): Response {
         logRequest(request)
         val boardId = request.path("id")?.toInt()
-        checkNotNull(boardId){"Board Id must not be null"}
+        checkNotNull(boardId) { "Board Id must not be null" }
         return try {
-            val boardLists = services.boards.getBoardLists(boardId)
+            val boardLists = services.lists.getBoardLists(boardId)
             Response(CREATED)
                 .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(boardLists))
 
-        }catch (e:DataException){
+        } catch (e: DataException) {
             Response(BAD_REQUEST)
                 .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
@@ -140,15 +143,15 @@ val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))
     fun createList(request: Request): Response {
         logRequest(request)
         val boardId = request.path("id")?.toInt()
-        checkNotNull(boardId){"Board Id must not be null"}
+        checkNotNull(boardId) { "Board Id must not be null" }
         val listInput = Json.decodeFromString<InputBoardListDto>(request.bodyString())
         return try {
-           val boardList = services.boards.createBoardList(boardId,listInput)
+            val boardList = services.lists.createBoardList(boardId, listInput)
             Response(CREATED)
                 .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(OutputIdDto(boardList.id)))
 
-        }catch (e:DataException){
+        } catch (e: DataException) {
             Response(BAD_REQUEST)
                 .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
@@ -159,15 +162,15 @@ val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))
         logRequest(request)
         val boardId = request.path("id")?.toInt()
         val boardListId = request.path("lid")?.toInt()
-        checkNotNull(boardId){"Board Id must not be null"}
-        checkNotNull(boardListId){"List Id must not be null"}
+        checkNotNull(boardId) { "Board Id must not be null" }
+        checkNotNull(boardListId) { "List Id must not be null" }
         return try {
-            val cards = services.boards.getCardsOnList(boardId,boardListId)
+            val cards = services.cards.getCardsOnList(boardId, boardListId)
             Response(OK)
                 .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(cards))
 
-        }catch (e:DataException){
+        } catch (e: DataException) {
             Response(BAD_REQUEST)
                 .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
@@ -178,15 +181,15 @@ val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))
         logRequest(request)
         val boardId = request.path("id")?.toInt()
         val boardListId = request.path("lid")?.toInt()
-        checkNotNull(boardId){"Board Id must not be null"}
-        checkNotNull(boardListId){"List Id must not be null"}
+        checkNotNull(boardId) { "Board Id must not be null" }
+        checkNotNull(boardListId) { "List Id must not be null" }
         val newCard = Json.decodeFromString<InputCardDto>(request.bodyString())
-       return try {
-            val card = services.boards.createCard(newCard,boardId, boardListId)
-           Response(CREATED)
-               .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
-               .body(Json.encodeToString(OutputIdDto(card.id)))
-        }catch (e:DataException){
+        return try {
+            val card = services.cards.createCard(newCard, boardId, boardListId)
+            Response(CREATED)
+                .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(OutputIdDto(card.id)))
+        } catch (e: DataException) {
             Response(BAD_REQUEST)
                 .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
@@ -203,13 +206,13 @@ val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))
         logRequest(request)
         val boardId = request.path("id")?.toInt()
         val boardListId = request.path("lid")?.toInt()
-        checkNotNull(boardId){"Board Id must not be null"}
-        checkNotNull(boardListId){"List Id must not be null"}
+        checkNotNull(boardId) { "Board Id must not be null" }
+        checkNotNull(boardListId) { "List Id must not be null" }
         val editList = Json.decodeFromString<EditBoardListDto>(request.bodyString())
         return try {
-            services.boards.editBoardList(editList,boardListId, boardId)
+            services.lists.editBoardList(editList, boardListId, boardId)
             Response(OK)
-        }catch (e:DataException){
+        } catch (e: DataException) {
             Response(BAD_REQUEST)
                 .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
@@ -221,14 +224,14 @@ val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))
         logRequest(request)
         val boardId = request.path("id")?.toInt()
         val boardListId = request.path("lid")?.toInt()
-        checkNotNull(boardId){"Board Id must not be null"}
-        checkNotNull(boardListId){"List Id must not be null"}
+        checkNotNull(boardId) { "Board Id must not be null" }
+        checkNotNull(boardListId) { "List Id must not be null" }
         return try {
-            val list =services.boards.getBoardList(boardId,boardListId)
+            val list = services.lists.getBoardList(boardId, boardListId)
             Response(OK)
                 .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(list))
-        }catch (e:DataException){
+        } catch (e: DataException) {
             Response(BAD_REQUEST)
                 .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
@@ -239,13 +242,13 @@ val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))
         logRequest(request)
         val boardId = request.path("id")?.toInt()
         val cardId = request.path("cid")?.toInt()
-        checkNotNull(boardId){"Board Id must not be null"}
-        checkNotNull(cardId){"List Id must not be null"}
+        checkNotNull(boardId) { "Board Id must not be null" }
+        checkNotNull(cardId) { "List Id must not be null" }
         val inputList = Json.decodeFromString<InputMoveCardDto>(request.bodyString())
         return try {
-            services.boards.moveCard(inputList,boardId, cardId)
+            services.cards.moveCard(inputList, boardId, cardId)
             Response(OK)
-        }catch (e:Exception){
+        } catch (e: Exception) {
             Response(BAD_REQUEST)
                 .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
@@ -260,13 +263,13 @@ val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))
         logRequest(request)
         val boardId = request.path("id")?.toInt()
         val userId = request.path("uid")?.toInt()
-        checkNotNull(boardId){"Board Id must not be null"}
-        checkNotNull(userId){"User Id must not be null"}
+        checkNotNull(boardId) { "Board Id must not be null" }
+        checkNotNull(userId) { "User Id must not be null" }
         return try {
-            services.boards.addUserOnBoard(boardId,userId)
+            services.boards.addUserOnBoard(boardId, userId)
             Response(OK)
                 .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
-        }catch (e:DataException){
+        } catch (e: DataException) {
             Response(BAD_REQUEST)
                 .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
@@ -277,14 +280,14 @@ val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))
         logRequest(request)
         val boardId = request.path("id")?.toInt()
         val cardId = request.path("cid")?.toInt()
-        checkNotNull(boardId){"Board Id must not be null"}
-        checkNotNull(cardId){"List Id must not be null"}
+        checkNotNull(boardId) { "Board Id must not be null" }
+        checkNotNull(cardId) { "List Id must not be null" }
         return try {
-            val card =services.boards.getCard(boardId,cardId)
+            val card = services.cards.getCard(boardId, cardId)
             Response(OK)
                 .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(card))
-        }catch (e:DataException){
+        } catch (e: DataException) {
             Response(BAD_REQUEST)
                 .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
@@ -295,13 +298,13 @@ val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))
         logRequest(request)
         val boardId = request.path("id")?.toInt()
         val cardId = request.path("cid")?.toInt()
-        checkNotNull(boardId){"Board Id must not be null"}
-        checkNotNull(cardId){"List Id must not be null"}
+        checkNotNull(boardId) { "Board Id must not be null" }
+        checkNotNull(cardId) { "List Id must not be null" }
         val editCard = Json.decodeFromString<EditCardDto>(request.bodyString())
         return try {
-            services.boards.editCard(editCard,boardId, cardId)
+            services.cards.editCard(editCard, boardId, cardId)
             Response(OK)
-        }catch (e:Exception){
+        } catch (e: Exception) {
             Response(BAD_REQUEST)
                 .header(HeaderTypes.ContentType.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
@@ -314,23 +317,21 @@ val listUser= listOf<User>(User(0,"a","a"), User(0,"a","a"))
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 val token = authHeader.substring(7)
                 try {
-                val user = services.users.getUserByToken(token)
-                    next(request
-                        .header("User",Json.encodeToString(user))
+                    val user = services.users.getUserByToken(token)
+                    next(
+                        request
+                            .header("User", Json.encodeToString(user))
                     )
-                }catch (e:Exception){
-                    when (e){
+                } catch (e: Exception) {
+                    when (e) {
                         is DataException -> Response(Status.UNAUTHORIZED).body("Invalid token")
                         else -> Response(Status.INTERNAL_SERVER_ERROR).body("Server Error")
-                     }
+                    }
                 }
-                }else {
+            } else {
                 Response(Status.UNAUTHORIZED).body("Missing or invalid Authorization header")
             }
 
         }
     }
 }
-
-
-

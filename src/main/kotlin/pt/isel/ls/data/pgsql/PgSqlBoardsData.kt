@@ -8,9 +8,6 @@ import pt.isel.ls.tasksServices.dtos.EditBoardDto
 import pt.isel.ls.tasksServices.dtos.InputBoardDto
 
 object PgSqlBoardsData : BoardsData {
-
-    override val boardLists = PgSqlListsData
-    override val cards = PgSqlCardsData
     override fun getByName(name: String): Board? {
         PgDataContext.getConnection().use {
             val statement = it.prepareStatement(
@@ -31,12 +28,14 @@ object PgSqlBoardsData : BoardsData {
         }
     }
 
-    override fun getUserBoards(user: User): List<Board> {
+    override fun getUserBoards(user: User, limit: Int, skip: Int): List<Board> {
         PgDataContext.getConnection().use {
             val statement = it.prepareStatement(
-                "select id, name, description from Boards b join UsersBoards ub on b.id = ub.boardId where ub.userId = ?;"
+                "select id, name, description from Boards b join UsersBoards ub on b.id = ub.boardId where ub.userId = ? offset ? limit ?;"
             )
             statement.setInt(1, user.id)
+            statement.setInt(2, skip)
+            statement.setInt(3, limit)
 
             val rs = statement.executeQuery()
 
@@ -171,12 +170,14 @@ object PgSqlBoardsData : BoardsData {
 
     }
 
-    override fun getUsers(boardId: Int, user: User): List<User> {
+    override fun getUsers(boardId: Int, user: User, limit: Int, skip: Int): List<User> {
         PgDataContext.getConnection().use {
             val statement = it.prepareStatement(
-                "select u.id, u.name, u.email from Users u join UsersBoards ub on u.id = ub.userid where ub.boardid = ?;"
+                "select u.id, u.name, u.email from Users u join UsersBoards ub on u.id = ub.userid where ub.boardid = ? offset ? limit ?;"
             )
             statement.setInt(1, boardId)
+            statement.setInt(2, skip)
+            statement.setInt(3, limit)
 
             val rs = statement.executeQuery()
 

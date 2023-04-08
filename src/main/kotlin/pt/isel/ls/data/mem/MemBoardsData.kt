@@ -9,16 +9,12 @@ import pt.isel.ls.tasksServices.dtos.InputBoardDto
 
 object MemBoardsData : BoardsData {
     private val CASCADE_DELETE = false
-
-    override val boardLists=MemListsData
-
-    override val cards=MemCardsData
-    override fun getByName(name: String): Board? =
+    override fun getByName(name: String): Board =
         MemDataSource.boards.firstOrNull { it.name == name }
             ?: throw EntityNotFoundException("Board not found.", Board::class)
 
-    override fun getUserBoards(user: User): List<Board> {
-        val boards = MemDataSource.usersBoards.filter { it.userId == user.id }.map { it.boardId }
+    override fun getUserBoards(user: User, limit: Int, skip: Int): List<Board> {
+        val boards = MemDataSource.usersBoards.filter { it.userId == user.id }.subList(skip,skip+limit).map { it.boardId }
         return MemDataSource.boards.filter { it.id in boards }
     }
 
@@ -43,9 +39,8 @@ object MemBoardsData : BoardsData {
         return board
     }
 
-
-    override fun getUsers(boardId: Int, user: User): List<User> {
-        val usersIds = MemDataSource.usersBoards.filter { it.boardId == boardId }.map { it.userId }
+    override fun getUsers(boardId: Int, user: User, limit: Int, skip: Int): List<User> {
+        val usersIds = MemDataSource.usersBoards.filter { it.boardId == boardId }.subList(skip,skip+limit).map { it.userId }
         return MemDataSource.users.filter { it.id in usersIds }
     }
 
@@ -95,6 +90,5 @@ object MemBoardsData : BoardsData {
 
     override fun exists(id: Int): Boolean =
         MemDataSource.boards.any { it.id == id }
-
 
 }
