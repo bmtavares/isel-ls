@@ -30,7 +30,7 @@ object MemBoardsData : BoardsData {
     }
 
     override fun add(newBoard: InputBoardDto): Board {
-        if (!MemDataSource.boards.any { it.name == newBoard.name }) {
+        if (MemDataSource.boards.any { it.name == newBoard.name }) {
             throw EntityAlreadyExistsException(
                 "Name already in use.",
                 Board::class
