@@ -31,7 +31,7 @@ object PgSqlCardsData : CardsData {
                     rs.getString("description"),
                     rs.getTimestamp("dueDate"),
                     rs.getInt("listId"),
-                    rs.getInt("boardId"),
+                    rs.getInt("boardId")
                 )
             }
 
@@ -110,7 +110,7 @@ object PgSqlCardsData : CardsData {
         }
     }
 
-    override fun add(newCard: InputCardDto,boardId:Int,listId:Int?): Card {
+    override fun add(newCard: InputCardDto, boardId: Int, listId: Int?): Card {
         PgDataContext.getConnection().use {
             val previousCommitState = it.autoCommit
             it.autoCommit = false
@@ -124,10 +124,11 @@ object PgSqlCardsData : CardsData {
             } else {
                 statement.setTimestamp(3, newCard.dueDate)
             }
-            if (listId != null)
+            if (listId != null) {
                 statement.setInt(4, listId)
-            else
-                statement.setNull(4,Types.INTEGER)
+            } else {
+                statement.setNull(4, Types.INTEGER)
+            }
 
             statement.setInt(5, boardId)
 
@@ -178,13 +179,13 @@ object PgSqlCardsData : CardsData {
         }
     }
 
-    override fun edit(editCardDto: EditCardDto, boardId: Int, cardId:Int) {
+    override fun edit(editCardDto: EditCardDto, boardId: Int, cardId: Int) {
         PgDataContext.getConnection().use {
             it.autoCommit = false
             val statement = it.prepareStatement(
                 "update Cards set name = ? where id = ?;" +
-                        "update Cards set description = ? where id = ?;" +
-                        "update Cards set dueDate = ? where id = ?;"
+                    "update Cards set description = ? where id = ?;" +
+                    "update Cards set dueDate = ? where id = ?;"
 
             )
             statement.setString(1, editCardDto.name)

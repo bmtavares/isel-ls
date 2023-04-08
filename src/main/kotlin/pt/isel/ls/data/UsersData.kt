@@ -9,8 +9,7 @@ interface UsersData : Data<User> {
     fun getByToken(token: String): User
     fun getByEmail(email: String): User
 
-    fun add(newUser:InputUserDto):User
+    fun add(newUser: InputUserDto): User
 
     fun edit(editUser: EditUserDto)
-
 }

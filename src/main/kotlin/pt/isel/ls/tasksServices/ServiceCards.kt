@@ -32,7 +32,6 @@ class ServiceCards(private val cardsRepo: CardsData) {
         return try {
             cardsRepo.edit(editCard, boardId, cardId)
         } catch (_: Exception) {
-
         }
     }
 
@@ -40,7 +39,6 @@ class ServiceCards(private val cardsRepo: CardsData) {
         return try {
             cardsRepo.move(moveList, boardId, cardId)
         } catch (_: Exception) {
-
         }
     }
 }

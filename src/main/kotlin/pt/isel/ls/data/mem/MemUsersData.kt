@@ -50,7 +50,7 @@ object MemUsersData : UsersData {
     override fun delete(id: Int) {
         val user = MemDataSource.users.firstOrNull { it.id == id } ?: throw EntityNotFoundException("User not found.", User::class)
         val userBoards = MemDataSource.usersBoards.filter { it.userId == id }
-        if(userBoards.isNotEmpty()) {
+        if (userBoards.isNotEmpty()) {
             // For now unlink, find a better way to deal with orphan boards later
             MemDataSource.usersBoards.removeAll { it.userId == id }
         }

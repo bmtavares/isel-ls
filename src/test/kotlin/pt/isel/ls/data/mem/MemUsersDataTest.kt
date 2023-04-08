@@ -19,7 +19,9 @@ class MemUsersDataTest {
 
     @Test
     fun addUser() {
-        assertFailsWith<EntityNotFoundException>{MemUsersData.getById(1)}
+        assertFailsWith<EntityNotFoundException> {
+            MemUsersData.getById(1)
+        }
         val newUser = InputUserDto(
             "Alberto",
             "alberto@example.org"
@@ -31,13 +33,13 @@ class MemUsersDataTest {
     @Test
     fun getUserByEmail() {
         val newUser1 = InputUserDto(
-                "Alberto",
-                "alberto@example.org"
-            )
+            "Alberto",
+            "alberto@example.org"
+        )
         val newUser2 = InputUserDto(
-                "Mariana",
-                "mariana@example.org"
-            )
+            "Mariana",
+            "mariana@example.org"
+        )
 
         val insertedUser1 = MemUsersData.add(newUser1)
         val insertedUser2 = MemUsersData.add(newUser2)
@@ -75,7 +77,7 @@ class MemUsersDataTest {
         val insertedUser = MemUsersData.add(newUser)
 
         assertTrue(MemUsersData.exists(insertedUser.id))
-        assertFalse(MemUsersData.exists(insertedUser.id+1))
+        assertFalse(MemUsersData.exists(insertedUser.id + 1))
     }
 
     @Test

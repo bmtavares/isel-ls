@@ -3,16 +3,14 @@ package pt.isel.ls.data.mem
 import pt.isel.ls.data.CardsData
 import pt.isel.ls.data.EntityNotFoundException
 import pt.isel.ls.data.entities.Board
-import pt.isel.ls.data.entities.BoardList
 import pt.isel.ls.data.entities.Card
 import pt.isel.ls.tasksServices.dtos.EditCardDto
 import pt.isel.ls.tasksServices.dtos.InputCardDto
 import pt.isel.ls.tasksServices.dtos.InputMoveCardDto
-import java.sql.Timestamp
 
 object MemCardsData : CardsData {
     override fun getByList(boardId: Int, listId: Int, limit: Int, skip: Int): List<Card> =
-        MemDataSource.cards.filter { it.listId == listId && it.boardId==boardId }.subList(skip,skip+limit)
+        MemDataSource.cards.filter { it.listId == listId && it.boardId == boardId }.subList(skip, skip + limit)
 
     override fun add(newCard: InputCardDto, boardId: Int, listId: Int?): Card {
         if (!MemDataSource.boards.any { it.id == boardId }) {

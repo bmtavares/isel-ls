@@ -5,7 +5,6 @@ import pt.isel.ls.data.UsersData
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.tasksServices.dtos.EditUserDto
 import pt.isel.ls.tasksServices.dtos.InputUserDto
-import java.sql.Connection
 import java.sql.Timestamp
 import java.util.UUID
 
@@ -105,18 +104,17 @@ object PgSqlUsersData : UsersData {
             statement.setString(2, newUser.email)
 
             val rs = statement.executeQuery()
-            while (rs.next()){
-             val id = rs.getInt("id")
+            while (rs.next()) {
+                val id = rs.getInt("id")
                 it.commit()
-                return User(id,newUser.name,newUser.email)
+                return User(id, newUser.name, newUser.email)
             }
-                it.rollback()
-                throw DataException("Failed to add user.")
-            }
+            it.rollback()
+            throw DataException("Failed to add user.")
         }
+    }
 
-
-    override fun delete(id:Int) {
+    override fun delete(id: Int) {
         PgDataContext.getConnection().use {
             it.autoCommit = false
             val statement = it.prepareStatement(
@@ -139,10 +137,10 @@ object PgSqlUsersData : UsersData {
         PgDataContext.getConnection().use {
             it.autoCommit = false
             val statement = it.prepareStatement(
-                "update Users set name = ? where id = ?;")
+                "update Users set name = ? where id = ?;"
+            )
             statement.setString(1, editUser.name)
             statement.setInt(2, editUser.id)
-
 
             val count = statement.executeUpdate()
 

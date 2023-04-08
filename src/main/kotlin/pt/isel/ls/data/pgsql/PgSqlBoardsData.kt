@@ -53,7 +53,7 @@ object PgSqlBoardsData : BoardsData {
         }
     }
 
-    override fun getById(id: Int): Board{
+    override fun getById(id: Int): Board {
         PgDataContext.getConnection().use {
             val statement = it.prepareStatement(
                 "select * from Boards where id = ?;"
@@ -87,18 +87,12 @@ object PgSqlBoardsData : BoardsData {
             while (rs.next()) {
                 val id = rs.getInt("id")
                 it.commit()
-                return Board(id,newBoard.name,newBoard.description)
+                return Board(id, newBoard.name, newBoard.description)
             }
 
-
-
-                it.rollback()
-                throw DataException("Failed to insert board.")
-
-
-
+            it.rollback()
+            throw DataException("Failed to insert board.")
         }
-
     }
 
     override fun delete(id: Int) {
@@ -140,7 +134,7 @@ object PgSqlBoardsData : BoardsData {
         }
     }
 
-    override fun exists(id:Int): Boolean {
+    override fun exists(id: Int): Boolean {
         PgDataContext.getConnection().use {
             val statement = it.prepareStatement(
                 "select count(*) exists from Boards where id = ?;"
@@ -156,7 +150,7 @@ object PgSqlBoardsData : BoardsData {
         }
     }
 
-    override fun addUserToBoard(userId: Int,boardId: Int){
+    override fun addUserToBoard(userId: Int, boardId: Int) {
         PgDataContext.getConnection().use {
             it.autoCommit = false
             val statement = it.prepareStatement(
@@ -167,7 +161,6 @@ object PgSqlBoardsData : BoardsData {
             statement.execute()
             it.commit()
         }
-
     }
 
     override fun getUsers(boardId: Int, user: User, limit: Int, skip: Int): List<User> {
@@ -194,7 +187,7 @@ object PgSqlBoardsData : BoardsData {
         }
     }
 
-    override fun deleteUserFromBoard(userId: Int, boardId: Int){
+    override fun deleteUserFromBoard(userId: Int, boardId: Int) {
         PgDataContext.getConnection().use {
             it.autoCommit = false
             val statement = it.prepareStatement(

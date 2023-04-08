@@ -2,9 +2,7 @@ package pt.isel.ls.data.pgsql
 
 import pt.isel.ls.data.DataException
 import pt.isel.ls.data.ListsData
-import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.BoardList
-import pt.isel.ls.tasksServices.dtos.EditBoardListDto
 import pt.isel.ls.tasksServices.dtos.InputBoardListDto
 
 object PgSqlListsData : ListsData {
@@ -53,7 +51,7 @@ object PgSqlListsData : ListsData {
         }
     }
 
-    override fun add(newBoardList: InputBoardListDto, boardId:Int): BoardList {
+    override fun add(newBoardList: InputBoardListDto, boardId: Int): BoardList {
         PgDataContext.getConnection().use {
             it.autoCommit = false
             val statement = it.prepareStatement(
@@ -102,15 +100,15 @@ object PgSqlListsData : ListsData {
         }
     }
 
-    override fun edit(editName: String, listId:Int,boardId: Int) {
+    override fun edit(editName: String, listId: Int, boardId: Int) {
         PgDataContext.getConnection().use {
             it.autoCommit = false
             val statement = it.prepareStatement(
                 "update Lists set name = ? where id = ? and boardid = ?;"
             )
             statement.setString(1, editName)
-            statement.setInt(2,listId)
-            statement.setInt(3,boardId)
+            statement.setInt(2, listId)
+            statement.setInt(3, boardId)
 
             val count = statement.executeUpdate()
 
@@ -123,7 +121,7 @@ object PgSqlListsData : ListsData {
         }
     }
 
-    override fun exists(id:Int): Boolean {
+    override fun exists(id: Int): Boolean {
         PgDataContext.getConnection().use {
             val statement = it.prepareStatement(
                 "select count(*) exists from Boards where id = ?;"

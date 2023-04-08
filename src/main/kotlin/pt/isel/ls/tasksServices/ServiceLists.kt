@@ -31,7 +31,6 @@ class ServiceLists(private val listsRepo: ListsData) {
         return try {
             listsRepo.edit(editList.name, boardListId, boardId)
         } catch (_: Exception) {
-
         }
     }
 }

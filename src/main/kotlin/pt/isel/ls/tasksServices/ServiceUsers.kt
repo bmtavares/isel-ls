@@ -14,7 +14,6 @@ class ServiceUsers(private val userRepository: UsersData) {
             val user = userRepository.add(newUser)
             val token = userRepository.createToken(user)
             OutputUserDto(token, user.id)
-
         } catch (e: Exception) {
             throw DataException("")
         }
@@ -34,7 +33,6 @@ class ServiceUsers(private val userRepository: UsersData) {
         } catch (e: Exception) {
             throw DataException("")
         }
-
     }
 
     class EmailValidator {
@@ -45,5 +43,4 @@ class ServiceUsers(private val userRepository: UsersData) {
             }
         }
     }
-
 }

@@ -10,9 +10,9 @@ object MemListsData : ListsData {
     private val CASCADE_DELETE = false
 
     override fun getListsByBoard(boardId: Int, limit: Int, skip: Int): List<BoardList> =
-        MemDataSource.lists.filter { it.boardId == boardId }.subList(skip,skip+limit)
+        MemDataSource.lists.filter { it.boardId == boardId }.subList(skip, skip + limit)
 
-    override fun edit(editName: String, listId: Int,boardId: Int) {
+    override fun edit(editName: String, listId: Int, boardId: Int) {
         val oldList = MemDataSource.lists.firstOrNull { it.id == listId && it.boardId == boardId }
             ?: throw EntityNotFoundException("List not found.", BoardList::class)
         val newList = BoardList(oldList.id, editName, oldList.boardId)
@@ -45,11 +45,12 @@ object MemListsData : ListsData {
             BoardList::class
         )
 
-        if (MemDataSource.cards.any{it.listId == id}) {
-            if(CASCADE_DELETE)
+        if (MemDataSource.cards.any { it.listId == id }) {
+            if (CASCADE_DELETE) {
                 MemDataSource.cards.removeAll { it.listId == id }
-            else
+            } else {
                 throw DataException("Cannot delete a list that has cards.")
+            }
         }
 
         MemDataSource.lists.remove(list)

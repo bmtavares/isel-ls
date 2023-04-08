@@ -1,6 +1,9 @@
 package pt.isel.ls.data.mem
 
-import pt.isel.ls.data.*
+import pt.isel.ls.data.BoardsData
+import pt.isel.ls.data.DataException
+import pt.isel.ls.data.EntityAlreadyExistsException
+import pt.isel.ls.data.EntityNotFoundException
 import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.data.entities.UserBoard
@@ -14,7 +17,7 @@ object MemBoardsData : BoardsData {
             ?: throw EntityNotFoundException("Board not found.", Board::class)
 
     override fun getUserBoards(user: User, limit: Int, skip: Int): List<Board> {
-        val boards = MemDataSource.usersBoards.filter { it.userId == user.id }.subList(skip,skip+limit).map { it.boardId }
+        val boards = MemDataSource.usersBoards.filter { it.userId == user.id }.subList(skip, skip + limit).map { it.boardId }
         return MemDataSource.boards.filter { it.id in boards }
     }
 
@@ -40,19 +43,21 @@ object MemBoardsData : BoardsData {
     }
 
     override fun getUsers(boardId: Int, user: User, limit: Int, skip: Int): List<User> {
-        val usersIds = MemDataSource.usersBoards.filter { it.boardId == boardId }.subList(skip,skip+limit).map { it.userId }
+        val usersIds = MemDataSource.usersBoards.filter { it.boardId == boardId }.subList(skip, skip + limit).map { it.userId }
         return MemDataSource.users.filter { it.id in usersIds }
     }
 
     override fun addUserToBoard(userId: Int, boardId: Int) {
         val pair = UserBoard(userId, boardId)
-        if (MemDataSource.usersBoards.any { it == pair }) throw EntityAlreadyExistsException(
-            "User already in board.",
-            Board::class
-        )
+        if (MemDataSource.usersBoards.any { it == pair }) {
+            throw EntityAlreadyExistsException(
+                "User already in board.",
+                Board::class
+            )
+        }
         MemDataSource.usersBoards.add(pair)
     }
-    override fun deleteUserFromBoard(userId: Int, boardId: Int){
+    override fun deleteUserFromBoard(userId: Int, boardId: Int) {
         val pair = UserBoard(userId, boardId)
         MemDataSource.usersBoards.remove(pair)
     }
@@ -70,17 +75,19 @@ object MemBoardsData : BoardsData {
         )
 
         if (MemDataSource.lists.any { it.boardId == id }) {
-            if (CASCADE_DELETE)
+            if (CASCADE_DELETE) {
                 MemDataSource.lists.removeAll { it.boardId == id }
-            else
+            } else {
                 throw DataException("Cannot delete a board that has lists.")
+            }
         }
 
         if (MemDataSource.cards.any { it.boardId == id }) {
-            if (CASCADE_DELETE)
+            if (CASCADE_DELETE) {
                 MemDataSource.cards.removeAll { it.listId == id }
-            else
+            } else {
                 throw DataException("Cannot delete a board that has cards.")
+            }
         }
 
         MemDataSource.usersBoards.removeAll { it.boardId == id }
@@ -90,5 +97,4 @@ object MemBoardsData : BoardsData {
 
     override fun exists(id: Int): Boolean =
         MemDataSource.boards.any { it.id == id }
-
 }
