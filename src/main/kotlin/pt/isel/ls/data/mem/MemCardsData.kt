@@ -11,8 +11,8 @@ import pt.isel.ls.tasksServices.dtos.InputMoveCardDto
 import java.sql.Timestamp
 
 object MemCardsData : CardsData {
-    override fun getByList(boardId: Int,listId: Int): List<Card> =
-        MemDataSource.cards.filter { it.listId == listId && it.boardId==boardId }
+    override fun getByList(boardId: Int, listId: Int, limit: Int, skip: Int): List<Card> =
+        MemDataSource.cards.filter { it.listId == listId && it.boardId==boardId }.subList(skip,skip+limit)
 
     override fun add(newCard: InputCardDto, boardId: Int, listId: Int?): Card {
         if (!MemDataSource.boards.any { it.id == boardId }) {

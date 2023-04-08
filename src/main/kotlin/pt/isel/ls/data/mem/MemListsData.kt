@@ -3,16 +3,14 @@ package pt.isel.ls.data.mem
 import pt.isel.ls.data.DataException
 import pt.isel.ls.data.EntityNotFoundException
 import pt.isel.ls.data.ListsData
-import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.BoardList
-import pt.isel.ls.tasksServices.dtos.EditBoardListDto
 import pt.isel.ls.tasksServices.dtos.InputBoardListDto
 
 object MemListsData : ListsData {
     private val CASCADE_DELETE = false
 
-    override fun getListsByBoard(boardId: Int): List<BoardList> =
-        MemDataSource.lists.filter { it.boardId == boardId }
+    override fun getListsByBoard(boardId: Int, limit: Int, skip: Int): List<BoardList> =
+        MemDataSource.lists.filter { it.boardId == boardId }.subList(skip,skip+limit)
 
     override fun edit(editName: String, listId: Int,boardId: Int) {
         val oldList = MemDataSource.lists.firstOrNull { it.id == listId && it.boardId == boardId }

@@ -10,13 +10,15 @@ import pt.isel.ls.tasksServices.dtos.InputMoveCardDto
 import java.sql.Types
 
 object PgSqlCardsData : CardsData {
-    override fun getByList(boardId: Int, listId: Int): List<Card> {
+    override fun getByList(boardId: Int, listId: Int, limit: Int, skip: Int): List<Card> {
         PgDataContext.getConnection().use {
             val statement = it.prepareStatement(
-                "select * from Cards where listId = ? and boardid = ?;"
+                "select * from Cards where listId = ? and boardid = ? offset ? limit ?;"
             )
             statement.setInt(1, listId)
             statement.setInt(2, boardId)
+            statement.setInt(3, skip)
+            statement.setInt(4, limit)
 
             val rs = statement.executeQuery()
 
