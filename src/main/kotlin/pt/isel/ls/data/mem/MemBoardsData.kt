@@ -17,8 +17,15 @@ object MemBoardsData : BoardsData {
             ?: throw EntityNotFoundException("Board not found.", Board::class)
 
     override fun getUserBoards(user: User, limit: Int, skip: Int): List<Board> {
-        val boards = MemDataSource.usersBoards.filter { it.userId == user.id }.subList(skip, skip + limit).map { it.boardId }
-        return MemDataSource.boards.filter { it.id in boards }
+        val boards = MemDataSource.usersBoards.filter { it.userId == user.id }
+
+        if (skip > boards.lastIndex) return emptyList()
+
+        val boardIds = boards.slice(
+            skip..if (skip + limit <= boards.lastIndex) skip + limit else boards.lastIndex
+        ).map { it.boardId }
+
+        return MemDataSource.boards.filter { it.id in boardIds }
     }
 
     override fun edit(editBoard: EditBoardDto) {
@@ -43,7 +50,14 @@ object MemBoardsData : BoardsData {
     }
 
     override fun getUsers(boardId: Int, user: User, limit: Int, skip: Int): List<User> {
-        val usersIds = MemDataSource.usersBoards.filter { it.boardId == boardId }.subList(skip, skip + limit).map { it.userId }
+        val users = MemDataSource.usersBoards.filter { it.boardId == boardId }
+
+        if (skip > users.lastIndex) return emptyList()
+
+        val usersIds = users.slice(
+            skip..if (skip + limit <= users.lastIndex) skip + limit else users.lastIndex
+        ).map { it.userId }
+
         return MemDataSource.users.filter { it.id in usersIds }
     }
 

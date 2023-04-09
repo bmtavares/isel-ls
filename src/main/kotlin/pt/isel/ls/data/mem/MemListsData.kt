@@ -9,8 +9,15 @@ import pt.isel.ls.tasksServices.dtos.InputBoardListDto
 object MemListsData : ListsData {
     private val CASCADE_DELETE = false
 
-    override fun getListsByBoard(boardId: Int, limit: Int, skip: Int): List<BoardList> =
-        MemDataSource.lists.filter { it.boardId == boardId }.subList(skip, skip + limit)
+    override fun getListsByBoard(boardId: Int, limit: Int, skip: Int): List<BoardList> {
+        val lists = MemDataSource.lists.filter { it.boardId == boardId }.subList(skip, skip + limit)
+
+        if (skip > lists.lastIndex) return emptyList()
+
+        return lists.slice(
+            skip..if (skip + limit <= lists.lastIndex) skip + limit else lists.lastIndex
+        )
+    }
 
     override fun edit(editName: String, listId: Int, boardId: Int) {
         val oldList = MemDataSource.lists.firstOrNull { it.id == listId && it.boardId == boardId }

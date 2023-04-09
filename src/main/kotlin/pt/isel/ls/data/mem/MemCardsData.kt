@@ -9,8 +9,15 @@ import pt.isel.ls.tasksServices.dtos.InputCardDto
 import pt.isel.ls.tasksServices.dtos.InputMoveCardDto
 
 object MemCardsData : CardsData {
-    override fun getByList(boardId: Int, listId: Int, limit: Int, skip: Int): List<Card> =
-        MemDataSource.cards.filter { it.listId == listId && it.boardId == boardId }.subList(skip, skip + limit)
+    override fun getByList(boardId: Int, listId: Int, limit: Int, skip: Int): List<Card> {
+        val cards = MemDataSource.cards.filter { it.listId == listId && it.boardId == boardId }
+
+        if (skip > cards.lastIndex) return emptyList()
+
+        return cards.slice(
+            skip..if (skip + limit <= cards.lastIndex) skip + limit else cards.lastIndex
+        )
+    }
 
     override fun add(newCard: InputCardDto, boardId: Int, listId: Int?): Card {
         if (!MemDataSource.boards.any { it.id == boardId }) {
