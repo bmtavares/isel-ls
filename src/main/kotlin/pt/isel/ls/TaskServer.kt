@@ -28,8 +28,8 @@ fun main() {
     val logger = LoggerFactory.getLogger("pt.isel.ls.http.HTTPServer")
 
     // Make sure an env key for ``USE_POSTGRESQL`` exists with the value ``true`` to use the Postgresql for data
-    val usePostgresql = System.getenv("USE_POSTGRESQL").lowercase() == "true"
-
+    //val usePostgresql = System.getenv("USE_POSTGRESQL").lowercase() == "true"
+    val usePostgresql = true
     val boardsRepo = if (usePostgresql) PgSqlBoardsData else MemBoardsData
     val usersRepo = if (usePostgresql) PgSqlUsersData else MemUsersData
     val listsRepo = if (usePostgresql) PgSqlListsData else MemListsData
