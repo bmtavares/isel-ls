@@ -13,7 +13,7 @@ or
 Note: You have to use the DOM Api, but not directly
 */
 
-
+import * as c from "./createElement.js"
 const API_BASE_URL = "http://localhost:9000/"
 
 
@@ -251,14 +251,68 @@ function getBoardsUsers(mainContent,args){
 }
 
 //-- list details --//
+function addCardsToPage(card){
+const mainContent = document.getElementById("mainContent")
+const main = c.div(c.h3("card: "+ card.name,))
 
-function listDetails(mainContent,args){
+//main.appendChild(c.a(card.name,{ href: "/sparouter/index.html#boards/"+card.boardId+"/lists/"+card.listId+"/cards/"+card.id }))
 
+var temp_link = document.createElement("a");
+temp_link.href = "/sparouter/index.html#boards/"+card.boardId+"/lists/"+card.listId+"/cards/"+card.id
+temp_link.innerHTML = card.name;
+main.appendChild(temp_link)
 
-
+mainContent.appendChild(main)
 }
 
+function listDetails(mainContent,args){
+const boardid =  args[0]
+const listid =  args[1]
+ fetch(API_BASE_URL + "boards/"+boardid+"/lists/"+listid,  {headers: {Authorization: 'Bearer f52129ca-ccf1-42cc-a363-fdc89f71901b'}})
+    .then(res => res.json())
+    .then(list => {
+    mainContent.innerHTML = "";
+        const main = c.div(c.h1("lista: "+ list.name,))
+        mainContent.appendChild(main)
+        fetch(API_BASE_URL + "boards/"+boardid+"/lists/"+listid+"/cards",  {headers: {Authorization: 'Bearer f52129ca-ccf1-42cc-a363-fdc89f71901b'}})
+        .then(res => res.json())
+        .then(cards =>
+        cards.forEach(addCardsToPage)
+        )
+         const links = [
+                  { href: "#boards/"+boardid, type: "secondary", text: "boards details" },
+                ];
 
+                createLinks(links);
+
+
+        }
+    )
+}
+// ---------- cards -------- //
+
+function cardDetail(mainContent,args){
+const boardid =  args[0]
+const listid =  args[1]
+const cardid =  args[2]
+fetch(API_BASE_URL + "boards/"+boardid+"/cards/"+cardid,  {headers: {Authorization: 'Bearer f52129ca-ccf1-42cc-a363-fdc89f71901b'}})
+.then(res => res.json())
+    .then(card => {
+    mainContent.innerHTML = "";
+    var date = new Date(card.dueDate )
+    const main = c.div(c.h1("card: "+ card.name,),
+        c.li(card.description),
+        c.li(`due date: ${date.getFullYear()}  ${date.getMonth()} ${date.getDate()}`)
+    )
+            mainContent.appendChild(main)
+ const links = [
+                  { href: "#boards/"+boardid+"/lists/"+listid, type: "secondary", text: "list details" },
+                ];
+
+                createLinks(links);
+
+    })
+}
 
 
 
@@ -270,6 +324,7 @@ export const handlers = {
     getBoardDetail,
     getBoardsUsers,
     listDetails,
+    cardDetail,
 }
 
 export default handlers

@@ -55,9 +55,9 @@ fun main() {
             "boards/{id}" bind Method.GET to webApi::getBoard, // working
             //"boards/" bind Method.POST to webApi::createBoard, // working
            // "boards/{id}/user-list" bind Method.GET to webApi::getBoardUsers, // working
-            "boards/{id}/user-list/{uid}" bind Method.PUT to webApi::addUsersOnBoard, // working
+            "boards/{id}/user-list/{uid}" bind Method.PUT to webApi::addUsersOnBoard, // working// todo add user to body - url boards/{id}
             "boards/{id}/user-list/" bind Method.POST to webApi::alterUsersOnBoard, // is it necessary?
-            "boards/{id}/user-list/{uid}" bind Method.DELETE to webApi::deleteUserFromBoard, // working
+            "boards/{id}/user-list/{uid}" bind Method.DELETE to webApi::deleteUserFromBoard, // working todo not needed
             "boards/{id}/lists" bind Method.GET to webApi::getLists, // working
             "boards/{id}/lists" bind Method.POST to webApi::createList, // working
             "boards/{id}/lists/{lid}" bind Method.PUT to webApi::editList, // working
@@ -67,7 +67,7 @@ fun main() {
             "boards/{id}/lists/{lid}/cards" bind Method.POST to webApi::createCard, // working
             "boards/{id}/cards/{cid}" bind Method.GET to webApi::getCard, // working
             "boards/{id}/cards/{cid}" bind Method.PUT to webApi::editCard, // working but there's a problem with timestamps
-            "boards/{id}/cards/{cid}/move" bind Method.GET to webApi::alterCardListPosition // working
+            "boards/{id}/cards/{cid}/move" bind Method.GET to webApi::alterCardListPosition // working  todo channge to put add new position on the body
         )
     )
 
