@@ -3,15 +3,12 @@ package pt.isel.ls.webApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.http4k.core.ContentType
-import org.http4k.core.Filter
-import org.http4k.core.Request
-import org.http4k.core.Response
-import org.http4k.core.Status
+import org.http4k.core.*
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.CREATED
 import org.http4k.core.Status.Companion.INTERNAL_SERVER_ERROR
 import org.http4k.core.Status.Companion.OK
+import org.http4k.lens.RequestContextLens
 import org.http4k.routing.path
 import pt.isel.ls.data.DataException
 import pt.isel.ls.data.entities.User
@@ -41,7 +38,7 @@ class WebApi(
             .body(Json.encodeToString(board))
     }
 
-    fun createBoard(request: Request): Response {
+    fun createBoard2(request: Request): Response {
         logRequest(request)
         val user = Json.decodeFromString<User>(request.header("User").toString())
         val board = Json.decodeFromString<InputBoardDto>(request.bodyString())
@@ -50,6 +47,19 @@ class WebApi(
             services.boards.createBoard(board, user) ?: return Response(BAD_REQUEST).body("Failed to create board")
         val returnValue = OutputIdDto(rsp.id)
         return Response(CREATED).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+            .body(Json.encodeToString(returnValue))
+    }
+    fun createBoard(contexts: RequestContexts): HttpHandler = { request ->
+        logRequest(request)
+        val user:User? = contexts[request]["user"]
+        checkNotNull(user)
+        val board = Json.decodeFromString<InputBoardDto>(request.bodyString())
+        check(board.name.isNotEmpty()) { Response(BAD_REQUEST).body("Board name is mandatory") }
+        val rsp = services.boards.createBoard(board, user)
+            if (rsp == null) Response(BAD_REQUEST).body("Failed to create board")
+        checkNotNull(rsp)
+        val returnValue = OutputIdDto(rsp.id)
+        Response(CREATED).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
             .body(Json.encodeToString(returnValue))
     }
 
@@ -81,7 +91,7 @@ class WebApi(
         }
     }
 
-    fun getBoards(request: Request): Response {
+    fun getBoards2(request: Request): Response {
         logRequest(request)
         val user = Json.decodeFromString<User>(request.header("User").toString())
         return try {
@@ -95,14 +105,40 @@ class WebApi(
                 .body(Json.encodeToString(e.message))
         }
     }
+    fun getBoards(contexts: RequestContexts): HttpHandler = { request ->
+        logRequest(request)
+        val user:User? = contexts[request]["user"]
+        checkNotNull(user)
+         try {
+            val boards = services.boards.getUserBoards(user)
+            Response(OK)
+                .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(boards))
+        } catch (e: DataException) {
+            Response(INTERNAL_SERVER_ERROR)
+                .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(e.message))
+        }
+    }
 
-    fun getBoardUsers(request: Request): Response {
+    fun getBoardUsers2(request: Request): Response {
         logRequest(request)
         val boardId = request.path("id")?.toInt()
         checkNotNull(boardId)
         val user = Json.decodeFromString<User>(request.header("User").toString())
         val users = services.boards.getUsersOnBoard(boardId, user)
         return Response(OK)
+            .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+            .body(Json.encodeToString(users))
+    }
+    fun getBoardUsers(contexts: RequestContexts): HttpHandler = { request ->
+        logRequest(request)
+        val boardId = request.path("id")?.toInt()
+        checkNotNull(boardId)
+        val user:User? = contexts[request]["user"]
+        checkNotNull(user)
+        val users = services.boards.getUsersOnBoard(boardId, user)
+        Response(OK)
             .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
             .body(Json.encodeToString(users))
     }
@@ -308,18 +344,34 @@ class WebApi(
                 .body(Json.encodeToString(e.message))
         }
     }
-
-    val authFilter = Filter { next ->
+    fun filterUser(contexts: RequestContexts) = Filter { next ->
         { request ->
             val authHeader = request.header("Authorization")
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 val token = authHeader.substring(7)
                 try {
                     val user = services.users.getUserByToken(token)
-                    next(
-                        request
-                            .header("User", Json.encodeToString(user))
-                    )
+                    contexts[request]["user"] = user
+                    next(request)
+                } catch (e: Exception) {
+                    when (e) {
+                        is DataException -> Response(Status.UNAUTHORIZED).body("Invalid token")
+                        else -> Response(Status.INTERNAL_SERVER_ERROR).body("Server Error")
+                    }
+                }
+            } else {
+                Response(Status.UNAUTHORIZED).body("Missing or invalid Authorization header")
+            }
+        }
+    }
+    val authFilter = Filter { next ->
+        { request ->
+            val authHeader = request.header("Authorization")
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                val token = authHeader.substring(7)
+                try {
+                    services.users.getUserByToken(token)
+                    next(request)
                 } catch (e: Exception) {
                     when (e) {
                         is DataException -> Response(Status.UNAUTHORIZED).body("Invalid token")

@@ -1,10 +1,8 @@
 package pt.isel.ls
 
-import org.http4k.core.Method
-import org.http4k.core.Request
-import org.http4k.core.Response
+import org.http4k.core.*
 import org.http4k.core.Status.Companion.OK
-import org.http4k.core.then
+import org.http4k.filter.ServerFilters
 import org.http4k.routing.ResourceLoader
 import org.http4k.routing.bind
 import org.http4k.routing.routes
@@ -43,13 +41,20 @@ fun main() {
         "users/{id}" bind Method.GET to webApi::getUser, // working
         "users" bind Method.POST to webApi::createUser // working
     )
-
+    val contexts = RequestContexts()
+    val injectUserRoutes = ServerFilters.InitialiseRequestContext(contexts).then(webApi.filterUser(contexts)).then(
+        routes(
+            "boards/{id}/user-list" bind Method.GET to webApi.getBoardUsers(contexts),
+            "boards/" bind Method.GET to webApi.getBoards(contexts),
+            "boards/" bind Method.POST to webApi.createBoard(contexts),
+        )
+    )
     val boardRoutes = webApi.authFilter.then(
         routes(
-            "boards/" bind Method.GET to webApi::getBoards, // working
+            //"boards/" bind Method.GET to webApi::getBoards, // working
             "boards/{id}" bind Method.GET to webApi::getBoard, // working
-            "boards/" bind Method.POST to webApi::createBoard, // working
-            "boards/{id}/user-list" bind Method.GET to webApi::getBoardUsers, // working
+            //"boards/" bind Method.POST to webApi::createBoard, // working
+           // "boards/{id}/user-list" bind Method.GET to webApi::getBoardUsers, // working
             "boards/{id}/user-list/{uid}" bind Method.PUT to webApi::addUsersOnBoard, // working
             "boards/{id}/user-list/" bind Method.POST to webApi::alterUsersOnBoard, // is it necessary?
             "boards/{id}/user-list/{uid}" bind Method.DELETE to webApi::deleteUserFromBoard, // working
@@ -69,6 +74,7 @@ fun main() {
     val app = routes(
         usersRoutes,
         boardRoutes,
+        injectUserRoutes,
         "/open-api" bind Method.GET to { _: Request ->
             val fileContents = File("./open-api.json").readText()
             Response(OK).body(fileContents)
