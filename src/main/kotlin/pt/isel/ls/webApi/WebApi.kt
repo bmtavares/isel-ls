@@ -3,7 +3,13 @@ package pt.isel.ls.webApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.http4k.core.*
+import org.http4k.core.ContentType
+import org.http4k.core.Filter
+import org.http4k.core.HttpHandler
+import org.http4k.core.Request
+import org.http4k.core.RequestContexts
+import org.http4k.core.Response
+import org.http4k.core.Status
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.CREATED
 import org.http4k.core.Status.Companion.INTERNAL_SERVER_ERROR
@@ -28,13 +34,14 @@ import java.lang.Error
 class WebApi(
     private val services: TasksServices
 ) {
-    fun getBoard(request: Request): Response {
+    fun getBoard(contexts: RequestContexts): HttpHandler = { request ->
         logRequest(request)
         val boardId = request.path("id")?.toInt()
         checkNotNull(boardId)
-        val user = Json.decodeFromString<User>(request.header("User").toString())
+        val user:User? = contexts[request]["user"]
+        checkNotNull(user)
         val board = services.boards.getBoard(boardId, user)
-        return Response(OK)
+        Response(OK)
             .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
             .body(Json.encodeToString(board))
     }
@@ -94,6 +101,7 @@ class WebApi(
 
     fun getBoards2(request: Request): Response {
         logRequest(request)
+        // val user = contexts[r]["user"]
         val user = Json.decodeFromString<User>(request.header("User").toString())
         return try {
             val boards = services.boards.getUserBoards(user)

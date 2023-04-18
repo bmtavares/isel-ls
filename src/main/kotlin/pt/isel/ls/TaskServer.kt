@@ -47,12 +47,12 @@ fun main() {
             "boards/{id}/user-list" bind Method.GET to webApi.getBoardUsers(contexts),
             "boards/" bind Method.GET to webApi.getBoards(contexts),
             "boards/" bind Method.POST to webApi.createBoard(contexts),
+            "boards/{id}" bind Method.GET to webApi.getBoard(contexts), // working
         )
     )
     val boardRoutes = webApi.authFilter.then(
         routes(
             //"boards/" bind Method.GET to webApi::getBoards, // working
-            "boards/{id}" bind Method.GET to webApi::getBoard, // working
             //"boards/" bind Method.POST to webApi::createBoard, // working
            // "boards/{id}/user-list" bind Method.GET to webApi::getBoardUsers, // working
             "boards/{id}/user-list/{uid}" bind Method.PUT to webApi::addUsersOnBoard, // working// todo add user to body - url boards/{id}
