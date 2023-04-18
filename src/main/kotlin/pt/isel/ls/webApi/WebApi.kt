@@ -13,6 +13,7 @@ import org.http4k.core.Status
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.CREATED
 import org.http4k.core.Status.Companion.INTERNAL_SERVER_ERROR
+import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
 import org.http4k.lens.RequestContextLens
 import org.http4k.routing.path
@@ -36,14 +37,31 @@ class WebApi(
 ) {
     fun getBoard(contexts: RequestContexts): HttpHandler = { request ->
         logRequest(request)
-        val boardId = request.path("id")?.toInt()
-        checkNotNull(boardId)
-        val user:User? = contexts[request]["user"]
-        checkNotNull(user)
-        val board = services.boards.getBoard(boardId, user)
-        Response(OK)
-            .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
-            .body(Json.encodeToString(board))
+        try {
+            val boardId = request.path("id")?.toInt()
+            checkNotNull(boardId)
+            val user:User? = contexts[request]["user"]
+            checkNotNull(user)
+            val board = services.boards.getBoard(boardId, user)
+            if(board == null){
+                Response(NOT_FOUND)
+                    .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+            }else{
+                Response(OK)
+                    .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                    .body(Json.encodeToString(board))
+            }
+        }catch (e:NumberFormatException){
+            Response(BAD_REQUEST)
+                .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                .body("Input is not a number")
+        }catch (e:Exception){
+            Response(BAD_REQUEST)
+                .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+
+        }
+
+
     }
 
     fun createBoard2(request: Request): Response {
@@ -127,6 +145,11 @@ class WebApi(
             Response(INTERNAL_SERVER_ERROR)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
+        } catch (e: Exception){
+             Response(INTERNAL_SERVER_ERROR)
+                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                 .body(Json.encodeToString(e.message))
+
         }
     }
 
