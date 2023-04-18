@@ -16,8 +16,8 @@ class ServiceCards(private val cardsRepo: CardsData) {
         }
     }
 
-    fun getCardsOnList(boardId: Int, boardListId: Int): List<Card> = try {
-        cardsRepo.getByList(boardId, boardListId)
+    fun getCardsOnList(boardId: Int, boardListId: Int,limit: Int = 25, skip :Int = 0): List<Card> = try {
+        cardsRepo.getByList(boardId, boardListId,limit,skip)
     } catch (e: Exception) {
         throw DataException("Failed to retrieve Cards")
     }

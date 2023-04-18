@@ -16,9 +16,9 @@ class ServiceBoards(private val boardRepository: BoardsData) {
         }
     }
 
-    fun getUserBoards(user: User): List<Board> {
+    fun getUserBoards(user: User,limit: Int = 25, skip :Int = 0): List<Board> {
         return try {
-            boardRepository.getUserBoards(user)
+            boardRepository.getUserBoards(user, limit,skip)
         } catch (e: Exception) {
             throw DataException("Failed to retrieve Boards")
         }
@@ -34,9 +34,9 @@ class ServiceBoards(private val boardRepository: BoardsData) {
         }
     }
 
-    fun getUsersOnBoard(boardId: Int, user: User): List<User> {
+    fun getUsersOnBoard(boardId: Int, user: User,limit: Int = 25, skip :Int = 0): List<User> {
         return try {
-            val users = boardRepository.getUsers(boardId, user)
+            val users = boardRepository.getUsers(boardId, user,limit,skip)
             users
         } catch (e: Exception) {
             throw DataException("managed errors")

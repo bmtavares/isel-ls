@@ -110,7 +110,9 @@ class WebApi(
         val user:User? = contexts[request]["user"]
         checkNotNull(user)
          try {
-            val boards = services.boards.getUserBoards(user)
+             val limit:Int = if (request.query("limit") == null) 25 else Integer.parseInt(request.query("limit").toString())
+             val skip:Int = if (request.query("skip") == null) 0 else Integer.parseInt(request.query("skip").toString())
+            val boards = services.boards.getUserBoards(user,limit,skip)
             Response(OK)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(boards))
@@ -137,7 +139,11 @@ class WebApi(
         checkNotNull(boardId)
         val user:User? = contexts[request]["user"]
         checkNotNull(user)
-        val users = services.boards.getUsersOnBoard(boardId, user)
+
+        val limit:Int = if (request.query("limit") == null) 25 else Integer.parseInt(request.query("limit").toString())
+        val skip:Int = if (request.query("skip") == null) 0 else Integer.parseInt(request.query("skip").toString())
+
+        val users = services.boards.getUsersOnBoard(boardId, user,limit,skip)
         Response(OK)
             .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
             .body(Json.encodeToString(users))
@@ -168,7 +174,10 @@ class WebApi(
         val boardId = request.path("id")?.toInt()
         checkNotNull(boardId) { "Board Id must not be null" }
         return try {
-            val boardLists = services.lists.getBoardLists(boardId)
+            val limit:Int = if (request.query("limit") == null) 25 else Integer.parseInt(request.query("limit").toString())
+            val skip:Int = if (request.query("skip") == null) 0 else Integer.parseInt(request.query("skip").toString())
+
+            val boardLists = services.lists.getBoardLists(boardId, limit,skip)
             Response(CREATED)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(boardLists))
@@ -203,7 +212,10 @@ class WebApi(
         checkNotNull(boardId) { "Board Id must not be null" }
         checkNotNull(boardListId) { "List Id must not be null" }
         return try {
-            val cards = services.cards.getCardsOnList(boardId, boardListId)
+            val limit:Int = if (request.query("limit") == null) 25 else Integer.parseInt(request.query("limit").toString())
+            val skip:Int = if (request.query("skip") == null) 0 else Integer.parseInt(request.query("skip").toString())
+
+            val cards = services.cards.getCardsOnList(boardId, boardListId,limit,skip)
             Response(OK)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(cards))
