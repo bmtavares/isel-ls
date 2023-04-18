@@ -174,8 +174,8 @@ function addListsToPage(item_list){
 
 }
 
-function getBoardDetail(mainContent,args){
-    const boardid =  args[0]
+function getBoardDetail(mainContent,kargs){
+    const boardid =  kargs.b_id
     fetch(API_BASE_URL + "boards/"+boardid,  {headers: {Authorization: 'Bearer f52129ca-ccf1-42cc-a363-fdc89f71901b'}})
     .then(res => res.json())
             .then(board => {
@@ -233,8 +233,8 @@ function userApend(item){
         mainContent.appendChild(ulStd)
 }
 
-function getBoardsUsers(mainContent,args){
-    const boardid =  args[0]
+function getBoardsUsers(mainContent,kargs){
+    const boardid =  kargs.b_id
     fetch(API_BASE_URL + "boards/"+boardid+"/user-list",  {headers: {Authorization: 'Bearer f52129ca-ccf1-42cc-a363-fdc89f71901b'}})
     .then(res => res.json())
             .then(user => {
@@ -265,9 +265,9 @@ main.appendChild(temp_link)
 mainContent.appendChild(main)
 }
 
-function listDetails(mainContent,args){
-const boardid =  args[0]
-const listid =  args[1]
+function listDetails(mainContent,kargs){
+const boardid =  kargs.b_id
+const listid =  kargs.l_id
  fetch(API_BASE_URL + "boards/"+boardid+"/lists/"+listid,  {headers: {Authorization: 'Bearer f52129ca-ccf1-42cc-a363-fdc89f71901b'}})
     .then(res => res.json())
     .then(list => {
@@ -291,10 +291,10 @@ const listid =  args[1]
 }
 // ---------- cards -------- //
 
-function cardDetail(mainContent,args){
-const boardid =  args[0]
-const listid =  args[1]
-const cardid =  args[2]
+function cardDetail(mainContent,kargs){
+const boardid =  kargs.b_id
+const listid =  kargs.l_id
+const cardid =  kargs.c_id
 fetch(API_BASE_URL + "boards/"+boardid+"/cards/"+cardid,  {headers: {Authorization: 'Bearer f52129ca-ccf1-42cc-a363-fdc89f71901b'}})
 .then(res => res.json())
     .then(card => {
