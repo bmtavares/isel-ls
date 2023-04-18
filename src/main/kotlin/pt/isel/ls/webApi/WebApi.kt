@@ -23,6 +23,7 @@ import pt.isel.ls.tasksServices.dtos.InputCardDto
 import pt.isel.ls.tasksServices.dtos.InputMoveCardDto
 import pt.isel.ls.tasksServices.dtos.InputUserDto
 import pt.isel.ls.tasksServices.dtos.OutputIdDto
+import java.lang.Error
 
 class WebApi(
     private val services: TasksServices
@@ -110,9 +111,7 @@ class WebApi(
         val user:User? = contexts[request]["user"]
         checkNotNull(user)
          try {
-             val limit:Int = if (request.query("limit") == null) 25 else Integer.parseInt(request.query("limit").toString())
-             val skip:Int = if (request.query("skip") == null) 0 else Integer.parseInt(request.query("skip").toString())
-            val boards = services.boards.getUserBoards(user,limit,skip)
+            val boards = services.boards.getUserBoards(user,getLimit(request),getSkip(request))
             Response(OK)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(boards))
@@ -140,10 +139,8 @@ class WebApi(
         val user:User? = contexts[request]["user"]
         checkNotNull(user)
 
-        val limit:Int = if (request.query("limit") == null) 25 else Integer.parseInt(request.query("limit").toString())
-        val skip:Int = if (request.query("skip") == null) 0 else Integer.parseInt(request.query("skip").toString())
 
-        val users = services.boards.getUsersOnBoard(boardId, user,limit,skip)
+        val users = services.boards.getUsersOnBoard(boardId, user,getLimit(request),getSkip(request))
         Response(OK)
             .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
             .body(Json.encodeToString(users))
@@ -174,10 +171,8 @@ class WebApi(
         val boardId = request.path("id")?.toInt()
         checkNotNull(boardId) { "Board Id must not be null" }
         return try {
-            val limit:Int = if (request.query("limit") == null) 25 else Integer.parseInt(request.query("limit").toString())
-            val skip:Int = if (request.query("skip") == null) 0 else Integer.parseInt(request.query("skip").toString())
 
-            val boardLists = services.lists.getBoardLists(boardId, limit,skip)
+            val boardLists = services.lists.getBoardLists(boardId, getLimit(request),getSkip(request))
             Response(CREATED)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(boardLists))
@@ -205,6 +200,20 @@ class WebApi(
         }
     }
 
+    fun getLimit(request: Request):Int{
+        return try {
+            if(Integer.parseInt(request.query("limit").toString())>=0)
+            Integer.parseInt(request.query("limit").toString()) else
+            25
+        } catch (e:java.lang.Exception) {
+                25
+            }
+    }
+    fun getSkip(request: Request):Int{
+        return try {if(Integer.parseInt(request.query("skip").toString())>=0)
+            Integer.parseInt(request.query("skip").toString()) else
+            0 } catch (e:java.lang.Exception) {0}
+    }
     fun getCardsFromList(request: Request): Response {
         logRequest(request)
         val boardId = request.path("id")?.toInt()
@@ -212,10 +221,10 @@ class WebApi(
         checkNotNull(boardId) { "Board Id must not be null" }
         checkNotNull(boardListId) { "List Id must not be null" }
         return try {
-            val limit:Int = if (request.query("limit") == null) 25 else Integer.parseInt(request.query("limit").toString())
-            val skip:Int = if (request.query("skip") == null) 0 else Integer.parseInt(request.query("skip").toString())
 
-            val cards = services.cards.getCardsOnList(boardId, boardListId,limit,skip)
+
+
+            val cards = services.cards.getCardsOnList(boardId, boardListId,getLimit(request),getSkip(request))
             Response(OK)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(cards))
