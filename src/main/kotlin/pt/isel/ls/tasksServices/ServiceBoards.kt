@@ -16,6 +16,15 @@ class ServiceBoards(private val boardRepository: BoardsData) {
         }
     }
 
+    fun getBoard(boardName: String, user: User): Board? {
+        return try {
+            val board = boardRepository.getByName(boardName)
+            board
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     fun getUserBoards(user: User,limit: Int = 25, skip :Int = 0): List<Board> {
         return try {
             boardRepository.getUserBoards(user, limit,skip)

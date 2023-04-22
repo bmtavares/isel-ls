@@ -79,14 +79,35 @@ class WebApi(
         logRequest(request)
         val user:User? = contexts[request]["user"]
         checkNotNull(user)
-        val board = Json.decodeFromString<InputBoardDto>(request.bodyString())
-        check(board.name.isNotEmpty()) { Response(BAD_REQUEST).body("Board name is mandatory") }
-        val rsp = services.boards.createBoard(board, user)
-            if (rsp == null) Response(BAD_REQUEST).body("Failed to create board")
-        checkNotNull(rsp)
-        val returnValue = OutputIdDto(rsp.id)
-        Response(CREATED).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
-            .body(Json.encodeToString(returnValue))
+        try{
+           val board = Json.decodeFromString<InputBoardDto>(request.bodyString())
+
+            if((board.name.isEmpty()) or (board.name == "")) {
+                Response(BAD_REQUEST).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                    .body("Name is mandatory")
+            }
+            val rsp = services.boards.createBoard(board, user)
+            if (rsp == null){
+
+                val board = services.boards.getBoard(board.name, user)
+                if(board != null){
+                    Response(BAD_REQUEST).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                        .body("That name is already in use")
+
+                }else{
+                    Response(BAD_REQUEST).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                        .body("Failed to create board")
+                }
+            }else{
+                val returnValue = OutputIdDto(rsp.id)
+                Response(CREATED).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                    .body(Json.encodeToString(returnValue))
+            }
+        }catch(e: Exception){
+            Response(BAD_REQUEST).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                .body("body in incorrect format")
+        }
+
     }
 
     fun getUser(request: Request): Response {
