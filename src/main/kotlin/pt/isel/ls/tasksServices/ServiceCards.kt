@@ -16,8 +16,8 @@ class ServiceCards(private val cardsRepo: CardsData) {
         }
     }
 
-    fun getCardsOnList(boardId: Int, boardListId: Int,limit: Int = 25, skip :Int = 0): List<Card> = try {
-        cardsRepo.getByList(boardId, boardListId,limit,skip)
+    fun getCardsOnList(boardId: Int, boardListId: Int, limit: Int = 25, skip: Int = 0): List<Card> = try {
+        cardsRepo.getByList(boardId, boardListId, limit, skip)
     } catch (e: Exception) {
         throw DataException("Failed to retrieve Cards")
     }
@@ -40,5 +40,11 @@ class ServiceCards(private val cardsRepo: CardsData) {
             cardsRepo.move(moveList, boardId, cardId)
         } catch (_: Exception) {
         }
+    }
+
+    fun removeCard(boardId: Int, cardId: Int) = try {
+        cardsRepo.delete(cardId)
+    } catch (ex: DataException) {
+        throw ex
     }
 }

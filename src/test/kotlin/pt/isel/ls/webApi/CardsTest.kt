@@ -30,6 +30,7 @@ import kotlin.test.assertNull
 class CardsTest {
     private val services = TasksServices(MemBoardsData, MemUsersData, MemListsData, MemCardsData)
     private val api = WebApi(services)
+    private val unitApi = CardsApi(services)
     private val context = RequestContexts()
     private val prepare = ApiTestUtils(api, context)
 
@@ -38,7 +39,8 @@ class CardsTest {
             "boards/{id}/lists/{lid}/cards" bind Method.POST to api::createCard,
             "boards/{id}/lists/{lid}/cards" bind Method.GET to api::getCardsFromList,
             "boards/{id}/cards/{cid}" bind Method.GET to api::getCard,
-            "boards/{id}/cards/{cid}/move" bind Method.GET to api::alterCardListPosition
+            "boards/{id}/cards/{cid}/move" bind Method.GET to api::alterCardListPosition,
+            "boards/{id}/cards/{cid}" bind Method.DELETE to unitApi::deleteCard
         )
     )
 
@@ -381,6 +383,78 @@ class CardsTest {
             val gottenCard = Json.decodeFromString<Card>(it.bodyString())
 
             assertEquals(destinationBoardList.id, gottenCard.listId)
+        }
+    }
+
+    @Test
+    fun deleteCard() {
+        val user = prepare.createUser()
+        val board = prepare.createBoard(user.token)
+        val boardList = prepare.createList(user.token, board.id)
+
+        val createDto = InputCardDto(
+            "Test Card",
+            "Card used for integration testing"
+        )
+
+        val response = app(
+            Request(
+                Method.POST,
+                "boards/${board.id}/lists/${boardList.id}/cards"
+            )
+                .body(Json.encodeToString(createDto))
+                .header("Authorization", "Bearer ${user.token}")
+        )
+        assertEquals(Status.CREATED, response.status)
+        assertEquals("application/json", response.header("content-type"))
+        val createdCard = Json.decodeFromString<OutputIdDto>(response.bodyString())
+
+        app(
+            Request(
+                Method.DELETE,
+                "boards/${board.id}/cards/${createdCard.id}"
+            )
+                .body(Json.encodeToString(createDto))
+                .header("Authorization", "Bearer ${user.token}")
+        ).let {
+            assertEquals(Status.OK, it.status)
+        }
+    }
+
+    @Test
+    fun deleteNonExistentCard() {
+        val user = prepare.createUser()
+        val board = prepare.createBoard(user.token)
+        val boardList = prepare.createList(user.token, board.id)
+
+        val createDto = InputCardDto(
+            "Test Card",
+            "Card used for integration testing"
+        )
+
+        app(
+            Request(
+                Method.POST,
+                "boards/${board.id}/lists/${boardList.id}/cards"
+            )
+                .body(Json.encodeToString(createDto))
+                .header("Authorization", "Bearer ${user.token}")
+        ).let {
+            assertEquals(Status.CREATED, it.status)
+            assertEquals("application/json", it.header("content-type"))
+        }
+
+        app(
+            Request(
+                Method.DELETE,
+                "boards/${board.id}/cards/-1"
+            )
+                .body(Json.encodeToString(createDto))
+                .header("Authorization", "Bearer ${user.token}")
+        ).let {
+            assertEquals(Status.BAD_REQUEST, it.status)
+            assertEquals("application/json", it.header("content-type"))
+            assertEquals("Card not found.", Json.decodeFromString(it.bodyString()))
         }
     }
 }

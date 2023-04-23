@@ -28,7 +28,7 @@ create table Cards (
     name varchar(255) not null,
     description varchar(255) not null,
     dueDate timestamp, -- Sem input check por agora para ver se a data é no futuro
-    listId int references Lists(id),
+    listId int references Lists(id) on delete cascade,
     boardId int references Boards(id) not null
 );
 

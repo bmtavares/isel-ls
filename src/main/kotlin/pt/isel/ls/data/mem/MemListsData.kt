@@ -7,7 +7,7 @@ import pt.isel.ls.data.entities.BoardList
 import pt.isel.ls.tasksServices.dtos.InputBoardListDto
 
 object MemListsData : ListsData {
-    private val CASCADE_DELETE = false
+    private val CASCADE_DELETE = true
 
     override fun getListsByBoard(boardId: Int, limit: Int, skip: Int): List<BoardList> {
         val lists = MemDataSource.lists.filter { it.boardId == boardId }

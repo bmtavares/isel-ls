@@ -33,4 +33,10 @@ class ServiceLists(private val listsRepo: ListsData) {
         } catch (_: Exception) {
         }
     }
+
+    fun removeList(boardId: Int, listId: Int) = try {
+        listsRepo.delete(listId)
+    } catch (ex: DataException) {
+        throw ex
+    }
 }

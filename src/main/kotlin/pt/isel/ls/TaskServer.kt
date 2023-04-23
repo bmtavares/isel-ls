@@ -19,6 +19,9 @@ import pt.isel.ls.data.pgsql.PgSqlCardsData
 import pt.isel.ls.data.pgsql.PgSqlListsData
 import pt.isel.ls.data.pgsql.PgSqlUsersData
 import pt.isel.ls.tasksServices.TasksServices
+import pt.isel.ls.webApi.CardsApi
+import pt.isel.ls.webApi.Filters
+import pt.isel.ls.webApi.ListsApi
 import pt.isel.ls.webApi.WebApi
 import java.io.File
 
@@ -36,6 +39,9 @@ fun main() {
     val services = TasksServices(boardsRepo, usersRepo, listsRepo, cardsRepo)
 
     val webApi = WebApi(services)
+    val cardsApi = CardsApi(services)
+    val listsApi = ListsApi(services)
+    val filters = Filters(services)
 
     val usersRoutes = routes(
         "users/{id}" bind Method.GET to webApi::getUser, // working
@@ -47,14 +53,14 @@ fun main() {
             "boards/{id}/user-list" bind Method.GET to webApi.getBoardUsers(contexts),
             "boards/" bind Method.GET to webApi.getBoards(contexts),
             "boards/" bind Method.POST to webApi.createBoard(contexts),
-            "boards/{id}" bind Method.GET to webApi.getBoard(contexts), // working
+            "boards/{id}" bind Method.GET to webApi.getBoard(contexts) // working
         )
     )
     val boardRoutes = webApi.authFilter.then(
         routes(
-            //"boards/" bind Method.GET to webApi::getBoards, // working
-            //"boards/" bind Method.POST to webApi::createBoard, // working
-           // "boards/{id}/user-list" bind Method.GET to webApi::getBoardUsers, // working
+            // "boards/" bind Method.GET to webApi::getBoards, // working
+            // "boards/" bind Method.POST to webApi::createBoard, // working
+            // "boards/{id}/user-list" bind Method.GET to webApi::getBoardUsers, // working
             "boards/{id}/user-list/{uid}" bind Method.PUT to webApi::addUsersOnBoard, // working// todo add user to body - url boards/{id}
             "boards/{id}/user-list/" bind Method.POST to webApi::alterUsersOnBoard, // is it necessary?
             "boards/{id}/user-list/{uid}" bind Method.DELETE to webApi::deleteUserFromBoard, // working todo not needed
@@ -67,7 +73,13 @@ fun main() {
             "boards/{id}/lists/{lid}/cards" bind Method.POST to webApi::createCard, // working
             "boards/{id}/cards/{cid}" bind Method.GET to webApi::getCard, // working
             "boards/{id}/cards/{cid}" bind Method.PUT to webApi::editCard, // working but there's a problem with timestamps
-            "boards/{id}/cards/{cid}/move" bind Method.GET to webApi::alterCardListPosition // working  todo channge to put add new position on the body
+            "boards/{id}/cards/{cid}/move" bind Method.GET to webApi::alterCardListPosition, // working  todo channge to put add new position on the body
+            filters.logRequest.then(
+                routes(
+                    "boards/{id}/cards/{cid}" bind Method.DELETE to cardsApi::deleteCard,
+                    "boards/{id}/lists/{lid}" bind Method.DELETE to listsApi::deleteList
+                )
+            )
         )
     )
 

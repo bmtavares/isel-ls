@@ -28,6 +28,7 @@ import kotlin.test.assertNull
 class ListsTest {
     private val services = TasksServices(MemBoardsData, MemUsersData, MemListsData, MemCardsData)
     private val api = WebApi(services)
+    private val unitApi = ListsApi(services)
     private val context = RequestContexts()
     private val prepare = ApiTestUtils(api, context)
 
@@ -35,7 +36,8 @@ class ListsTest {
         routes(
             "boards/{id}/lists" bind Method.GET to api::getLists,
             "boards/{id}/lists" bind Method.POST to api::createList,
-            "boards/{id}/lists/{lid}" bind Method.GET to api::getList
+            "boards/{id}/lists/{lid}" bind Method.GET to api::getList,
+            "boards/{id}/lists/{lid}" bind Method.DELETE to unitApi::deleteList
         )
     )
 
@@ -282,5 +284,69 @@ class ListsTest {
         assertNull(gottenLists.firstOrNull { it.name == createDto1.name })
         assertNotNull(gottenLists.firstOrNull { it.name == createDto2.name })
         assertNull(gottenLists.firstOrNull { it.name == createDto3.name })
+    }
+
+    @Test
+    fun deleteBoardList() {
+        val user = prepare.createUser()
+        val board = prepare.createBoard(user.token)
+
+        val createDto = InputBoardListDto("Test List")
+
+        val responseCreateList = app(
+            Request(
+                Method.POST,
+                "boards/${board.id}/lists"
+            )
+                .body(Json.encodeToString(createDto))
+                .header("content-type", "application/json")
+                .header("Authorization", "Bearer ${user.token}")
+        )
+        assertEquals(Status.CREATED, responseCreateList.status)
+        assertEquals("application/json", responseCreateList.header("content-type"))
+        val createdList = Json.decodeFromString<OutputIdDto>(responseCreateList.bodyString())
+
+        app(
+            Request(
+                Method.DELETE,
+                "boards/${board.id}/lists/${createdList.id}"
+            )
+                .header("Authorization", "Bearer ${user.token}")
+        ).let {
+            assertEquals(Status.OK, it.status)
+        }
+    }
+
+    @Test
+    fun deleteNonExistentBoardList() {
+        val user = prepare.createUser()
+        val board = prepare.createBoard(user.token)
+
+        val createDto = InputBoardListDto("Test List")
+
+        app(
+            Request(
+                Method.POST,
+                "boards/${board.id}/lists"
+            )
+                .body(Json.encodeToString(createDto))
+                .header("content-type", "application/json")
+                .header("Authorization", "Bearer ${user.token}")
+        ).let {
+            assertEquals(Status.CREATED, it.status)
+            assertEquals("application/json", it.header("content-type"))
+        }
+
+        app(
+            Request(
+                Method.DELETE,
+                "boards/${board.id}/lists/-1"
+            )
+                .header("Authorization", "Bearer ${user.token}")
+        ).let {
+            assertEquals(Status.BAD_REQUEST, it.status)
+            assertEquals("application/json", it.header("content-type"))
+            assertEquals("List not found.", Json.decodeFromString(it.bodyString()))
+        }
     }
 }
