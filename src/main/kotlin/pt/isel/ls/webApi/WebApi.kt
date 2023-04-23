@@ -184,37 +184,27 @@ class WebApi(
             .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
             .body(Json.encodeToString(users))
     }
+
     fun getBoardUsers(contexts: RequestContexts): HttpHandler = { request ->
         logRequest(request)
-
-
         try {
             val boardId = request.path("id")?.toInt()
             checkNotNull(boardId)
-            val user:User? = contexts[request]["user"]
+            val user: User? = contexts[request]["user"]
             checkNotNull(user)
 
-            val users = services.boards.getUsersOnBoard(boardId, user,getLimit(request),getSkip(request))
-            if(users.isEmpty()){
-                Response(NOT_FOUND)
-                    .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
-            }else{
-                Response(OK)
-                    .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
-                    .body(Json.encodeToString(users))
-            }
-        }catch (e:NumberFormatException){
+            val users = services.boards.getUsersOnBoard(boardId, user, getLimit(request), getSkip(request))
+            Response(OK)
+                .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(users))
+        } catch (e: NumberFormatException) {
             Response(BAD_REQUEST)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body("Input is not a number")
-        }catch (e:Exception){
+        } catch (e: Exception) {
             Response(BAD_REQUEST)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
-
         }
-
-
-
     }
 
     fun alterUsersOnBoard(request: Request): Response {
