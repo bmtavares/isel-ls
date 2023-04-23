@@ -5,8 +5,10 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.http4k.core.Method
 import org.http4k.core.Request
+import org.http4k.core.RequestContexts
 import org.http4k.core.Status
 import org.http4k.core.then
+import org.http4k.filter.ServerFilters
 import org.http4k.routing.bind
 import org.http4k.routing.routes
 import org.junit.jupiter.api.Test
@@ -21,7 +23,6 @@ import pt.isel.ls.tasksServices.TasksServices
 import pt.isel.ls.tasksServices.dtos.InputBoardDto
 import pt.isel.ls.tasksServices.dtos.InputUserDto
 import pt.isel.ls.tasksServices.dtos.OutputIdDto
-import pt.isel.ls.tasksServices.dtos.OutputUserDto
 import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -29,25 +30,27 @@ import kotlin.test.assertNull
 
 class BoardsTest {
     private val services = TasksServices(MemBoardsData, MemUsersData, MemListsData, MemCardsData)
-
     private val api = WebApi(services)
+    private val context = RequestContexts()
+    private val prepare = ApiTestUtils(api,context)
 
-    private val app = api.authFilter.then(
+    private val app =
         routes(
-            "boards/" bind Method.GET to api::getBoards,
-            "boards/{id}" bind Method.GET to api::getBoard,
-            "boards/" bind Method.POST to api::createBoard,
-            "boards/{id}/user-list" bind Method.GET to api::getBoardUsers,
-            "boards/{id}/user-list/{uid}" bind Method.PUT to api::addUsersOnBoard,
-//        "boards/{id}/user-list/" bind Method.POST to api::alterUsersOnBoard,
-            "boards/{id}/user-list/{uid}" bind Method.DELETE to api::deleteUserFromBoard
+            ServerFilters.InitialiseRequestContext(context).then(api.filterUser(context)).then(
+                routes(
+                    "boards/{id}" bind Method.GET to api.getBoard(context),
+                    "boards/" bind Method.GET to api.getBoards(context),
+                    "boards/" bind Method.POST to api.createBoard(context),
+                    "boards/{id}/user-list" bind Method.GET to api.getBoardUsers(context),
+                )
+            ),
+            api.authFilter.then(
+                routes (
+                    "boards/{id}/user-list/{uid}" bind Method.PUT to api::addUsersOnBoard,
+                    "boards/{id}/user-list/{uid}" bind Method.DELETE to api::deleteUserFromBoard
+                )
+            )
         )
-    )
-
-    private fun createUser(name: String = "Maria", email: String = "maria@example.org"): OutputUserDto {
-        val newUser = InputUserDto(name, email)
-        return services.users.createUser(newUser)
-    }
 
     @BeforeTest
     fun clearStorage() {
@@ -56,7 +59,7 @@ class BoardsTest {
 
     @Test
     fun createBoard() {
-        val user = createUser()
+        val user = prepare.createUser()
 
         val createDto = InputBoardDto("New Board", "A really cool new board")
         val response = app(
@@ -76,7 +79,7 @@ class BoardsTest {
 
     @Test
     fun getBoard() {
-        val user = createUser()
+        val user = prepare.createUser()
 
         val createDto = InputBoardDto("New Board", "A really cool new board")
         val response = app(
@@ -107,31 +110,28 @@ class BoardsTest {
         assertEquals(createDto.description, gottenBoard.description)
     }
 
+    private fun simpleCreateBoard(createData: InputBoardDto, token: String) {
+        app(
+            Request(
+                Method.POST,
+                "boards"
+            )
+                .body(Json.encodeToString(createData))
+                .header("Authorization", "Bearer $token")
+        ).let {
+            assertEquals(Status.CREATED, it.status)
+        }
+    }
+
     @Test
     fun getUserBoards() {
-        val user = createUser()
+        val user = prepare.createUser()
 
         val createDto1 = InputBoardDto("New Board", "A really cool new board")
         val createDto2 = InputBoardDto("New Board 2", "Derivative work actually")
-        val response1 = app(
-            Request(
-                Method.POST,
-                "boards"
-            )
-                .body(Json.encodeToString(createDto1))
-                .header("Authorization", "Bearer ${user.token}")
-        )
-        assertEquals(Status.CREATED, response1.status)
 
-        val response2 = app(
-            Request(
-                Method.POST,
-                "boards"
-            )
-                .body(Json.encodeToString(createDto2))
-                .header("Authorization", "Bearer ${user.token}")
-        )
-        assertEquals(Status.CREATED, response2.status)
+        simpleCreateBoard(createDto1, user.token)
+        simpleCreateBoard(createDto2, user.token)
 
         val responseGetBoards = app(
             Request(
@@ -144,14 +144,162 @@ class BoardsTest {
         assertEquals(Status.OK, responseGetBoards.status)
         assertEquals("application/json", responseGetBoards.header("content-type"))
         val boards = Json.decodeFromString<List<Board>>(responseGetBoards.bodyString())
+
         assertEquals(2, boards.size)
         assertNotNull(boards.firstOrNull { it.name == createDto1.name })
         assertNotNull(boards.firstOrNull { it.name == createDto2.name })
     }
 
     @Test
+    fun getUserBoardsWithOptionalLimit1() {
+        val user = prepare.createUser()
+
+        val createDto1 = InputBoardDto("New Board", "A really cool new board")
+        val createDto2 = InputBoardDto("New Board 2", "Derivative work actually")
+        val createDto3 = InputBoardDto("New Board 3", "Ditto")
+
+        simpleCreateBoard(createDto1, user.token)
+        simpleCreateBoard(createDto2, user.token)
+        simpleCreateBoard(createDto3, user.token)
+
+        val responseGetBoards = app(
+            Request(
+                Method.GET,
+                "boards?limit=1"
+            )
+                .header("Authorization", "Bearer ${user.token}")
+        )
+
+        assertEquals(Status.OK, responseGetBoards.status)
+        assertEquals("application/json", responseGetBoards.header("content-type"))
+        val boards = Json.decodeFromString<List<Board>>(responseGetBoards.bodyString())
+
+        assertEquals(1, boards.size)
+        assertNotNull(boards.firstOrNull { it.name == createDto1.name })
+        assertNull(boards.firstOrNull { it.name == createDto2.name })
+        assertNull(boards.firstOrNull { it.name == createDto3.name })
+    }
+
+    @Test
+    fun getUserBoardsWithOptionalLimitOverSize() {
+        val user = prepare.createUser()
+
+        val createDto1 = InputBoardDto("New Board", "A really cool new board")
+        val createDto2 = InputBoardDto("New Board 2", "Derivative work actually")
+        val createDto3 = InputBoardDto("New Board 3", "Ditto")
+
+        simpleCreateBoard(createDto1, user.token)
+        simpleCreateBoard(createDto2, user.token)
+        simpleCreateBoard(createDto3, user.token)
+
+        val responseGetBoards = app(
+            Request(
+                Method.GET,
+                "boards?limit=5"
+            )
+                .header("Authorization", "Bearer ${user.token}")
+        )
+
+        assertEquals(Status.OK, responseGetBoards.status)
+        assertEquals("application/json", responseGetBoards.header("content-type"))
+        val boards = Json.decodeFromString<List<Board>>(responseGetBoards.bodyString())
+
+        assertEquals(3, boards.size)
+        assertNotNull(boards.firstOrNull { it.name == createDto1.name })
+        assertNotNull(boards.firstOrNull { it.name == createDto2.name })
+        assertNotNull(boards.firstOrNull { it.name == createDto3.name })
+    }
+
+    @Test
+    fun getUserBoardsWithOptionalSkip1() {
+        val user = prepare.createUser()
+
+        val createDto1 = InputBoardDto("New Board", "A really cool new board")
+        val createDto2 = InputBoardDto("New Board 2", "Derivative work actually")
+        val createDto3 = InputBoardDto("New Board 3", "Ditto")
+
+        simpleCreateBoard(createDto1, user.token)
+        simpleCreateBoard(createDto2, user.token)
+        simpleCreateBoard(createDto3, user.token)
+
+        val responseGetBoards = app(
+            Request(
+                Method.GET,
+                "boards?skip=1"
+            )
+                .header("Authorization", "Bearer ${user.token}")
+        )
+
+        assertEquals(Status.OK, responseGetBoards.status)
+        assertEquals("application/json", responseGetBoards.header("content-type"))
+        val boards = Json.decodeFromString<List<Board>>(responseGetBoards.bodyString())
+
+        assertEquals(2, boards.size)
+        assertNull(boards.firstOrNull { it.name == createDto1.name })
+        assertNotNull(boards.firstOrNull { it.name == createDto2.name })
+        assertNotNull(boards.firstOrNull { it.name == createDto3.name })
+    }
+
+    @Test
+    fun getUserBoardsWithOptionalSkipOverSize() {
+        val user = prepare.createUser()
+
+        val createDto1 = InputBoardDto("New Board", "A really cool new board")
+        val createDto2 = InputBoardDto("New Board 2", "Derivative work actually")
+        val createDto3 = InputBoardDto("New Board 3", "Ditto")
+
+        simpleCreateBoard(createDto1, user.token)
+        simpleCreateBoard(createDto2, user.token)
+        simpleCreateBoard(createDto3, user.token)
+
+        val responseGetBoards = app(
+            Request(
+                Method.GET,
+                "boards?skip=5"
+            )
+                .header("Authorization", "Bearer ${user.token}")
+        )
+
+        assertEquals(Status.OK, responseGetBoards.status)
+        assertEquals("application/json", responseGetBoards.header("content-type"))
+        val boards = Json.decodeFromString<List<Board>>(responseGetBoards.bodyString())
+
+        assertEquals(0, boards.size)
+    }
+
+    @Test
+    fun getUserBoardsWithOptionalParameters() {
+        val user = prepare.createUser()
+
+        val createDto1 = InputBoardDto("New Board", "A really cool new board")
+        val createDto2 = InputBoardDto("New Board 2", "Derivative work actually")
+        val createDto3 = InputBoardDto("New Board 3", "Ditto")
+
+        simpleCreateBoard(createDto1, user.token)
+        simpleCreateBoard(createDto2, user.token)
+        simpleCreateBoard(createDto3, user.token)
+
+        val responseGetBoards = app(
+            Request(
+                Method.GET,
+                "boards?skip=1&limit=1"
+            )
+                .header("Authorization", "Bearer ${user.token}")
+        )
+
+        assertEquals(Status.OK, responseGetBoards.status)
+        assertEquals("application/json", responseGetBoards.header("content-type"))
+        val boards = Json.decodeFromString<List<Board>>(responseGetBoards.bodyString())
+
+        assertEquals(1, boards.size)
+        assertNull(boards.firstOrNull { it.name == createDto1.name })
+        assertNotNull(boards.firstOrNull { it.name == createDto2.name })
+        assertNull(boards.firstOrNull { it.name == createDto3.name })
+    }
+
+    @Test
     fun getBoardUserList() {
-        val user = createUser()
+        val user = prepare.createUser()
 
         val createDto = InputBoardDto("New Board", "A really cool new board")
         val response = app(
@@ -177,13 +325,223 @@ class BoardsTest {
         assertEquals(Status.OK, responseGetBoard.status)
         assertEquals("application/json", responseGetBoard.header("content-type"))
         val boardUsers = Json.decodeFromString<List<User>>(responseGetBoard.bodyString())
+        assertEquals(1, boardUsers.size)
+        assertEquals(user.id, boardUsers.first().id)
+    }
+
+    private fun simpleAddUserToBoard(token: String, userId: Int, boardId: Int) {
+        app(
+            Request(
+                Method.PUT,
+                "boards/$boardId/user-list/$userId"
+            )
+                .header("Authorization", "Bearer $token")
+        ).let {
+            assertEquals(Status.OK, it.status)
+        }
+    }
+
+    @Test
+    fun getBoardUserListWithOptionalLimit1() {
+        val user = prepare.createUser()
+        val user1 = prepare.createUser(InputUserDto("Josephine", "josephine@example.org"))
+        val user2 = prepare.createUser(InputUserDto("Jonathan", "jonathan@example.org"))
+
+        val createDto = InputBoardDto("New Board", "A really cool new board")
+        val response = app(
+            Request(
+                Method.POST,
+                "boards"
+            )
+                .body(Json.encodeToString(createDto))
+                .header("Authorization", "Bearer ${user.token}")
+        )
+
+        assertEquals(Status.CREATED, response.status)
+        val createdBoard = Json.decodeFromString<OutputIdDto>(response.bodyString())
+
+        simpleAddUserToBoard(user.token, user1.id, createdBoard.id)
+        simpleAddUserToBoard(user.token, user2.id, createdBoard.id)
+
+        val responseGetBoard = app(
+            Request(
+                Method.GET,
+                "boards/${createdBoard.id}/user-list?limit=1"
+            )
+                .header("Authorization", "Bearer ${user.token}")
+        )
+
+        assertEquals(Status.OK, responseGetBoard.status)
+        assertEquals("application/json", responseGetBoard.header("content-type"))
+        val boardUsers = Json.decodeFromString<List<User>>(responseGetBoard.bodyString())
+
+        assertEquals(1, boardUsers.size)
         assertNotNull(boardUsers.firstOrNull { it.id == user.id })
+        assertNull(boardUsers.firstOrNull { it.id == user1.id })
+        assertNull(boardUsers.firstOrNull { it.id == user2.id })
+    }
+
+    @Test
+    fun getBoardUserListWithOptionalLimitOverSize() {
+        val user = prepare.createUser()
+        val user1 = prepare.createUser(InputUserDto("Josephine", "josephine@example.org"))
+        val user2 = prepare.createUser(InputUserDto("Jonathan", "jonathan@example.org"))
+
+        val createDto = InputBoardDto("New Board", "A really cool new board")
+        val response = app(
+            Request(
+                Method.POST,
+                "boards"
+            )
+                .body(Json.encodeToString(createDto))
+                .header("Authorization", "Bearer ${user.token}")
+        )
+
+        assertEquals(Status.CREATED, response.status)
+        val createdBoard = Json.decodeFromString<OutputIdDto>(response.bodyString())
+
+        simpleAddUserToBoard(user.token, user1.id, createdBoard.id)
+        simpleAddUserToBoard(user.token, user2.id, createdBoard.id)
+
+        val responseGetBoard = app(
+            Request(
+                Method.GET,
+                "boards/${createdBoard.id}/user-list?limit=5"
+            )
+                .header("Authorization", "Bearer ${user.token}")
+        )
+
+        assertEquals(Status.OK, responseGetBoard.status)
+        assertEquals("application/json", responseGetBoard.header("content-type"))
+        val boardUsers = Json.decodeFromString<List<User>>(responseGetBoard.bodyString())
+
+        assertEquals(3, boardUsers.size)
+        assertNotNull(boardUsers.firstOrNull { it.id == user.id })
+        assertNotNull(boardUsers.firstOrNull { it.id == user1.id })
+        assertNotNull(boardUsers.firstOrNull { it.id == user2.id })
+    }
+
+    @Test
+    fun getBoardUserListWithOptionalSkip1() {
+        val user = prepare.createUser()
+        val user1 = prepare.createUser(InputUserDto("Josephine", "josephine@example.org"))
+        val user2 = prepare.createUser(InputUserDto("Jonathan", "jonathan@example.org"))
+
+        val createDto = InputBoardDto("New Board", "A really cool new board")
+        val response = app(
+            Request(
+                Method.POST,
+                "boards"
+            )
+                .body(Json.encodeToString(createDto))
+                .header("Authorization", "Bearer ${user.token}")
+        )
+
+        assertEquals(Status.CREATED, response.status)
+        val createdBoard = Json.decodeFromString<OutputIdDto>(response.bodyString())
+
+        simpleAddUserToBoard(user.token, user1.id, createdBoard.id)
+        simpleAddUserToBoard(user.token, user2.id, createdBoard.id)
+
+        val responseGetBoard = app(
+            Request(
+                Method.GET,
+                "boards/${createdBoard.id}/user-list?skip=1"
+            )
+                .header("Authorization", "Bearer ${user.token}")
+        )
+
+        assertEquals(Status.OK, responseGetBoard.status)
+        assertEquals("application/json", responseGetBoard.header("content-type"))
+        val boardUsers = Json.decodeFromString<List<User>>(responseGetBoard.bodyString())
+
+        assertEquals(2, boardUsers.size)
+        assertNull(boardUsers.firstOrNull { it.id == user.id })
+        assertNotNull(boardUsers.firstOrNull { it.id == user1.id })
+        assertNotNull(boardUsers.firstOrNull { it.id == user2.id })
+    }
+
+    @Test
+    fun getBoardUserListWithOptionalSkipOverSize() {
+        val user = prepare.createUser()
+        val user1 = prepare.createUser(InputUserDto("Josephine", "josephine@example.org"))
+        val user2 = prepare.createUser(InputUserDto("Jonathan", "jonathan@example.org"))
+
+        val createDto = InputBoardDto("New Board", "A really cool new board")
+        val response = app(
+            Request(
+                Method.POST,
+                "boards"
+            )
+                .body(Json.encodeToString(createDto))
+                .header("Authorization", "Bearer ${user.token}")
+        )
+
+        assertEquals(Status.CREATED, response.status)
+        val createdBoard = Json.decodeFromString<OutputIdDto>(response.bodyString())
+
+        simpleAddUserToBoard(user.token, user1.id, createdBoard.id)
+        simpleAddUserToBoard(user.token, user2.id, createdBoard.id)
+
+        val responseGetBoard = app(
+            Request(
+                Method.GET,
+                "boards/${createdBoard.id}/user-list?skip=5"
+            )
+                .header("Authorization", "Bearer ${user.token}")
+        )
+
+        assertEquals(Status.OK, responseGetBoard.status)
+        assertEquals("application/json", responseGetBoard.header("content-type"))
+        val boardUsers = Json.decodeFromString<List<User>>(responseGetBoard.bodyString())
+
+        assertEquals(0, boardUsers.size)
+    }
+
+    @Test
+    fun getBoardUserListWithOptionalParameters() {
+        val user = prepare.createUser()
+        val user1 = prepare.createUser(InputUserDto("Josephine", "josephine@example.org"))
+        val user2 = prepare.createUser(InputUserDto("Jonathan", "jonathan@example.org"))
+
+        val createDto = InputBoardDto("New Board", "A really cool new board")
+        val response = app(
+            Request(
+                Method.POST,
+                "boards"
+            )
+                .body(Json.encodeToString(createDto))
+                .header("Authorization", "Bearer ${user.token}")
+        )
+
+        assertEquals(Status.CREATED, response.status)
+        val createdBoard = Json.decodeFromString<OutputIdDto>(response.bodyString())
+
+        simpleAddUserToBoard(user.token, user1.id, createdBoard.id)
+        simpleAddUserToBoard(user.token, user2.id, createdBoard.id)
+
+        val responseGetBoard = app(
+            Request(
+                Method.GET,
+                "boards/${createdBoard.id}/user-list?skip=1&limit=1"
+            )
+                .header("Authorization", "Bearer ${user.token}")
+        )
+
+        assertEquals(Status.OK, responseGetBoard.status)
+        assertEquals("application/json", responseGetBoard.header("content-type"))
+        val boardUsers = Json.decodeFromString<List<User>>(responseGetBoard.bodyString())
+
+        assertEquals(1, boardUsers.size)
+        assertNull(boardUsers.firstOrNull { it.id == user.id })
+        assertNotNull(boardUsers.firstOrNull { it.id == user1.id })
+        assertNull(boardUsers.firstOrNull { it.id == user2.id })
     }
 
     @Test
     fun addBoardUser() {
-        val user = createUser()
-        val user2 = createUser("Jose", "jose@example.org")
+        val user = prepare.createUser()
+        val user2 = prepare.createUser(InputUserDto("Jose", "jose@example.org"))
 
         val createDto = InputBoardDto("New Board", "A really cool new board")
         val response = app(
@@ -221,8 +579,8 @@ class BoardsTest {
 
     @Test
     fun removeBoardUser() {
-        val user = createUser()
-        val user2 = createUser("Jose", "jose@example.org")
+        val user = prepare.createUser()
+        val user2 = prepare.createUser(InputUserDto("Jose", "jose@example.org"))
 
         val createDto = InputBoardDto("New Board", "A really cool new board")
         val response = app(
