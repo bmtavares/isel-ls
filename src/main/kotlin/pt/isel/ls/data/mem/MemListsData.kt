@@ -10,12 +10,12 @@ object MemListsData : ListsData {
     private val CASCADE_DELETE = false
 
     override fun getListsByBoard(boardId: Int, limit: Int, skip: Int): List<BoardList> {
-        val lists = MemDataSource.lists.filter { it.boardId == boardId }.subList(skip, skip + limit)
+        val lists = MemDataSource.lists.filter { it.boardId == boardId }
 
         if (skip > lists.lastIndex) return emptyList()
 
-        return lists.slice(
-            skip..if (skip + limit <= lists.lastIndex) skip + limit else lists.lastIndex
+        return lists.subList(
+            skip, if (skip + limit <= lists.lastIndex) skip + limit else lists.lastIndex + 1
         )
     }
 
