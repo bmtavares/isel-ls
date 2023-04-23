@@ -232,14 +232,11 @@ class WebApi(
         val boardId = request.path("id")?.toInt()
         checkNotNull(boardId) { "Board Id must not be null" }
         return try {
-
-            val boardLists = services.lists.getBoardLists(boardId, getLimit(request),getSkip(request))
-            Response(CREATED)
-                .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+            val boardLists = services.lists.getBoardLists(boardId, getLimit(request), getSkip(request))
+            Response(OK).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(boardLists))
         } catch (e: DataException) {
-            Response(BAD_REQUEST)
-                .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+            Response(BAD_REQUEST).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
         }
     }

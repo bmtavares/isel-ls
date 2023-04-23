@@ -15,8 +15,8 @@ class ServiceLists(private val listsRepo: ListsData) {
         }
     }
 
-    fun getBoardLists(boardId: Int,limit: Int = 25, skip :Int = 0) = try {
-        listsRepo.getListsByBoard(boardId)
+    fun getBoardLists(boardId: Int, limit: Int = 25, skip: Int = 0) = try {
+        listsRepo.getListsByBoard(boardId, limit, skip)
     } catch (e: Exception) {
         throw DataException("Failed to retrieve board Lists")
     }
