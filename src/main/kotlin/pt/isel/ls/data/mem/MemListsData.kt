@@ -15,7 +15,8 @@ object MemListsData : ListsData {
         if (skip > lists.lastIndex) return emptyList()
 
         return lists.subList(
-            skip, if (skip + limit <= lists.lastIndex) skip + limit else lists.lastIndex + 1
+            skip,
+            if (skip + limit <= lists.lastIndex) skip + limit else lists.lastIndex + 1
         )
     }
 

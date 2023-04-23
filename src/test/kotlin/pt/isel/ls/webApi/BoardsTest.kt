@@ -32,7 +32,7 @@ class BoardsTest {
     private val services = TasksServices(MemBoardsData, MemUsersData, MemListsData, MemCardsData)
     private val api = WebApi(services)
     private val context = RequestContexts()
-    private val prepare = ApiTestUtils(api,context)
+    private val prepare = ApiTestUtils(api, context)
 
     private val app =
         routes(
@@ -41,11 +41,11 @@ class BoardsTest {
                     "boards/{id}" bind Method.GET to api.getBoard(context),
                     "boards/" bind Method.GET to api.getBoards(context),
                     "boards/" bind Method.POST to api.createBoard(context),
-                    "boards/{id}/user-list" bind Method.GET to api.getBoardUsers(context),
+                    "boards/{id}/user-list" bind Method.GET to api.getBoardUsers(context)
                 )
             ),
             api.authFilter.then(
-                routes (
+                routes(
                     "boards/{id}/user-list/{uid}" bind Method.PUT to api::addUsersOnBoard,
                     "boards/{id}/user-list/{uid}" bind Method.DELETE to api::deleteUserFromBoard
                 )

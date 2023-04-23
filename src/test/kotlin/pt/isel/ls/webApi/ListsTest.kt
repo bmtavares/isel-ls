@@ -8,7 +8,6 @@ import org.http4k.core.Request
 import org.http4k.core.RequestContexts
 import org.http4k.core.Status
 import org.http4k.core.then
-import org.http4k.filter.ServerFilters
 import org.http4k.routing.bind
 import org.http4k.routing.routes
 import org.junit.jupiter.api.Test
@@ -30,7 +29,7 @@ class ListsTest {
     private val services = TasksServices(MemBoardsData, MemUsersData, MemListsData, MemCardsData)
     private val api = WebApi(services)
     private val context = RequestContexts()
-    private val prepare = ApiTestUtils(api,context)
+    private val prepare = ApiTestUtils(api, context)
 
     private val app = api.authFilter.then(
         routes(
@@ -39,7 +38,6 @@ class ListsTest {
             "boards/{id}/lists/{lid}" bind Method.GET to api::getList
         )
     )
-
 
     @BeforeTest
     fun resetStorage() {

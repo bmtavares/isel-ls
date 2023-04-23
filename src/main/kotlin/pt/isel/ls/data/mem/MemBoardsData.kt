@@ -22,7 +22,8 @@ object MemBoardsData : BoardsData {
         if (skip > boards.lastIndex) return emptyList()
 
         val boardIds = boards.subList(
-            skip, if (skip + limit <= boards.lastIndex) skip + limit else boards.lastIndex + 1
+            skip,
+            if (skip + limit <= boards.lastIndex) skip + limit else boards.lastIndex + 1
         ).map { it.boardId }
 
         return MemDataSource.boards.filter { it.id in boardIds }
@@ -55,7 +56,8 @@ object MemBoardsData : BoardsData {
         if (skip > users.lastIndex) return emptyList()
 
         val usersIds = users.subList(
-            skip, if (skip + limit <= users.lastIndex) skip + limit else users.lastIndex + 1
+            skip,
+            if (skip + limit <= users.lastIndex) skip + limit else users.lastIndex + 1
         ).map { it.userId }
 
         return MemDataSource.users.filter { it.id in usersIds }

@@ -15,7 +15,8 @@ object MemCardsData : CardsData {
         if (skip > cards.lastIndex) return emptyList()
 
         return cards.subList(
-            skip, if (skip + limit <= cards.lastIndex) skip + limit else cards.lastIndex + 1
+            skip,
+            if (skip + limit <= cards.lastIndex) skip + limit else cards.lastIndex + 1
         )
     }
 
@@ -70,7 +71,7 @@ object MemCardsData : CardsData {
         MemDataSource.cards.filter { it.boardId == board.id }
 
     override fun move(inputList: InputMoveCardDto, boardId: Int, cardId: Int) {
-        val oldCard = MemDataSource.cards.firstOrNull {it.id == cardId && it.boardId == boardId}
+        val oldCard = MemDataSource.cards.firstOrNull { it.id == cardId && it.boardId == boardId }
             ?: throw EntityNotFoundException("Card not found.", Card::class)
 
         val newCard = oldCard.copy(listId = inputList.lid)

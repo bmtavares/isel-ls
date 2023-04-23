@@ -3,7 +3,6 @@ package pt.isel.ls.webApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.eclipse.jetty.http.HttpTester.Input
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.RequestContexts
@@ -13,7 +12,6 @@ import org.http4k.routing.bind
 import org.http4k.routing.routes
 import org.junit.jupiter.api.Test
 import pt.isel.ls.data.entities.Card
-import kotlin.test.BeforeTest
 import pt.isel.ls.data.mem.MemBoardsData
 import pt.isel.ls.data.mem.MemCardsData
 import pt.isel.ls.data.mem.MemDataSource
@@ -24,6 +22,7 @@ import pt.isel.ls.tasksServices.dtos.InputBoardListDto
 import pt.isel.ls.tasksServices.dtos.InputCardDto
 import pt.isel.ls.tasksServices.dtos.InputMoveCardDto
 import pt.isel.ls.tasksServices.dtos.OutputIdDto
+import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -32,7 +31,7 @@ class CardsTest {
     private val services = TasksServices(MemBoardsData, MemUsersData, MemListsData, MemCardsData)
     private val api = WebApi(services)
     private val context = RequestContexts()
-    private val prepare = ApiTestUtils(api,context)
+    private val prepare = ApiTestUtils(api, context)
 
     private val app = api.authFilter.then(
         routes(
@@ -42,7 +41,6 @@ class CardsTest {
             "boards/{id}/cards/{cid}/move" bind Method.GET to api::alterCardListPosition
         )
     )
-
 
     @BeforeTest
     fun resetStorage() {
@@ -175,8 +173,8 @@ class CardsTest {
             "Test Card",
             "Card used for integration testing"
         )
-        val createDto2 = createDto1.copy(name="Test Card 2")
-        val createDto3 = createDto1.copy(name="Test Card 3")
+        val createDto2 = createDto1.copy(name = "Test Card 2")
+        val createDto3 = createDto1.copy(name = "Test Card 3")
 
         simpleCreateCard(createDto1, board.id, boardList.id, user.token)
         simpleCreateCard(createDto2, board.id, boardList.id, user.token)
@@ -209,8 +207,8 @@ class CardsTest {
             "Test Card",
             "Card used for integration testing"
         )
-        val createDto2 = createDto1.copy(name="Test Card 2")
-        val createDto3 = createDto1.copy(name="Test Card 3")
+        val createDto2 = createDto1.copy(name = "Test Card 2")
+        val createDto3 = createDto1.copy(name = "Test Card 3")
 
         simpleCreateCard(createDto1, board.id, boardList.id, user.token)
         simpleCreateCard(createDto2, board.id, boardList.id, user.token)
@@ -243,8 +241,8 @@ class CardsTest {
             "Test Card",
             "Card used for integration testing"
         )
-        val createDto2 = createDto1.copy(name="Test Card 2")
-        val createDto3 = createDto1.copy(name="Test Card 3")
+        val createDto2 = createDto1.copy(name = "Test Card 2")
+        val createDto3 = createDto1.copy(name = "Test Card 3")
 
         simpleCreateCard(createDto1, board.id, boardList.id, user.token)
         simpleCreateCard(createDto2, board.id, boardList.id, user.token)
@@ -277,8 +275,8 @@ class CardsTest {
             "Test Card",
             "Card used for integration testing"
         )
-        val createDto2 = createDto1.copy(name="Test Card 2")
-        val createDto3 = createDto1.copy(name="Test Card 3")
+        val createDto2 = createDto1.copy(name = "Test Card 2")
+        val createDto3 = createDto1.copy(name = "Test Card 3")
 
         simpleCreateCard(createDto1, board.id, boardList.id, user.token)
         simpleCreateCard(createDto2, board.id, boardList.id, user.token)
@@ -308,8 +306,8 @@ class CardsTest {
             "Test Card",
             "Card used for integration testing"
         )
-        val createDto2 = createDto1.copy(name="Test Card 2")
-        val createDto3 = createDto1.copy(name="Test Card 3")
+        val createDto2 = createDto1.copy(name = "Test Card 2")
+        val createDto3 = createDto1.copy(name = "Test Card 3")
 
         simpleCreateCard(createDto1, board.id, boardList.id, user.token)
         simpleCreateCard(createDto2, board.id, boardList.id, user.token)
