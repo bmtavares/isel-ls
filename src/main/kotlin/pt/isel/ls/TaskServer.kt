@@ -1,7 +1,11 @@
 package pt.isel.ls
 
-import org.http4k.core.*
+import org.http4k.core.Method
+import org.http4k.core.Request
+import org.http4k.core.RequestContexts
+import org.http4k.core.Response
 import org.http4k.core.Status.Companion.OK
+import org.http4k.core.then
 import org.http4k.filter.ServerFilters
 import org.http4k.routing.ResourceLoader
 import org.http4k.routing.bind
@@ -10,7 +14,11 @@ import org.http4k.routing.singlePageApp
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
 import org.slf4j.LoggerFactory
-import pt.isel.ls.data.mem.*
+import pt.isel.ls.data.mem.MemBoardsData
+import pt.isel.ls.data.mem.MemCardsData
+import pt.isel.ls.data.mem.MemDataSource
+import pt.isel.ls.data.mem.MemListsData
+import pt.isel.ls.data.mem.MemUsersData
 import pt.isel.ls.data.pgsql.PgSqlBoardsData
 import pt.isel.ls.data.pgsql.PgSqlCardsData
 import pt.isel.ls.data.pgsql.PgSqlListsData
@@ -27,7 +35,7 @@ fun main() {
 
     // Make sure an env key for ``USE_POSTGRESQL`` exists with the value ``true`` to use the Postgresql for data
     val usePostgresql = System.getenv("USE_POSTGRESQL").lowercase() == "true"
-    //val usePostgresql = false
+    // val usePostgresql = false
     if (!usePostgresql) MemDataSource.resetStorage()
 
     val boardsRepo = if (usePostgresql) PgSqlBoardsData else MemBoardsData

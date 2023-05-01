@@ -12,12 +12,12 @@ object PgDataContext {
 
     fun getConnection() = dataSource.connection
 
-    fun handleDB(block:(Connection)->Unit){
+    fun handleDB(block: (Connection) -> Unit) {
         getConnection().use { con ->
             con.autoCommit = false
             try {
                 block(con).also { con.commit() }
-            }catch (e:Exception){
+            } catch (e: Exception) {
                 con.rollback()
                 throw e
             }

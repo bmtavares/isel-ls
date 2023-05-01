@@ -13,7 +13,7 @@ data class Card(
     val dueDate: Timestamp?,
     val listId: Int?,
     val boardId: Int,
-    val cIdx:Int
+    val cIdx: Int
 ) : Entity {
     override fun clone(id: Int): Card = this.copy(id = id)
 }

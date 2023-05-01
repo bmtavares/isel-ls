@@ -10,10 +10,10 @@ import pt.isel.ls.tasksServices.dtos.InputMoveCardDto
 
 class ServiceCards(private val cardsRepo: CardsData) {
     fun createCard(newCard: InputCardDto, boardId: Int, boardListId: Int): Card {
-        lateinit var card :Card
+        lateinit var card: Card
         try {
             handleDB { con ->
-                card = cardsRepo.add(newCard, boardId, boardListId,con)
+                card = cardsRepo.add(newCard, boardId, boardListId, con)
             }
         } catch (e: Exception) {
             throw DataException("Failed to create the card")
@@ -22,7 +22,7 @@ class ServiceCards(private val cardsRepo: CardsData) {
     }
 
     fun getCardsOnList(boardId: Int, boardListId: Int, limit: Int = 25, skip: Int = 0): List<Card> {
-        lateinit var cards :List<Card>
+        lateinit var cards: List<Card>
         try {
             handleDB { con ->
                 cards = cardsRepo.getByList(boardId, boardListId, limit, skip, con)
@@ -33,12 +33,11 @@ class ServiceCards(private val cardsRepo: CardsData) {
         return cards
     }
 
-
     fun getCard(boardId: Int, cardId: Int): Card {
         lateinit var card: Card
         try {
             handleDB { con ->
-               card = cardsRepo.getById(cardId, con)
+                card = cardsRepo.getById(cardId, con)
             }
         } catch (e: Exception) {
             throw DataException("Failed to retrieve List")
@@ -49,25 +48,25 @@ class ServiceCards(private val cardsRepo: CardsData) {
     fun editCard(editCard: EditCardDto, boardId: Int, cardId: Int) {
         try {
             handleDB { con ->
-                cardsRepo.edit(editCard, boardId, cardId,con)
-                }
-            } catch (_: Exception) {
+                cardsRepo.edit(editCard, boardId, cardId, con)
+            }
+        } catch (_: Exception) {
         }
     }
 
     fun moveCard(moveList: InputMoveCardDto, boardId: Int, cardId: Int) {
-       try {
-           handleDB { con ->
-               cardsRepo.move( moveList,boardId,cardId,con)
-           }
-       }catch (e:Exception){
-           throw e
-       }
+        try {
+            handleDB { con ->
+                cardsRepo.move(moveList, boardId, cardId, con)
+            }
+        } catch (e: Exception) {
+            throw e
+        }
     }
 
     fun removeCard(boardId: Int, cardId: Int) = try {
-            handleDB { con ->
-        cardsRepo.delete(cardId,con)
+        handleDB { con ->
+            cardsRepo.delete(cardId, con)
         }
     } catch (ex: DataException) {
         throw ex

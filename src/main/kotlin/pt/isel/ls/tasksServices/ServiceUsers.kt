@@ -9,13 +9,13 @@ import pt.isel.ls.tasksServices.dtos.OutputUserDto
 
 class ServiceUsers(private val userRepository: UsersData) {
     fun createUser(newUser: InputUserDto): OutputUserDto {
-        lateinit var user :User
+        lateinit var user: User
         lateinit var token: String
         if (!EmailValidator.isEmailValid(newUser.email)) throw DataException("Invalid Email")
         try {
-            handleDB{ con ->
-                user = userRepository.add(newUser,con)
-                token = userRepository.createToken(user,con)
+            handleDB { con ->
+                user = userRepository.add(newUser, con)
+                token = userRepository.createToken(user, con)
             }
         } catch (e: Exception) {
             throw DataException("")
@@ -24,7 +24,7 @@ class ServiceUsers(private val userRepository: UsersData) {
     }
 
     fun getUser(userId: Int): User {
-        lateinit var user:User
+        lateinit var user: User
         try {
             handleDB { con ->
                 user = userRepository.getById(userId, con)
@@ -36,10 +36,10 @@ class ServiceUsers(private val userRepository: UsersData) {
     }
 
     fun getUserByToken(token: String): User {
-        lateinit var user:User
+        lateinit var user: User
         try {
             handleDB { con ->
-                user = userRepository.getByToken(token,con)
+                user = userRepository.getByToken(token, con)
             }
         } catch (e: Exception) {
             throw DataException("")
