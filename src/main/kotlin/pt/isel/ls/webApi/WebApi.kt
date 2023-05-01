@@ -33,6 +33,7 @@ import pt.isel.ls.tasksServices.dtos.InputMoveCardDto
 import pt.isel.ls.tasksServices.dtos.InputUserDto
 import pt.isel.ls.tasksServices.dtos.OutputIdDto
 import java.lang.Error
+import java.lang.IllegalStateException
 
 class WebApi(
     private val services: TasksServices
@@ -57,9 +58,10 @@ class WebApi(
             Response(BAD_REQUEST)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body("Input is not a number")
-        }catch (e:Exception){
-            Response(BAD_REQUEST)
+        }catch (e: Exception){
+            Response(INTERNAL_SERVER_ERROR)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(e.message))
 
         }
     }
@@ -70,7 +72,6 @@ class WebApi(
         checkNotNull(user)
         try{
            val board = Json.decodeFromString<InputBoardDto>(request.bodyString())
-
             if((board.name.isEmpty()) or (board.name == "")) {
                 Response(BAD_REQUEST).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                     .body("Name is mandatory")
@@ -84,27 +85,32 @@ class WebApi(
            } catch (e:EntityAlreadyExistsException){
                Response(BAD_REQUEST).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                    .body("That name is already in use")
-           } catch (e:Exception) {
-               Response(BAD_REQUEST).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
-                   .body("Failed to create board")
            }
 
-        }catch(e: Exception){
-            Response(BAD_REQUEST).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
-                .body("body in incorrect format")
+        }catch (e: Exception){
+            Response(INTERNAL_SERVER_ERROR)
+                .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(e.message))
+
         }
     }
 
     fun getUser(request: Request): Response {
         logRequest(request)
         val userId = request.path("id")?.toInt()
-        checkNotNull(userId)
+            ?: return Response(BAD_REQUEST).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+
         return try {
             val user = services.users.getUser(userId)
             Response(OK).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(user))
-        } catch (e: DataException) {
-            Response(BAD_REQUEST)
+        }catch (e:DataException){
+            Response(NOT_FOUND).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+        }catch (e: Exception){
+            Response(INTERNAL_SERVER_ERROR)
+                .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(e.message))
+
         }
     }
 
@@ -120,24 +126,14 @@ class WebApi(
             Response(BAD_REQUEST)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
-        }
-    }
-
-    fun getBoards2(request: Request): Response {
-        logRequest(request)
-        // val user = contexts[r]["user"]
-        val user = Json.decodeFromString<User>(request.header("User").toString())
-        return try {
-            val boards = services.boards.getUserBoards(user)
-            Response(OK)
-                .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
-                .body(Json.encodeToString(boards))
-        } catch (e: DataException) {
+        }catch (e: Exception){
             Response(INTERNAL_SERVER_ERROR)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
+
         }
     }
+
     fun getBoards(contexts: RequestContexts): HttpHandler = { request ->
         logRequest(request)
         val user:User? = contexts[request]["user"]
@@ -159,41 +155,31 @@ class WebApi(
         }
     }
 
-    fun getBoardUsers2(request: Request): Response {
-        logRequest(request)
-        val boardId = request.path("id")?.toInt()
-        checkNotNull(boardId)
-        val user = Json.decodeFromString<User>(request.header("User").toString())
-        val users = services.boards.getUsersOnBoard(boardId, user)
-        return Response(OK)
-            .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
-            .body(Json.encodeToString(users))
-    }
-
     fun getBoardUsers(contexts: RequestContexts): HttpHandler = { request ->
         logRequest(request)
         try {
             val boardId = request.path("id")?.toInt()
-            checkNotNull(boardId)
             val user: User? = contexts[request]["user"]
-            checkNotNull(user)
+            if ((user == null) or (boardId == null)){
+                 Response(BAD_REQUEST)
+                    .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+            }else{
+                val users = services.boards.getUsersOnBoard(boardId!!, user!!, getLimit(request), getSkip(request))
+                Response(OK)
+                    .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                    .body(Json.encodeToString(users))
+            }
 
-            val users = services.boards.getUsersOnBoard(boardId, user, getLimit(request), getSkip(request))
-            Response(OK)
-                .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
-                .body(Json.encodeToString(users))
         } catch (e: NumberFormatException) {
             Response(BAD_REQUEST)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body("Input is not a number")
-        } catch (e: Exception) {
-            Response(BAD_REQUEST)
+        }catch (e: Exception){
+            Response(INTERNAL_SERVER_ERROR)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(e.message))
 
         }
-
-
-
     }
 
     fun alterUsersOnBoard(request: Request): Response {
@@ -211,8 +197,16 @@ class WebApi(
             Response(OK)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
         } catch (e: DataException) {
-            Response(OK)
+            Response(BAD_REQUEST)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+        }catch (e:IllegalStateException){
+            Response(INTERNAL_SERVER_ERROR)
+                .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+        }catch (e: Exception){
+            Response(INTERNAL_SERVER_ERROR)
+                .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(e.message))
+
         }
     }
 
@@ -227,6 +221,11 @@ class WebApi(
         } catch (e: DataException) {
             Response(BAD_REQUEST).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
+        }catch (e: Exception){
+            Response(INTERNAL_SERVER_ERROR)
+                .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(e.message))
+
         }
     }
 
@@ -244,6 +243,11 @@ class WebApi(
             Response(BAD_REQUEST)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
+        }catch (e: Exception){
+            Response(INTERNAL_SERVER_ERROR)
+                .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(e.message))
+
         }
     }
 
@@ -256,11 +260,13 @@ class WebApi(
                 25
             }
     }
+
     fun getSkip(request: Request):Int{
         return try {if(Integer.parseInt(request.query("skip").toString())>=0)
             Integer.parseInt(request.query("skip").toString()) else
             0 } catch (e:java.lang.Exception) {0}
     }
+
     fun getCardsFromList(request: Request): Response {
         logRequest(request)
         val boardId = request.path("id")?.toInt()
@@ -268,15 +274,16 @@ class WebApi(
         checkNotNull(boardId) { "Board Id must not be null" }
         checkNotNull(boardListId) { "List Id must not be null" }
         return try {
-
-
-
             val cards = services.cards.getCardsOnList(boardId, boardListId,getLimit(request),getSkip(request))
             Response(OK)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(cards))
         } catch (e: DataException) {
             Response(BAD_REQUEST)
+                .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(e.message))
+        }catch (e: Exception){
+            Response(INTERNAL_SERVER_ERROR)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
         }
@@ -298,6 +305,11 @@ class WebApi(
             Response(BAD_REQUEST)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
+        }catch (e: Exception){
+            Response(INTERNAL_SERVER_ERROR)
+                .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(e.message))
+
         }
     }
 
@@ -319,6 +331,11 @@ class WebApi(
             Response(BAD_REQUEST)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
+        }catch (e: Exception){
+            Response(INTERNAL_SERVER_ERROR)
+                .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(e.message))
+
         }
     }
 
@@ -337,6 +354,11 @@ class WebApi(
             Response(BAD_REQUEST)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
+        }catch (e: Exception){
+            Response(INTERNAL_SERVER_ERROR)
+                .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(e.message))
+
         }
     }
 
@@ -349,11 +371,13 @@ class WebApi(
         val inputList = Json.decodeFromString<InputMoveCardDto>(request.bodyString())
         return try {
             services.cards.moveCard(inputList, boardId, cardId)
-            Response(OK)
-        } catch (e: Exception) {
-            Response(BAD_REQUEST)
+            Response(OK).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+
+        } catch (e: Exception){
+            Response(INTERNAL_SERVER_ERROR)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
+
         }
     }
 
@@ -378,6 +402,11 @@ class WebApi(
                 Response(BAD_REQUEST)
                     .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                     .body(Json.encodeToString(e.message))
+            }catch (e: Exception){
+                Response(INTERNAL_SERVER_ERROR)
+                    .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                    .body(Json.encodeToString(e.message))
+
             }
         }
 
@@ -399,6 +428,11 @@ class WebApi(
             Response(BAD_REQUEST)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
+        }catch (e: Exception){
+            Response(INTERNAL_SERVER_ERROR)
+                .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(e.message))
+
         }
     }
 
@@ -411,11 +445,16 @@ class WebApi(
         val editCard = Json.decodeFromString<EditCardDto>(request.bodyString())
         return try {
             services.cards.editCard(editCard, boardId, cardId)
-            Response(OK)
+            Response(OK).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
         } catch (e: Exception) {
             Response(BAD_REQUEST)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
+        }catch (e: Exception){
+            Response(INTERNAL_SERVER_ERROR)
+                .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(e.message))
+
         }
     }
     fun filterUser(contexts: RequestContexts) = Filter { next ->
