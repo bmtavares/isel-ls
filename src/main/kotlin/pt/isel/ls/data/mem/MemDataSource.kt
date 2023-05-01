@@ -54,12 +54,12 @@ object MemDataSource {
 
         cards.addAll(
             listOf(
-                Card(1, "Viena", "Austria", null, null, 1),
-                Card(2, "Roma", "Italia", null, null, 1),
-                Card(3, "Llanfairpwllgwyngyllgogerychwyrndrobwllllantysiliogogogoch", "Pais de Gales", null, null, 1),
-                Card(4, "Avião", "Comprar os bilhetes para todos", Timestamp.valueOf("2023-04-15 12:30:00"), 1, 1),
-                Card(5, "Hotel", "Reservar os quartos (para quantos?)", Timestamp.valueOf("2023-05-01 12:00:00"), 1, 1),
-                Card(6, "Transportes", "De e para o aeroporto", Timestamp.valueOf("2023-06-09 23:59:59"), 1, 1)
+                Card(1, "Viena", "Austria", null, null, 1,0),
+                Card(2, "Roma", "Italia", null, null, 1,1),
+                Card(3, "Llanfairpwllgwyngyllgogerychwyrndrobwllllantysiliogogogoch", "Pais de Gales", null, null, 1,2),
+                Card(4, "Avião", "Comprar os bilhetes para todos", Timestamp.valueOf("2023-04-15 12:30:00"), 1, 1,0),
+                Card(5, "Hotel", "Reservar os quartos (para quantos?)", Timestamp.valueOf("2023-05-01 12:00:00"), 1, 1,1),
+                Card(6, "Transportes", "De e para o aeroporto", Timestamp.valueOf("2023-06-09 23:59:59"), 1, 1,2)
             )
         )
     }

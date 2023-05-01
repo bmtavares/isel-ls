@@ -5,38 +5,33 @@ import pt.isel.ls.data.UsersData
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.tasksServices.dtos.EditUserDto
 import pt.isel.ls.tasksServices.dtos.InputUserDto
+import java.sql.Connection
 import java.sql.Timestamp
 import java.util.UUID
 
 object PgSqlUsersData : UsersData {
-    override fun createToken(user: User): String {
-        PgDataContext.getConnection().use {
-            it.autoCommit = false
-
-            val statement = it.prepareStatement(
+    override fun createToken(user: User,connection : Connection?): String {
+        checkNotNull(connection){"Connection is need to use DB"}
+            val statement = connection.prepareStatement(
                 "insert into UsersTokens (token, userId, creationDate) values (?,?,?);"
             )
             val token = UUID.randomUUID()
             statement.setObject(1, token)
-            statement.setInt(2, user.id!!)
+            statement.setInt(2, user.id)
             statement.setTimestamp(3, Timestamp(System.currentTimeMillis()))
 
             val count = statement.executeUpdate()
 
             if (count == 0) {
-                it.rollback()
                 throw DataException("Failed to create token.")
             }
-
-            it.commit()
-
-            return token.toString()
+        return token.toString()
         }
-    }
 
-    override fun getByToken(token: String): User {
-        PgDataContext.getConnection().use {
-            val statement = it.prepareStatement(
+
+    override fun getByToken(token: String,connection : Connection?): User {
+        checkNotNull(connection){"Connection is need to use DB"}
+            val statement = connection.prepareStatement(
                 "select id, name, email from Users u join UsersTokens ut on u.id = ut.userId where token = ?;"
             )
             statement.setString(1, token)
@@ -52,11 +47,11 @@ object PgSqlUsersData : UsersData {
 
             throw Exception("awdwa") // TODO
         }
-    }
 
-    override fun getByEmail(email: String): User {
-        PgDataContext.getConnection().use {
-            val statement = it.prepareStatement(
+
+    override fun getByEmail(email: String,connection : Connection?): User {
+        checkNotNull(connection){"Connection is need to use DB"}
+            val statement = connection.prepareStatement(
                 "select * from Users where email = ?;"
             )
             statement.setString(1, email)
@@ -72,11 +67,11 @@ object PgSqlUsersData : UsersData {
 
             throw Exception("failed to get by email") // TODO
         }
-    }
 
-    override fun getById(id: Int): User {
-        PgDataContext.getConnection().use {
-            val statement = it.prepareStatement(
+
+    override fun getById(id: Int,connection : Connection?): User {
+        checkNotNull(connection){"Connection is need to use DB"}
+            val statement = connection.prepareStatement(
                 "select * from Users where id = ?;"
             )
             statement.setInt(1, id)
@@ -92,12 +87,11 @@ object PgSqlUsersData : UsersData {
 
             throw Exception("failed to get by id") // TODO
         }
-    }
 
-    override fun add(newUser: InputUserDto): User {
-        PgDataContext.getConnection().use {
-            it.autoCommit = false
-            val statement = it.prepareStatement(
+
+    override fun add(newUser: InputUserDto,connection : Connection?): User {
+        checkNotNull(connection){"Connection is need to use DB"}
+            val statement = connection.prepareStatement(
                 "insert into Users (name, email) values (?, ?) returning id,name,email;"
             )
             statement.setString(1, newUser.name)
@@ -106,18 +100,14 @@ object PgSqlUsersData : UsersData {
             val rs = statement.executeQuery()
             while (rs.next()) {
                 val id = rs.getInt("id")
-                it.commit()
                 return User(id, newUser.name, newUser.email)
             }
-            it.rollback()
             throw DataException("Failed to add user.")
         }
-    }
 
-    override fun delete(id: Int) {
-        PgDataContext.getConnection().use {
-            it.autoCommit = false
-            val statement = it.prepareStatement(
+    override fun delete(id: Int,connection : Connection?) {
+        checkNotNull(connection){"Connection is need to use DB"}
+            val statement = connection.prepareStatement(
                 "delete from Users where id = ?;"
             )
             statement.setInt(1, id)
@@ -125,18 +115,13 @@ object PgSqlUsersData : UsersData {
             val count = statement.executeUpdate()
 
             if (count == 0) {
-                it.rollback()
                 throw DataException("Failed to delete user.")
             }
-
-            it.commit()
-        }
     }
 
-    override fun edit(editUser: EditUserDto) {
-        PgDataContext.getConnection().use {
-            it.autoCommit = false
-            val statement = it.prepareStatement(
+    override fun edit(editUser: EditUserDto,connection : Connection?) {
+        checkNotNull(connection){"Connection is need to use DB"}
+            val statement = connection.prepareStatement(
                 "update Users set name = ? where id = ?;"
             )
             statement.setString(1, editUser.name)
@@ -145,17 +130,13 @@ object PgSqlUsersData : UsersData {
             val count = statement.executeUpdate()
 
             if (count == 0) {
-                it.rollback()
                 throw DataException("Failed to edit user.")
             }
-
-            it.commit()
-        }
     }
 
-    override fun exists(id: Int): Boolean {
-        PgDataContext.getConnection().use {
-            val statement = it.prepareStatement(
+    override fun exists(id: Int,connection : Connection?): Boolean {
+        checkNotNull(connection){"Connection is need to use DB"}
+            val statement = connection.prepareStatement(
                 "select count(*) exists from Users where id = ?;"
             )
             statement.setInt(1, id)
@@ -166,7 +147,6 @@ object PgSqlUsersData : UsersData {
             }
 
             return false
-        }
     }
 
     operator fun invoke(): UsersData {

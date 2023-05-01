@@ -10,10 +10,7 @@ import org.http4k.routing.singlePageApp
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
 import org.slf4j.LoggerFactory
-import pt.isel.ls.data.mem.MemBoardsData
-import pt.isel.ls.data.mem.MemCardsData
-import pt.isel.ls.data.mem.MemListsData
-import pt.isel.ls.data.mem.MemUsersData
+import pt.isel.ls.data.mem.*
 import pt.isel.ls.data.pgsql.PgSqlBoardsData
 import pt.isel.ls.data.pgsql.PgSqlCardsData
 import pt.isel.ls.data.pgsql.PgSqlListsData
@@ -30,6 +27,8 @@ fun main() {
 
     // Make sure an env key for ``USE_POSTGRESQL`` exists with the value ``true`` to use the Postgresql for data
     val usePostgresql = System.getenv("USE_POSTGRESQL").lowercase() == "true"
+    //val usePostgresql = false
+    if (!usePostgresql) MemDataSource.resetStorage()
 
     val boardsRepo = if (usePostgresql) PgSqlBoardsData else MemBoardsData
     val usersRepo = if (usePostgresql) PgSqlUsersData else MemUsersData

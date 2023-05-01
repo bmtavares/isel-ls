@@ -7,12 +7,14 @@ import pt.isel.ls.data.entities.Card
 import pt.isel.ls.tasksServices.dtos.EditCardDto
 import pt.isel.ls.tasksServices.dtos.InputCardDto
 import pt.isel.ls.tasksServices.dtos.InputMoveCardDto
+import java.sql.Connection
 import java.sql.Types
 
 object PgSqlCardsData : CardsData {
-    override fun getByList(boardId: Int, listId: Int, limit: Int, skip: Int): List<Card> {
-        PgDataContext.getConnection().use {
-            val statement = it.prepareStatement(
+
+    override fun getByList(boardId: Int, listId: Int, limit: Int, skip: Int,connection : Connection?): List<Card> {
+        checkNotNull(connection){"Connection is need to use DB"}
+            val statement = connection.prepareStatement(
                 "select * from Cards where listId = ? and boardid = ? offset ? limit ?;"
             )
             statement.setInt(1, listId)
@@ -30,21 +32,22 @@ object PgSqlCardsData : CardsData {
                     rs.getString("name"),
                     rs.getString("description"),
                     rs.getTimestamp("dueDate"),
-                    rs.getInt("listId"),
-                    rs.getInt("boardId")
+                    if (rs.wasNull()) null else rs.getInt("listId"),
+                    rs.getInt("boardId"),
+                    rs.getInt("cIdx")
                 )
             }
 
             return results
-        }
+
     }
 
-    override fun getByBoard(board: Board): List<Card> {
-        PgDataContext.getConnection().use {
-            val statement = it.prepareStatement(
+    override fun getByBoard(board: Board,connection : Connection?): List<Card> {
+        checkNotNull(connection){"Connection is need to use DB"}
+            val statement = connection.prepareStatement(
                 "select * from Cards where boardId = ?;"
             )
-            statement.setInt(1, board.id!!)
+            statement.setInt(1, board.id)
 
             val rs = statement.executeQuery()
 
@@ -57,64 +60,114 @@ object PgSqlCardsData : CardsData {
                     rs.getString("description"),
                     rs.getTimestamp("dueDate"),
                     if (rs.wasNull()) null else rs.getInt("listId"),
-                    rs.getInt("boardId")
+                    rs.getInt("boardId"),
+                    rs.getInt("cIdx")
                 )
             }
 
             return results
+
+    }
+    internal fun getListCount(lid:Int?, boardId: Int, connection: Connection):Int{
+        val statement = connection.prepareStatement("select nCards from lists where id = ? and boardid = ?;")
+        if (lid != null) {
+            statement.setInt(1, lid)
+        } else {
+            statement.setNull(1, Types.INTEGER)
+        }
+        statement.setInt(2,boardId)
+        val rs = statement.executeQuery()
+        while (rs.next()) {
+            return rs.getInt("nCards")
+        }
+        throw DataException("something went wrong")
+    }
+    internal fun getCardInfo(cardId: Int, connection: Connection):Card{
+        val statement = connection.prepareStatement("select * from cards where id = ?;")
+        statement.setInt(1, cardId)
+        val rs = statement.executeQuery()
+        while (rs.next()) {
+            return Card(
+                rs.getInt("id"),
+                rs.getString("name"),
+                rs.getString("description"),
+                rs.getTimestamp("dueDate"),
+                if (rs.wasNull()) null else rs.getInt("listId"),
+                rs.getInt("boardId"),
+                rs.getInt("cidx")
+            )
+        }
+
+        throw Exception("awdwa") // TODO
+    }
+    private fun updateCardLid(cardId: Int,lid:Int,bid:Int, connection: Connection){
+        val statement = connection.prepareStatement(
+            "update Cards set listid = ? where id = ? and boardid = ?;"
+        )
+        /*
+        * update whatever set pos = pos + 1 where pos between 2 and 3;
+        * update whatever set pos = 2 where id = 4;*/
+        statement.setInt(1, lid)
+        statement.setInt(2, cardId)
+        statement.setInt(3, bid)
+
+        val count = statement.executeUpdate()
+
+        if (count == 0) {
+            throw DataException("Failed to edit card.")
         }
     }
-
-    override fun move(inputList: InputMoveCardDto, boardId: Int, cardId: Int) {
-        PgDataContext.getConnection().use {
-            it.autoCommit = false
-            val statement = it.prepareStatement(
-                "update Cards set listid = ? where id = ? and boardid = ?;"
-
-            )
-            statement.setInt(1, inputList.lid)
-            statement.setInt(2, cardId)
-            statement.setInt(3, boardId)
-
-            val count = statement.executeUpdate()
-
-            if (count == 0) {
-                it.rollback()
+    private fun updateCardIdx(cardId: Int,cIdx:Int,bid:Int, connection: Connection){
+        val statement = connection.prepareStatement(
+            "update Cards set cIdx = ? where id = ? and boardid = ?;"
+        )
+        /*
+        * update whatever set pos = pos + 1 where pos between 2 and 3;
+        * update whatever set pos = 2 where id = 4;*/
+        statement.setInt(1, cIdx)
+        statement.setInt(2, cardId)
+        statement.setInt(3, bid)
+        val count = statement.executeUpdate()
+        if (count == 0) {
+            throw DataException("Failed to edit card.")
+        }
+    }
+    override fun move(inputList: InputMoveCardDto, boardId: Int, cardId: Int,connection: Connection?) {
+        checkNotNull(connection)
+            val lidCardCount = getListCount(inputList.lid,boardId,connection)
+            val cardInfo = getCardInfo(cardId,connection)
+            var offset = (inputList.cix - cardInfo.cIdx)
+            if (offset>0) offset = 1
+            if (offset<0) offset = -1
+            if(inputList.lid == cardInfo.listId){
+                if (offset == 0) return
+            }else{
+                //diferent list
+            }
+            // 1 informação da lista 2 comparar indices 3 verificar se é na mesma lista 4 arranjar a/as listas 5 trocar
+            try {
+                updateCardLid(cardInfo.id,inputList.lid,boardId,connection)
+                updateCardIdx(cardInfo.id,inputList.cix,boardId,connection)
+            }catch (e:Exception){
                 throw DataException("Failed to edit card.")
             }
-
-            it.commit()
         }
-    }
 
-    override fun getById(id: Int): Card {
-        PgDataContext.getConnection().use {
-            val statement = it.prepareStatement(
-                "select * from Cards where id = ?;"
-            )
-            statement.setInt(1, id)
 
-            val rs = statement.executeQuery()
-            while (rs.next()) {
-                return Card(
-                    rs.getInt("id"),
-                    rs.getString("name"),
-                    rs.getString("description"),
-                    rs.getTimestamp("dueDate"),
-                    rs.getInt("listId"),
-                    rs.getInt("boardId")
-                )
+    override fun getById(id: Int,connection: Connection?): Card {
+        checkNotNull(connection){"Connection is need to use DB"}
+            return try {
+                getCardInfo(id,connection)
+            }catch (e:Exception){
+            throw Exception("awdwa") // TODO
             }
 
-            throw Exception("awdwa") // TODO
-        }
     }
 
-    override fun add(newCard: InputCardDto, boardId: Int, listId: Int?): Card {
-        PgDataContext.getConnection().use {
-            val previousCommitState = it.autoCommit
-            it.autoCommit = false
-            val statement = it.prepareStatement(
+    override fun add(newCard: InputCardDto, boardId: Int, listId: Int?,connection : Connection?): Card {
+        checkNotNull(connection){"Connection is need to use DB"}
+            val listCount = getListCount(listId,boardId,connection)
+            val statement = connection.prepareStatement(
                 "insert into Cards (name, description, dueDate, listId, boardId) values (?, ?, ?, ?, ?) returning id, name, description, dueDate, listId, boardId;"
             )
             statement.setString(1, newCard.name)
@@ -141,9 +194,7 @@ object PgSqlCardsData : CardsData {
                 val dueDate = rs.getTimestamp("dueDate")
                 val lId = if (rs.wasNull()) null else rs.getInt("listId")
                 val bId = rs.getInt("boardId")
-
-                it.commit()
-                it.autoCommit = previousCommitState
+                val cIdx = rs.getInt("cIdx")
 
                 return Card(
                     id,
@@ -151,19 +202,17 @@ object PgSqlCardsData : CardsData {
                     description,
                     dueDate,
                     lId,
-                    bId
+                    bId,
+                    cIdx
                 )
             }
-
-            it.rollback()
             throw DataException("Failed to add card.")
-        }
+
     }
 
-    override fun delete(id: Int) {
-        PgDataContext.getConnection().use {
-            it.autoCommit = false
-            val statement = it.prepareStatement(
+    override fun delete(id: Int,connection : Connection?) {
+        checkNotNull(connection){"Connection is need to use DB"}
+            val statement = connection.prepareStatement(
                 "delete from Cards where id = ?;"
             )
             statement.setInt(1, id)
@@ -171,18 +220,15 @@ object PgSqlCardsData : CardsData {
             val count = statement.executeUpdate()
 
             if (count == 0) {
-                it.rollback()
+
                 throw DataException("Failed to delete card.")
             }
 
-            it.commit()
-        }
     }
 
-    override fun edit(editCardDto: EditCardDto, boardId: Int, cardId: Int) {
-        PgDataContext.getConnection().use {
-            it.autoCommit = false
-            val statement = it.prepareStatement(
+    override fun edit(editCardDto: EditCardDto, boardId: Int, cardId: Int,connection : Connection?) {
+        checkNotNull(connection){"Connection is need to use DB"}
+            val statement = connection.prepareStatement(
                 "update Cards set name = ? where id = ?;" +
                     "update Cards set description = ? where id = ?;" +
                     "update Cards set dueDate = ? where id = ?;"
@@ -203,17 +249,14 @@ object PgSqlCardsData : CardsData {
             val count = statement.executeUpdate()
 
             if (count == 0) {
-                it.rollback()
                 throw DataException("Failed to edit card.")
             }
 
-            it.commit()
-        }
     }
 
-    override fun exists(id: Int): Boolean {
-        PgDataContext.getConnection().use {
-            val statement = it.prepareStatement(
+    override fun exists(id: Int,connection : Connection?): Boolean {
+        checkNotNull(connection){"Connection is need to use DB"}
+            val statement = connection.prepareStatement(
                 "select count(*) exists from Cards where id = ?;"
             )
             statement.setInt(1, id)
@@ -225,5 +268,5 @@ object PgSqlCardsData : CardsData {
 
             return false
         }
-    }
+
 }

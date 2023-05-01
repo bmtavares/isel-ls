@@ -26,4 +26,6 @@ insert into usersboards values (1,1),(2,1),(3,1);
 
 delete from boards;
 
-update cards set listid=1 where id = 1
+update cards set listid=1 where id = 1;
+
+DELETE FROM users WHERE id = 7;

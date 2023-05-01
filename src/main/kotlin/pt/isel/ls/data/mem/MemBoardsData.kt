@@ -9,14 +9,15 @@ import pt.isel.ls.data.entities.User
 import pt.isel.ls.data.entities.UserBoard
 import pt.isel.ls.tasksServices.dtos.EditBoardDto
 import pt.isel.ls.tasksServices.dtos.InputBoardDto
+import java.sql.Connection
 
 object MemBoardsData : BoardsData {
     private val CASCADE_DELETE = false
-    override fun getByName(name: String): Board =
+    override fun getByName(name: String,connection : Connection?): Board =
         MemDataSource.boards.firstOrNull { it.name == name }
             ?: throw EntityNotFoundException("Board not found.", Board::class)
 
-    override fun getUserBoards(user: User, limit: Int, skip: Int): List<Board> {
+    override fun getUserBoards(user: User, limit: Int, skip: Int,connection : Connection?): List<Board> {
         val boards = MemDataSource.usersBoards.filter { it.userId == user.id }
 
         if (skip > boards.lastIndex) return emptyList()
@@ -29,7 +30,7 @@ object MemBoardsData : BoardsData {
         return MemDataSource.boards.filter { it.id in boardIds }
     }
 
-    override fun edit(editBoard: EditBoardDto) {
+    override fun edit(editBoard: EditBoardDto,connection : Connection?) {
         val oldBoard = MemDataSource.boards.firstOrNull { it.id == editBoard.id }
             ?: throw EntityNotFoundException("Board not found.", Board::class)
         val newBoard = Board(oldBoard.id, oldBoard.name, editBoard.description)
@@ -37,7 +38,7 @@ object MemBoardsData : BoardsData {
         MemDataSource.boards.add(newBoard)
     }
 
-    override fun add(newBoard: InputBoardDto): Board {
+    override fun add(newBoard: InputBoardDto,connection : Connection?): Board {
         if (MemDataSource.boards.any { it.name == newBoard.name }) {
             throw EntityAlreadyExistsException(
                 "Name already in use.",
@@ -50,7 +51,7 @@ object MemBoardsData : BoardsData {
         return board
     }
 
-    override fun getUsers(boardId: Int, user: User, limit: Int, skip: Int): List<User> {
+    override fun getUsers(boardId: Int, user: User, limit: Int, skip: Int,connection : Connection?): List<User> {
         val users = MemDataSource.usersBoards.filter { it.boardId == boardId }
 
         if (skip > users.lastIndex) return emptyList()
@@ -63,7 +64,7 @@ object MemBoardsData : BoardsData {
         return MemDataSource.users.filter { it.id in usersIds }
     }
 
-    override fun addUserToBoard(userId: Int, boardId: Int) {
+    override fun addUserToBoard(userId: Int, boardId: Int,connection : Connection?) {
         val pair = UserBoard(userId, boardId)
         if (MemDataSource.usersBoards.any { it == pair }) {
             throw EntityAlreadyExistsException(
@@ -73,18 +74,18 @@ object MemBoardsData : BoardsData {
         }
         MemDataSource.usersBoards.add(pair)
     }
-    override fun deleteUserFromBoard(userId: Int, boardId: Int) {
+    override fun deleteUserFromBoard(userId: Int, boardId: Int,connection : Connection?) {
         val pair = UserBoard(userId, boardId)
         MemDataSource.usersBoards.remove(pair)
     }
 
-    override fun getById(id: Int): Board =
+    override fun getById(id: Int,connection : Connection?): Board =
         MemDataSource.boards.firstOrNull { it.id == id } ?: throw EntityNotFoundException(
             "Board not found.",
             Board::class
         )
 
-    override fun delete(id: Int) {
+    override fun delete(id: Int,connection : Connection?) {
         val board = MemDataSource.boards.firstOrNull { it.id == id } ?: throw EntityNotFoundException(
             "Board not found.",
             Board::class
@@ -111,6 +112,6 @@ object MemBoardsData : BoardsData {
         MemDataSource.boards.remove(board)
     }
 
-    override fun exists(id: Int): Boolean =
+    override fun exists(id: Int,connection : Connection?): Boolean =
         MemDataSource.boards.any { it.id == id }
 }

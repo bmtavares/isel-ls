@@ -7,9 +7,10 @@ import pt.isel.ls.data.entities.Card
 import pt.isel.ls.tasksServices.dtos.EditCardDto
 import pt.isel.ls.tasksServices.dtos.InputCardDto
 import pt.isel.ls.tasksServices.dtos.InputMoveCardDto
+import java.sql.Connection
 
 object MemCardsData : CardsData {
-    override fun getByList(boardId: Int, listId: Int, limit: Int, skip: Int): List<Card> {
+    override fun getByList(boardId: Int, listId: Int, limit: Int, skip: Int,connection : Connection?): List<Card> {
         val cards = MemDataSource.cards.filter { it.listId == listId && it.boardId == boardId }
 
         if (skip > cards.lastIndex) return emptyList()
@@ -20,7 +21,7 @@ object MemCardsData : CardsData {
         )
     }
 
-    override fun add(newCard: InputCardDto, boardId: Int, listId: Int?): Card {
+    override fun add(newCard: InputCardDto, boardId: Int, listId: Int?,connection : Connection?): Card {
         if (!MemDataSource.boards.any { it.id == boardId }) {
             throw EntityNotFoundException(
                 "Board does not exist.",
@@ -45,14 +46,15 @@ object MemCardsData : CardsData {
             newCard.description,
             ts,
             listId,
-            boardId
+            boardId,
+            0
         )
 
         MemDataSource.cards.add(card)
         return card
     }
 
-    override fun edit(editCardDto: EditCardDto, boardId: Int, cardId: Int) {
+    override fun edit(editCardDto: EditCardDto, boardId: Int, cardId: Int,connection : Connection?) {
         val oldCard = MemDataSource.cards.firstOrNull { it.id == cardId }
             ?: throw EntityNotFoundException("Card not found.", Card::class)
         val newCard = Card(
@@ -61,16 +63,18 @@ object MemCardsData : CardsData {
             editCardDto.description,
             editCardDto.dueDate ?: oldCard.dueDate,
             oldCard.listId,
-            boardId
+            boardId,
+            0
         )
         MemDataSource.cards.remove(oldCard)
         MemDataSource.cards.add(newCard)
     }
 
-    override fun getByBoard(board: Board): List<Card> =
+    override fun getByBoard(board: Board,connection : Connection?): List<Card> =
         MemDataSource.cards.filter { it.boardId == board.id }
 
-    override fun move(inputList: InputMoveCardDto, boardId: Int, cardId: Int) {
+
+    override fun move(inputList: InputMoveCardDto, boardId: Int, cardId: Int,connection : Connection?) {
         val oldCard = MemDataSource.cards.firstOrNull { it.id == cardId && it.boardId == boardId }
             ?: throw EntityNotFoundException("Card not found.", Card::class)
 
@@ -80,13 +84,13 @@ object MemCardsData : CardsData {
         MemDataSource.cards.add(newCard)
     }
 
-    override fun getById(id: Int): Card =
+    override fun getById(id: Int,connection : Connection?): Card =
         MemDataSource.cards.firstOrNull { it.id == id } ?: throw EntityNotFoundException(
             "Card not found.",
             Card::class
         )
 
-    override fun delete(id: Int) {
+    override fun delete(id: Int,connection : Connection?) {
         val card = MemDataSource.cards.firstOrNull { it.id == id } ?: throw EntityNotFoundException(
             "Card not found.",
             Card::class
@@ -94,6 +98,6 @@ object MemCardsData : CardsData {
         MemDataSource.cards.remove(card)
     }
 
-    override fun exists(id: Int): Boolean =
+    override fun exists(id: Int,connection : Connection?): Boolean =
         MemDataSource.cards.any { it.id == id }
 }

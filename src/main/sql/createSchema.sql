@@ -20,7 +20,8 @@ create table Boards (
 create table Lists (
     id serial primary key,
     name varchar(255) not null,
-    boardId int references Boards(id) not null
+    boardId int references Boards(id) not null,
+    nCards int default 0
 );
 
 create table Cards (
@@ -29,7 +30,8 @@ create table Cards (
     description varchar(255) not null,
     dueDate timestamp, -- Sem input check por agora para ver se a data é no futuro
     listId int references Lists(id) on delete cascade,
-    boardId int references Boards(id) not null
+    boardId int references Boards(id) not null,
+    cidx int not null
 );
 
 create table UsersBoards (
@@ -40,7 +42,7 @@ create table UsersBoards (
 
 create table UsersTokens (
     token varchar(128) not null,
-    userId int references Users(id) not null,
+    userId int references Users(id) on delete cascade not null ,
     creationDate timestamp not null,
     primary key(token, userId, creationDate)
 );

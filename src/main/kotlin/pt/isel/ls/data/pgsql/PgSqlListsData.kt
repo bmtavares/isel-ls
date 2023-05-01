@@ -4,11 +4,12 @@ import pt.isel.ls.data.DataException
 import pt.isel.ls.data.ListsData
 import pt.isel.ls.data.entities.BoardList
 import pt.isel.ls.tasksServices.dtos.InputBoardListDto
+import java.sql.Connection
 
 object PgSqlListsData : ListsData {
-    override fun getListsByBoard(boardId: Int, limit: Int, skip: Int): List<BoardList> {
-        PgDataContext.getConnection().use {
-            val statement = it.prepareStatement(
+    override fun getListsByBoard(boardId: Int, limit: Int, skip: Int,connection : Connection?): List<BoardList> {
+        checkNotNull(connection){"Connection is need to use DB"}
+            val statement = connection.prepareStatement(
                 "select l.id , l.name , l.boardId  from Lists l join Boards b on l.boardId = b.id where b.id = ? offset ? limit ?;"
             )
             statement.setInt(1, boardId)
@@ -29,11 +30,11 @@ object PgSqlListsData : ListsData {
 
             return results
         }
-    }
 
-    override fun getById(id: Int): BoardList {
-        PgDataContext.getConnection().use {
-            val statement = it.prepareStatement(
+
+    override fun getById(id: Int,connection : Connection?): BoardList {
+        checkNotNull(connection){"Connection is need to use DB"}
+            val statement = connection.prepareStatement(
                 "select * from Lists where id = ?;"
             )
             statement.setInt(1, id)
@@ -49,12 +50,11 @@ object PgSqlListsData : ListsData {
 
             throw Exception("awdwa") // TODO
         }
-    }
 
-    override fun add(newBoardList: InputBoardListDto, boardId: Int): BoardList {
-        PgDataContext.getConnection().use {
-            it.autoCommit = false
-            val statement = it.prepareStatement(
+
+    override fun add(newBoardList: InputBoardListDto, boardId: Int,connection : Connection?): BoardList {
+        checkNotNull(connection){"Connection is need to use DB"}
+            val statement = connection.prepareStatement(
                 "insert into Lists (name, boardId) values (?, ?) returning id, name, boardId;"
             )
             statement.setString(1, newBoardList.name)
@@ -67,8 +67,6 @@ object PgSqlListsData : ListsData {
                 val name = rs.getString("name")
                 val bId = rs.getInt("boardId")
 
-                it.commit()
-
                 return BoardList(
                     id,
                     name,
@@ -76,15 +74,14 @@ object PgSqlListsData : ListsData {
                 )
             }
 
-            it.rollback()
+
             throw DataException("Failed to add list.")
         }
-    }
 
-    override fun delete(id: Int) {
-        PgDataContext.getConnection().use {
-            it.autoCommit = false
-            val statement = it.prepareStatement(
+
+    override fun delete(id: Int,connection : Connection?) {
+        checkNotNull(connection){"Connection is need to use DB"}
+            val statement = connection.prepareStatement(
                 "delete from Lists where id = ?;"
             )
             statement.setInt(1, id)
@@ -92,18 +89,16 @@ object PgSqlListsData : ListsData {
             val count = statement.executeUpdate()
 
             if (count == 0) {
-                it.rollback()
+
                 throw DataException("Failed to delete list.")
             }
 
-            it.commit()
         }
-    }
 
-    override fun edit(editName: String, listId: Int, boardId: Int) {
-        PgDataContext.getConnection().use {
-            it.autoCommit = false
-            val statement = it.prepareStatement(
+
+    override fun edit(editName: String, listId: Int, boardId: Int,connection : Connection?) {
+        checkNotNull(connection){"Connection is need to use DB"}
+            val statement = connection.prepareStatement(
                 "update Lists set name = ? where id = ? and boardid = ?;"
             )
             statement.setString(1, editName)
@@ -113,17 +108,14 @@ object PgSqlListsData : ListsData {
             val count = statement.executeUpdate()
 
             if (count == 0) {
-                it.rollback()
                 throw DataException("Failed to edit list.")
             }
-
-            it.commit()
         }
-    }
 
-    override fun exists(id: Int): Boolean {
-        PgDataContext.getConnection().use {
-            val statement = it.prepareStatement(
+
+    override fun exists(id: Int,connection : Connection?): Boolean {
+        checkNotNull(connection){"Connection is need to use DB"}
+            val statement = connection.prepareStatement(
                 "select count(*) exists from Boards where id = ?;"
             )
             statement.setInt(1, id)
@@ -132,8 +124,6 @@ object PgSqlListsData : ListsData {
             while (rs.next()) {
                 return rs.getInt("exists") == 1
             }
-
             return false
         }
-    }
 }

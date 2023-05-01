@@ -356,7 +356,7 @@ class CardsTest {
 
         val createdCard = Json.decodeFromString<OutputIdDto>(responseCreate.bodyString())
 
-        val request = InputMoveCardDto(destinationBoardList.id)
+        val request = InputMoveCardDto(destinationBoardList.id,0)
 
         app(
             Request(

@@ -12,7 +12,8 @@ data class Card(
     @Serializable(with = TimestampAsLongSerializer::class)
     val dueDate: Timestamp?,
     val listId: Int?,
-    val boardId: Int
+    val boardId: Int,
+    val cIdx:Int
 ) : Entity {
     override fun clone(id: Int): Card = this.copy(id = id)
 }
