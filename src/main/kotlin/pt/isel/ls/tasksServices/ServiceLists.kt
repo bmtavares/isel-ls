@@ -30,7 +30,8 @@ class ServiceLists(private val listsRepo: ListsData) {
     fun editBoardList(editList: EditBoardListDto, boardListId: Int, boardId: Int) {
         return try {
             listsRepo.edit(editList.name, boardListId, boardId)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            throw DataException("Failed to esdit List")
         }
     }
 

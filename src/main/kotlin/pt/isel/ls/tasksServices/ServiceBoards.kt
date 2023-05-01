@@ -33,13 +33,13 @@ class ServiceBoards(private val boardRepository: BoardsData) {
         }
     }
 
-    fun createBoard(newBoard: InputBoardDto, user: User): Board? {
+    fun createBoard(newBoard: InputBoardDto, user: User): Board {
         return try {
             val board = boardRepository.add(newBoard)
             boardRepository.addUserToBoard(user.id, board.id)
             return board
         } catch (e: Exception) {
-            null
+            throw DataException("Failed to create Boards")
         }
     }
 
@@ -54,11 +54,14 @@ class ServiceBoards(private val boardRepository: BoardsData) {
 
     fun addUserOnBoard(boardId: Int, userId: Int) = try {
         boardRepository.addUserToBoard(userId, boardId)
-    } catch (_: Exception) {
+    } catch (e: Exception) {
+
+        throw DataException("Failed to add user")
     }
 
     fun deleteUserOnBoard(boardId: Int, userId: Int) = try {
         boardRepository.deleteUserFromBoard(userId, boardId)
     } catch (_: Exception) {
+        throw DataException("Failed to delete user")
     }
 }

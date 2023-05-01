@@ -18,6 +18,7 @@ import org.http4k.core.Status.Companion.OK
 import org.http4k.lens.RequestContextLens
 import org.http4k.routing.path
 import pt.isel.ls.data.DataException
+import pt.isel.ls.data.EntityAlreadyExistsException
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.http.logRequest
 import pt.isel.ls.server.HeaderTypes
@@ -86,23 +87,31 @@ class WebApi(
                 Response(BAD_REQUEST).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                     .body("Name is mandatory")
             }
-            val rsp = services.boards.createBoard(board, user)
-            if (rsp == null){
 
-                val board = services.boards.getBoard(board.name, user)
-                if(board != null){
-                    Response(BAD_REQUEST).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
-                        .body("That name is already in use")
+           try {
+               val rsp = services.boards.createBoard(board, user)
+               val returnValue = OutputIdDto(rsp.id)
+               Response(CREATED).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                   .body(Json.encodeToString(returnValue))
 
-                }else{
-                    Response(BAD_REQUEST).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
-                        .body("Failed to create board")
-                }
-            }else{
-                val returnValue = OutputIdDto(rsp.id)
-                Response(CREATED).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
-                    .body(Json.encodeToString(returnValue))
-            }
+           } catch (e:EntityAlreadyExistsException){
+               Response(BAD_REQUEST).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                   .body("That name is already in use")
+           }catch (e:Exception) {
+               Response(BAD_REQUEST).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                   .body("Failed to create board")
+           }
+
+
+
+
+
+
+
+
+
+
+
         }catch(e: Exception){
             Response(BAD_REQUEST).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body("body in incorrect format")
@@ -204,7 +213,11 @@ class WebApi(
         } catch (e: Exception) {
             Response(BAD_REQUEST)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+
         }
+
+
+
     }
 
     fun alterUsersOnBoard(request: Request): Response {
@@ -376,17 +389,23 @@ class WebApi(
         logRequest(request)
         val boardId = request.path("id")?.toInt()
         val userId = request.path("uid")?.toInt()
-        checkNotNull(boardId) { "Board Id must not be null" }
-        checkNotNull(userId) { "User Id must not be null" }
-        return try {
-            services.boards.addUserOnBoard(boardId, userId)
-            Response(OK)
+        if((boardId == null)or (userId == null)){
+           return Response(BAD_REQUEST)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
-        } catch (e: DataException) {
-            Response(BAD_REQUEST)
-                .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
-                .body(Json.encodeToString(e.message))
+                .body(Json.encodeToString("Board and user must not be null"))
+        }else{
+            return try {
+                services.boards.addUserOnBoard(boardId!!, userId!!)
+                Response(OK)
+                    .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+            } catch (e: DataException) {
+                Response(BAD_REQUEST)
+                    .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                    .body(Json.encodeToString(e.message))
+            }
         }
+
+
     }
 
     fun getCard(request: Request): Response {
