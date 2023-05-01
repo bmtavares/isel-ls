@@ -69,7 +69,7 @@ object PgSqlBoardsData : BoardsData {
                 )
             }
 
-            throw Exception("awda") // TODO
+            throw Exception("SQL exception") // TODO
         }
     }
 

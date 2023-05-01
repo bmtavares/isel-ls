@@ -19,6 +19,7 @@ import org.http4k.lens.RequestContextLens
 import org.http4k.routing.path
 import pt.isel.ls.data.DataException
 import pt.isel.ls.data.EntityAlreadyExistsException
+import pt.isel.ls.data.EntityNotFoundException
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.http.logRequest
 import pt.isel.ls.server.HeaderTypes
@@ -43,14 +44,14 @@ class WebApi(
             checkNotNull(boardId)
             val user:User? = contexts[request]["user"]
             checkNotNull(user)
-            val board = services.boards.getBoard(boardId, user)
-            if(board == null){
-                Response(NOT_FOUND)
-                    .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
-            }else{
+            try{
+                val board = services.boards.getBoard(boardId, user)
                 Response(OK)
                     .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                     .body(Json.encodeToString(board))
+            }catch (e:EntityNotFoundException){
+                Response(NOT_FOUND)
+                    .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
             }
         }catch (e:NumberFormatException){
             Response(BAD_REQUEST)
@@ -61,21 +62,8 @@ class WebApi(
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
 
         }
-
-
     }
 
-    fun createBoard2(request: Request): Response {
-        logRequest(request)
-        val user = Json.decodeFromString<User>(request.header("User").toString())
-        val board = Json.decodeFromString<InputBoardDto>(request.bodyString())
-        check(board.name.isNotEmpty()) { Response(BAD_REQUEST).body("Board name is mandatory") }
-        val rsp =
-            services.boards.createBoard(board, user) ?: return Response(BAD_REQUEST).body("Failed to create board")
-        val returnValue = OutputIdDto(rsp.id)
-        return Response(CREATED).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
-            .body(Json.encodeToString(returnValue))
-    }
     fun createBoard(contexts: RequestContexts): HttpHandler = { request ->
         logRequest(request)
         val user:User? = contexts[request]["user"]
@@ -87,7 +75,6 @@ class WebApi(
                 Response(BAD_REQUEST).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                     .body("Name is mandatory")
             }
-
            try {
                val rsp = services.boards.createBoard(board, user)
                val returnValue = OutputIdDto(rsp.id)
@@ -97,26 +84,15 @@ class WebApi(
            } catch (e:EntityAlreadyExistsException){
                Response(BAD_REQUEST).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                    .body("That name is already in use")
-           }catch (e:Exception) {
+           } catch (e:Exception) {
                Response(BAD_REQUEST).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                    .body("Failed to create board")
            }
-
-
-
-
-
-
-
-
-
-
 
         }catch(e: Exception){
             Response(BAD_REQUEST).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body("body in incorrect format")
         }
-
     }
 
     fun getUser(request: Request): Response {

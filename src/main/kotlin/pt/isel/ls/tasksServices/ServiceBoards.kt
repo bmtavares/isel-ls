@@ -2,6 +2,7 @@ package pt.isel.ls.tasksServices
 
 import pt.isel.ls.data.BoardsData
 import pt.isel.ls.data.DataException
+import pt.isel.ls.data.EntityNotFoundException
 import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.tasksServices.dtos.InputBoardDto
@@ -12,7 +13,7 @@ class ServiceBoards(private val boardRepository: BoardsData) {
             val board = boardRepository.getById(boardId)
             board
         } catch (e: Exception) {
-            null
+            throw EntityNotFoundException("Board not found",Board::class)
         }
     }
 
@@ -21,7 +22,7 @@ class ServiceBoards(private val boardRepository: BoardsData) {
             val board = boardRepository.getByName(boardName)
             board
         } catch (e: Exception) {
-            null
+            throw EntityNotFoundException("Board not found",Board::class)
         }
     }
 
@@ -29,7 +30,7 @@ class ServiceBoards(private val boardRepository: BoardsData) {
         return try {
             boardRepository.getUserBoards(user, limit,skip)
         } catch (e: Exception) {
-            throw DataException("Failed to retrieve Boards")
+            throw EntityNotFoundException("Board not found",Board::class)
         }
     }
 
