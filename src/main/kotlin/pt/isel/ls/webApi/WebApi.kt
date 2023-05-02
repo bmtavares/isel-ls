@@ -11,6 +11,7 @@ import org.http4k.core.RequestContexts
 import org.http4k.core.Response
 import org.http4k.core.Status
 import org.http4k.core.Status.Companion.BAD_REQUEST
+import org.http4k.core.Status.Companion.CONFLICT
 import org.http4k.core.Status.Companion.CREATED
 import org.http4k.core.Status.Companion.INTERNAL_SERVER_ERROR
 import org.http4k.core.Status.Companion.NOT_FOUND
@@ -115,7 +116,11 @@ class WebApi(
             Response(CREATED)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(user))
-        } catch (e: DataException) {
+        }  catch (e: EntityAlreadyExistsException) {
+            Response(CONFLICT)
+                .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(e.message))
+        }catch (e: DataException) {
             Response(BAD_REQUEST)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))

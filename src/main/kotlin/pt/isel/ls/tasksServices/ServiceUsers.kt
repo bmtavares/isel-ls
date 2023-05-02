@@ -18,7 +18,7 @@ class ServiceUsers(private val context: DataContext, private val userRepository:
                 token = userRepository.createToken(user, con)
             }
         } catch (e: Exception) {
-            throw DataException("")
+            throw e
         }
         return OutputUserDto(token, user.id)
     }

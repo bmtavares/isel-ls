@@ -1,6 +1,8 @@
 package pt.isel.ls.data.pgsql
 
+import org.postgresql.util.PSQLException
 import pt.isel.ls.data.DataException
+import pt.isel.ls.data.EntityAlreadyExistsException
 import pt.isel.ls.data.UsersData
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.tasksServices.dtos.EditUserDto
@@ -92,13 +94,24 @@ object PgSqlUsersData : UsersData {
         )
         statement.setString(1, newUser.name)
         statement.setString(2, newUser.email)
+        try {
+            val rs = statement.executeQuery()
+            while (rs.next()) {
+                val id = rs.getInt("id")
+                return User(id, newUser.name, newUser.email)
 
-        val rs = statement.executeQuery()
-        while (rs.next()) {
-            val id = rs.getInt("id")
-            return User(id, newUser.name, newUser.email)
+
+            }
+            throw DataException("Failed to add user.")
+        }catch (e:PSQLException){
+                if(e.sqlState=="23505"){
+                    throw EntityAlreadyExistsException("email alredy in use",User::class)
+                }else{
+                    throw DataException("Failed to add user, PSQLException")
+                }
+        }catch (e:PSQLException){
+            throw DataException("Failed to add user.")
         }
-        throw DataException("Failed to add user.")
     }
 
     override fun delete(id: Int, connection: Connection?) {
