@@ -1,4 +1,5 @@
 import * as c from "./createElement.js";
+import userUtils from "./user.js";
 const API_BASE_URL = "http://localhost:9000/";
 
 function createLinks(links) {
@@ -84,7 +85,7 @@ function boardApend(item) {
 
 function getBoards(mainContent) {
   fetch(API_BASE_URL + "boards", {
-    headers: { Authorization: "Bearer 26db00bb-4579-4cbb-86d3-93c0e702b8c6" },
+    headers: userUtils.getAuthorizationHeader(),
   })
     .then((res) => res.json())
     .then((boards) => {
@@ -134,7 +135,7 @@ function addListsToPage(itemList) {
 
 function getBoardDetail(mainContent, params) {
   fetch(API_BASE_URL + "boards/" + params.boardId, {
-    headers: { Authorization: "Bearer 26db00bb-4579-4cbb-86d3-93c0e702b8c6" },
+    headers: userUtils.getAuthorizationHeader(),
   })
     .then((res) => res.json())
     .then((board) => {
@@ -154,9 +155,7 @@ function getBoardDetail(mainContent, params) {
       mainContent.replaceChildren(ulStd);
 
       fetch(API_BASE_URL + "boards/" + params.boardId + "/lists", {
-        headers: {
-          Authorization: "Bearer 26db00bb-4579-4cbb-86d3-93c0e702b8c6",
-        },
+        headers: userUtils.getAuthorizationHeader(),
       })
         .then((res) => res.json())
         .then((lists) => {
@@ -191,7 +190,7 @@ function userApend(item) {
 
 function getBoardsUsers(mainContent, params) {
   fetch(API_BASE_URL + "boards/" + params.boardId + "/user-list", {
-    headers: { Authorization: "Bearer 26db00bb-4579-4cbb-86d3-93c0e702b8c6" },
+    headers: userUtils.getAuthorizationHeader(),
   })
     .then((res) => res.json())
     .then((user) => {
@@ -224,7 +223,7 @@ function addCardsToPage(card) {
 
 function listDetails(mainContent, params) {
   fetch(API_BASE_URL + "boards/" + params.boardId + "/lists/" + params.listId, {
-    headers: { Authorization: "Bearer 26db00bb-4579-4cbb-86d3-93c0e702b8c6" },
+    headers: userUtils.getAuthorizationHeader(),
   })
     .then((res) => res.json())
     .then((list) => {
@@ -239,9 +238,7 @@ function listDetails(mainContent, params) {
           params.listId +
           "/cards",
         {
-          headers: {
-            Authorization: "Bearer 26db00bb-4579-4cbb-86d3-93c0e702b8c6",
-          },
+          headers: userUtils.getAuthorizationHeader(),
         }
       )
         .then((res) => res.json())
@@ -259,7 +256,7 @@ function listDetails(mainContent, params) {
 
 function cardDetail(mainContent, params) {
   fetch(API_BASE_URL + "boards/" + params.boardId + "/cards/" + params.cardId, {
-    headers: { Authorization: "Bearer 26db00bb-4579-4cbb-86d3-93c0e702b8c6" },
+    headers: userUtils.getAuthorizationHeader(),
   })
     .then((res) => res.json())
     .then((card) => {
@@ -284,7 +281,7 @@ function cardDetail(mainContent, params) {
     });
 }
 
-export const handlers = {
+const handlers = {
   getHome,
   getUser,
   getBoards,
