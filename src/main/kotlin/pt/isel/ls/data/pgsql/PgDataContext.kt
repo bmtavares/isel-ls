@@ -1,9 +1,10 @@
 package pt.isel.ls.data.pgsql
 
 import org.postgresql.ds.PGSimpleDataSource
+import pt.isel.ls.data.DataContext
 import java.sql.Connection
 
-object PgDataContext {
+object PgDataContext : DataContext {
     private val dataSource: PGSimpleDataSource = PGSimpleDataSource()
 
     init {
@@ -12,7 +13,7 @@ object PgDataContext {
 
     fun getConnection() = dataSource.connection
 
-    fun handleDB(block: (Connection) -> Unit) {
+    override fun handleData(block: (Connection?) -> Unit) {
         getConnection().use { con ->
             con.autoCommit = false
             try {

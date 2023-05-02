@@ -16,6 +16,7 @@ import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.data.mem.MemBoardsData
 import pt.isel.ls.data.mem.MemCardsData
+import pt.isel.ls.data.mem.MemDataContext
 import pt.isel.ls.data.mem.MemDataSource
 import pt.isel.ls.data.mem.MemListsData
 import pt.isel.ls.data.mem.MemUsersData
@@ -29,7 +30,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class BoardsTest {
-    private val services = TasksServices(MemBoardsData, MemUsersData, MemListsData, MemCardsData)
+    private val services = TasksServices(MemDataContext, MemBoardsData, MemUsersData, MemListsData, MemCardsData)
     private val api = WebApi(services)
     private val context = RequestContexts()
     private val prepare = ApiTestUtils(api, context)
@@ -242,8 +243,7 @@ class BoardsTest {
 
     @Test
     fun getUserBoardsWithOptionalSkipOverSize() {
-        val wtv = ApiTestUtils(api, context)
-        val user = wtv.createUser()
+        val user = prepare.createUser()
 
         val createDto1 = InputBoardDto("New Board", "A really cool new board")
         val createDto2 = InputBoardDto("New Board 2", "Derivative work actually")

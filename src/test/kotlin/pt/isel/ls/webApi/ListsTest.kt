@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test
 import pt.isel.ls.data.entities.BoardList
 import pt.isel.ls.data.mem.MemBoardsData
 import pt.isel.ls.data.mem.MemCardsData
+import pt.isel.ls.data.mem.MemDataContext
 import pt.isel.ls.data.mem.MemDataSource
 import pt.isel.ls.data.mem.MemListsData
 import pt.isel.ls.data.mem.MemUsersData
@@ -26,7 +27,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class ListsTest {
-    private val services = TasksServices(MemBoardsData, MemUsersData, MemListsData, MemCardsData)
+    private val services = TasksServices(MemDataContext, MemBoardsData, MemUsersData, MemListsData, MemCardsData)
     private val api = WebApi(services)
     private val unitApi = ListsApi(services)
     private val context = RequestContexts()

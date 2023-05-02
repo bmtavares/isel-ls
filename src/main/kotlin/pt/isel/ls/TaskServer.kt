@@ -16,9 +16,11 @@ import org.http4k.server.asServer
 import org.slf4j.LoggerFactory
 import pt.isel.ls.data.mem.MemBoardsData
 import pt.isel.ls.data.mem.MemCardsData
+import pt.isel.ls.data.mem.MemDataContext
 import pt.isel.ls.data.mem.MemDataSource
 import pt.isel.ls.data.mem.MemListsData
 import pt.isel.ls.data.mem.MemUsersData
+import pt.isel.ls.data.pgsql.PgDataContext
 import pt.isel.ls.data.pgsql.PgSqlBoardsData
 import pt.isel.ls.data.pgsql.PgSqlCardsData
 import pt.isel.ls.data.pgsql.PgSqlListsData
@@ -42,8 +44,9 @@ fun main() {
     val usersRepo = if (usePostgresql) PgSqlUsersData else MemUsersData
     val listsRepo = if (usePostgresql) PgSqlListsData else MemListsData
     val cardsRepo = if (usePostgresql) PgSqlCardsData else MemCardsData
+    val dataContext = if (usePostgresql) PgDataContext else MemDataContext
 
-    val services = TasksServices(boardsRepo, usersRepo, listsRepo, cardsRepo)
+    val services = TasksServices(dataContext, boardsRepo, usersRepo, listsRepo, cardsRepo)
 
     val webApi = WebApi(services)
     val cardsApi = CardsApi(services)

@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.data.mem.MemBoardsData
 import pt.isel.ls.data.mem.MemCardsData
+import pt.isel.ls.data.mem.MemDataContext
 import pt.isel.ls.data.mem.MemDataSource
 import pt.isel.ls.data.mem.MemListsData
 import pt.isel.ls.data.mem.MemUsersData
@@ -23,7 +24,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 
 class UsersTest {
-    private val services = TasksServices(MemBoardsData, MemUsersData, MemListsData, MemCardsData)
+    private val services = TasksServices(MemDataContext, MemBoardsData, MemUsersData, MemListsData, MemCardsData)
 
     private val api = WebApi(services)
 
