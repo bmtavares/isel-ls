@@ -242,7 +242,8 @@ class BoardsTest {
 
     @Test
     fun getUserBoardsWithOptionalSkipOverSize() {
-        val user = prepare.createUser()
+        val wtv = ApiTestUtils(api, context)
+        val user = wtv.createUser()
 
         val createDto1 = InputBoardDto("New Board", "A really cool new board")
         val createDto2 = InputBoardDto("New Board 2", "Derivative work actually")
