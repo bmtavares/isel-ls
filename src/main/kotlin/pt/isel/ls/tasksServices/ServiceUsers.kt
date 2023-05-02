@@ -1,7 +1,9 @@
 package pt.isel.ls.tasksServices
 
+import org.postgresql.util.PSQLException
 import pt.isel.ls.data.DataContext
 import pt.isel.ls.data.DataException
+import pt.isel.ls.data.EntityNotFoundException
 import pt.isel.ls.data.UsersData
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.tasksServices.dtos.InputUserDto
@@ -29,8 +31,9 @@ class ServiceUsers(private val context: DataContext, private val userRepository:
             context.handleData { con ->
                 user = userRepository.getById(userId, con)
             }
-        } catch (e: Exception) {
-            throw DataException("")
+        }
+        catch (e: Exception) {
+            throw e
         }
         return user
     }
@@ -42,7 +45,7 @@ class ServiceUsers(private val context: DataContext, private val userRepository:
                 user = userRepository.getByToken(token, con)
             }
         } catch (e: Exception) {
-            throw DataException("")
+            throw e
         }
         return user
     }

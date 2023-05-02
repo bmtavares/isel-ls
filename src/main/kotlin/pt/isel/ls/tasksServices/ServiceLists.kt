@@ -15,7 +15,7 @@ class ServiceLists(private val context: DataContext, private val listsRepo: List
                 boardList = listsRepo.add(newBoardList, boardId, con)
             }
         } catch (e: Exception) {
-            throw DataException("")
+            throw e
         }
         return boardList
     }
@@ -27,7 +27,7 @@ class ServiceLists(private val context: DataContext, private val listsRepo: List
                 boardLists = listsRepo.getListsByBoard(boardId, limit, skip, con)
             }
         } catch (e: Exception) {
-            throw DataException("Failed to retrieve board Lists")
+            throw e
         }
         return boardLists
     }
@@ -39,7 +39,7 @@ class ServiceLists(private val context: DataContext, private val listsRepo: List
                 boardList = listsRepo.getById(boardListId, con)
             }
         } catch (e: Exception) {
-            throw DataException("Failed to retrieve List")
+            throw e
         }
         return boardList
     }

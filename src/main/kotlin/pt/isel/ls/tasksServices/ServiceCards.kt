@@ -16,7 +16,7 @@ class ServiceCards(private val context: DataContext, private val cardsRepo: Card
                 card = cardsRepo.add(newCard, boardId, boardListId, con)
             }
         } catch (e: Exception) {
-            throw DataException("Failed to create the card")
+            throw e
         }
         return card
     }
@@ -28,7 +28,7 @@ class ServiceCards(private val context: DataContext, private val cardsRepo: Card
                 cards = cardsRepo.getByList(boardId, boardListId, limit, skip, con)
             }
         } catch (e: Exception) {
-            throw DataException("Failed to retrieve Cards")
+            throw e
         }
         return cards
     }
@@ -40,7 +40,7 @@ class ServiceCards(private val context: DataContext, private val cardsRepo: Card
                 card = cardsRepo.getById(cardId, con)
             }
         } catch (e: Exception) {
-            throw DataException("Failed to retrieve List")
+            throw e
         }
         return card
     }

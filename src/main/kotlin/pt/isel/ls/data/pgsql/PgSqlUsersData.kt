@@ -3,6 +3,7 @@ package pt.isel.ls.data.pgsql
 import org.postgresql.util.PSQLException
 import pt.isel.ls.data.DataException
 import pt.isel.ls.data.EntityAlreadyExistsException
+import pt.isel.ls.data.EntityNotFoundException
 import pt.isel.ls.data.UsersData
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.tasksServices.dtos.EditUserDto
@@ -84,7 +85,7 @@ object PgSqlUsersData : UsersData {
             )
         }
 
-        throw Exception("failed to get by id") // TODO
+        throw EntityNotFoundException("failed to get by id",User::class)
     }
 
     override fun add(newUser: InputUserDto, connection: Connection?): User {

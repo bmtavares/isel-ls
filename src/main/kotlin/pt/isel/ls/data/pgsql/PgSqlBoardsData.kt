@@ -2,6 +2,7 @@ package pt.isel.ls.data.pgsql
 
 import pt.isel.ls.data.BoardsData
 import pt.isel.ls.data.DataException
+import pt.isel.ls.data.EntityNotFoundException
 import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.tasksServices.dtos.EditBoardDto
@@ -25,7 +26,7 @@ object PgSqlBoardsData : BoardsData {
             )
         }
 
-        throw Exception("awdwa") // TODO
+        throw EntityNotFoundException("Board not found", Board::class)
     }
 
     override fun getUserBoards(user: User, limit: Int, skip: Int, connection: Connection?): List<Board> {

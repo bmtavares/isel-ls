@@ -29,7 +29,7 @@ class ServiceBoards(private val context: DataContext, private val boardRepositor
                 board = boardRepository.getByName(boardName, con)
             }
         } catch (e: Exception) {
-            throw EntityNotFoundException("Board not found", Board::class)
+            throw e
         }
         return board
     }
@@ -54,7 +54,7 @@ class ServiceBoards(private val context: DataContext, private val boardRepositor
                 boardRepository.addUserToBoard(user.id, board.id)
             }
         } catch (e: Exception) {
-            throw DataException("Failed to create Boards")
+            throw e
         }
         return board
     }
@@ -66,7 +66,7 @@ class ServiceBoards(private val context: DataContext, private val boardRepositor
                 users = boardRepository.getUsers(boardId, user, limit, skip, con)
             }
         } catch (e: Exception) {
-            throw DataException("managed errors")
+            throw e
         }
         return users
     }

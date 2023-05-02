@@ -99,8 +99,9 @@ class WebApi(
             val user = services.users.getUser(userId)
             Response(OK).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(user))
-        } catch (e: DataException) {
+        } catch (e: EntityNotFoundException) {
             Response(NOT_FOUND).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(e.message))
         } catch (e: Exception) {
             Response(INTERNAL_SERVER_ERROR)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
