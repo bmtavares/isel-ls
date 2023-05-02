@@ -41,7 +41,7 @@ function createElement(tagType, args) {
       el.className = argsArr[0].class ?? "";
       delete argsArr[0].class;
       // Add all the remaining attributes
-      Object.keys(argsArr[0]).forEach((k) => el.setAttribute(k, args[0][k]));
+      Object.keys(argsArr[0]).forEach((k) => el.setAttribute(k, argsArr[0][k]));
       // Remove
       argsArr.splice(0, 1);
     }
