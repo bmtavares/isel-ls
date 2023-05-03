@@ -2,30 +2,109 @@ import * as c from "./createElement.js";
 import userUtils from "./user.js";
 const API_BASE_URL = "http://localhost:9000/";
 
-function createLinks(links) {
-  const linksEl = document.getElementById("links");
-  linksEl.innerHTML = "";
+function populateNavbar(items) {
+  const navbar = document.getElementById("navbar-items");
+  navbar.innerHTML = "";
 
-  links.forEach((link) => {
-    const anchor = document.createElement("a");
-    anchor.href = link.href;
-    anchor.className = `link-${link.type}`;
-    anchor.innerText = link.text;
-
-    linksEl.appendChild(anchor);
+  items.forEach((i) => {
+    navbar.appendChild(
+      c.li(
+        {
+          class: "nav-item",
+        },
+        c.a(i.text, {
+          href: i.href,
+          class: "nav-link link-light",
+        })
+      )
+    );
   });
 }
 
 function getHome(mainContent) {
-  const h1 = document.createElement("h1");
-  const text = document.createTextNode("Home");
-  h1.appendChild(text);
-  mainContent.replaceChildren(h1);
-  const links = [
-    { href: "#userDetails", type: "primary", text: "user details" },
-    { href: "#boards", type: "primary", text: "Boars" },
+  mainContent.innerHTML = "";
+
+  mainContent.appendChild(
+    c.div(
+      {
+        class: "container-fluid text-center",
+      },
+      c.div(
+        {
+          class: "row justify-content-center",
+        },
+
+        c.h1("Welcome to LEIC Fauxllo!"),
+        c.p(
+          userUtils.getToken()
+            ? "You appear to be logged in!"
+            : "Look's like you're not logged in..",
+          {
+            class: "text-muted",
+          }
+        )
+      )
+    )
+  );
+
+  mainContent.appendChild(
+    c.footer(
+      {
+        class: "fixed-bottom isel-bg-colour ms-1 mb-1 me-1 rounded",
+      },
+      c.ul(
+        {
+          class: "nav justify-content-center",
+        },
+        c.li(
+          {
+            class: "nav-item",
+          },
+          c.a("Made in Chelas by", {
+            class: "nav-link text-body text-opacity-70",
+          })
+        ),
+        c.li(
+          {
+            class: "nav-item",
+          },
+          c.a("Manuel Fonseca", {
+            class: "nav-link link-light",
+            href: "https://github.com/manuel-48052",
+          })
+        ),
+        c.li(
+          {
+            class: "nav-item",
+          },
+          c.a("Sérgio Zorro", {
+            class: "nav-link link-light",
+            href: "https://github.com/sergiomiguelzorro",
+          })
+        ),
+        c.li(
+          {
+            class: "nav-item",
+          },
+          c.a("Bruno Tavares", {
+            class: "nav-link link-light",
+            href: "https://github.com/bmtavares",
+          })
+        )
+      )
+    )
+  );
+
+  // const h1 = document.createElement("h1");
+  // const text = document.createTextNode("Home");
+  // h1.appendChild(text);
+  // mainContent.replaceChildren(h1);
+
+  const navbarItems = [
+    { href: "#userDetails", text: "User" },
+    { href: "#boards", text: "Boards" },
   ];
-  createLinks(links);
+  populateNavbar(navbarItems);
 }
 
 function getUser(mainContent) {
@@ -47,12 +126,8 @@ function getUser(mainContent) {
 
       mainContent.replaceChildren(ulStd);
 
-      const links = [
-        { href: "#home", type: "secondary", text: "Home" },
-        { href: "#boards", type: "primary", text: "Boars" },
-      ];
-
-      createLinks(links);
+      const navbarItems = [{ href: "#boards", text: "Boards" }];
+      populateNavbar(navbarItems);
     });
 }
 
@@ -99,11 +174,8 @@ function getBoards(mainContent) {
       mainContent.replaceChildren(ulStd);
       boards.forEach(boardApend);
 
-      const links = [
-        { href: "#home", type: "secondary", text: "Home" },
-        { href: "#userDetails", type: "primary", text: "user details" },
-      ];
-      createLinks(links);
+      const navbarItems = [{ href: "#userDetails", text: "User" }];
+      populateNavbar(navbarItems);
     });
 }
 
@@ -161,16 +233,15 @@ function getBoardDetail(mainContent, params) {
         .then((lists) => {
           lists.forEach(addListsToPage);
         });
-      const links = [
-        { href: "#boards", type: "secondary", text: "boards" },
+
+      const navbarItems = [
+        { href: "#boards", text: "Boards" },
         {
           href: "#board/" + params.boardId + "/user-list",
-          type: "primary",
-          text: "board_useres",
+          text: "Users",
         },
-        { href: "#List_details", type: "secondary", text: "List_details" },
       ];
-      createLinks(links);
+      populateNavbar(navbarItems);
     });
 }
 
@@ -197,15 +268,13 @@ function getBoardsUsers(mainContent, params) {
       mainContent.innerHTML = "";
       user.forEach(userApend);
 
-      const links = [
+      const navbarItems = [
         {
           href: "#boards/" + params.boardId,
-          type: "secondary",
-          text: "boards details",
+          text: "Board",
         },
       ];
-
-      createLinks(links);
+      populateNavbar(navbarItems);
     });
 }
 
@@ -243,14 +312,14 @@ function listDetails(mainContent, params) {
       )
         .then((res) => res.json())
         .then((cards) => cards.forEach(addCardsToPage));
-      const links = [
+
+      const navbarItems = [
         {
           href: "#boards/" + params.boardId,
-          type: "secondary",
-          text: "boards details",
+          text: "Board",
         },
       ];
-      createLinks(links);
+      populateNavbar(navbarItems);
     });
 }
 
@@ -273,11 +342,10 @@ function cardDetail(mainContent, params) {
       const links = [
         {
           href: "#boards/" + params.boardId + "/lists/" + params.listId,
-          type: "secondary",
-          text: "list details",
+          text: "List",
         },
       ];
-      createLinks(links);
+      populateNavbar(links);
     });
 }
 

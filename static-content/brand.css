@@ -1,0 +1,11 @@
+.isel-bg-colour {
+    background-color: #9a3324;
+}
+
+.isel-bg-stripes {
+    background: repeating-linear-gradient(135deg,
+            #9a3324,
+            #9a3324 4px,
+            #8c2e20 4px,
+            #8c2e20 5px);
+}

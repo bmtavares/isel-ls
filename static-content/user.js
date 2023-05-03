@@ -20,6 +20,7 @@ function getAuthorizationHeader() {
 
 const userUtils = {
   getAuthorizationHeader,
+  getToken
 };
 
 export default userUtils;

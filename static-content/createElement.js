@@ -162,3 +162,7 @@ export function option() {
 export function select() {
   return createElement("select", arguments);
 }
+
+export function footer() {
+  return createElement("footer", arguments);
+}
