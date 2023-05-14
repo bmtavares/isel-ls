@@ -1,6 +1,7 @@
 import * as c from "./createElement.js";
 import userUtils from "./user.js";
 import boardGenerator from "./boardGenerator.js";
+import userGenerator from "./userGenerator.js";
 const API_BASE_URL = "http://localhost:9000/";
 
 function populateNavbar(items) {
@@ -107,26 +108,15 @@ function getUser(mainContent) {
   fetch(API_BASE_URL + "users/" + userUtils.getId())
     .then((res) => res.json())
     .then((user) => {
-
       const content = c.div(
         {
           class: "container",
         },
         c.div(
           {
-            class: "card position-absolute top-50 start-50 translate-middle",
+            class: "position-absolute top-50 start-50 translate-middle",
           },
-          c.div(
-            {
-              class: "card-body",
-            },
-            c.h3(`${user.name}`, {
-              class: "card-title",
-            }),
-            c.p(`✉ ${user.email}`, {
-              class: "card-text",
-            })
-          )
+          userGenerator.listingCard(user)
         )
       );
 
@@ -185,28 +175,18 @@ function getBoardDetail(mainContent, params) {
     });
 }
 
-function userApend(item) {
-  const mainContent = document.getElementById("mainContent");
-  const ulStd = document.createElement("ul");
-  const liName = document.createElement("li");
-  const textName = document.createTextNode("Name : " + item.name);
-  const textemail = document.createTextNode("Email : " + item.email);
-
-  liName.appendChild(textName);
-  liName.appendChild(textemail);
-
-  ulStd.appendChild(liName);
-  mainContent.appendChild(ulStd);
-}
-
 function getBoardsUsers(mainContent, params) {
   fetch(API_BASE_URL + "boards/" + params.boardId + "/user-list", {
     headers: userUtils.getAuthorizationHeader(),
   })
     .then((res) => res.json())
-    .then((user) => {
-      mainContent.innerHTML = "";
-      user.forEach(userApend);
+    .then((users) => {
+      const content = c.div(
+        { class: "container px-2 py-4" },
+        userGenerator.listing(users)
+      );
+
+      mainContent.replaceChildren(content);
 
       const navbarItems = [
         {
