@@ -4,6 +4,7 @@ import boardGenerator from "./boardGenerator.js";
 import userGenerator from "./userGenerator.js";
 import homeGenerator from "./homeGenerator.js";
 import listGenerator from "./listGenerator.js";
+import cardGenerator from "./cardGenerator.js";
 const API_BASE_URL = "http://localhost:9000/";
 
 function populateNavbar(items) {
@@ -174,16 +175,17 @@ function cardDetail(mainContent, params) {
   })
     .then((res) => res.json())
     .then((card) => {
-      mainContent.innerHTML = "";
-      const date = new Date(card.dueDate);
-      const main = c.div(
-        c.h1("card: " + card.name),
-        c.li(card.description),
-        c.li(
-          `due date: ${date.getFullYear()}  ${date.getMonth()} ${date.getDate()}`
+      const content = c.div(
+        { class: "container" },
+        c.div(
+          {
+            class: "position-absolute top-50 start-50 translate-middle",
+          },
+          cardGenerator.details(card)
         )
       );
-      mainContent.appendChild(main);
+      mainContent.replaceChildren(content);
+      
       const links = [
         {
           href: "#boards/" + params.boardId + "/lists/" + params.listId,

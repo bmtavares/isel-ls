@@ -3,7 +3,7 @@ import * as c from "./createElement.js";
 function listingCard(card) {
   return c.div(
     { class: "card text-center" },
-    c.div({ class: "card-body" }, c.h3(card.name)),
+    c.div({ class: "card-body" }, c.h3(card.name, {class: "card-title"})),
     c.div(
       { class: "card-footer d-grid" },
       c.a("Details", {
@@ -23,8 +23,19 @@ function listing(cards) {
 
 function details(card) {
   return c.div(
-    c.h1(card.name),
-    cardGenerator.listing(cards)
+    { class: "card text-center" },
+    c.div(
+      { class: "card-body" },
+      c.h3(card.name, { class: "card-title" }),
+      c.p(card.description, { class: "card-text" }),
+      card.dueDate &&
+        c.p(
+          { class: "card-text" },
+          c.small(`📅 ${new Date(card.dueDate).toLocaleString()}`, {
+            class: "text-body-secondary",
+          })
+        )
+    )
   );
 }
 
