@@ -1,5 +1,6 @@
 import * as c from "./createElement.js";
 import userUtils from "./user.js";
+import boardGenerator from "./boardGenerator.js";
 const API_BASE_URL = "http://localhost:9000/";
 
 function populateNavbar(items) {
@@ -138,48 +139,19 @@ function getUser(mainContent) {
     });
 }
 
-function boardApend(item) {
-  const ulStd = document.createElement("ul");
-  const liName = document.createElement("li");
-  const textName = document.createTextNode("Name : " + item.name);
-
-  liName.appendChild(textName);
-  ulStd.appendChild(liName);
-
-  const detailsLink = document.createElement("a");
-  detailsLink.href = "#boards/" + item.id; // modify the URL path to include the board ID
-  detailsLink.innerHTML = "link";
-
-  const par = document.createElement("p");
-  par.innerHTML = "details: ";
-  par.appendChild(detailsLink);
-
-  detailsLink.addEventListener("click", function (event) {
-    event.preventDefault(); // prevent the link from navigating away from the page
-    window.history.pushState(null, null, detailsLink.href); // update the URL without navigating
-    location.reload();
-  });
-
-  par.appendChild(detailsLink);
-  mainContent.appendChild(ulStd);
-  mainContent.appendChild(par);
-}
-
 function getBoards(mainContent) {
   fetch(API_BASE_URL + "boards", {
     headers: userUtils.getAuthorizationHeader(),
   })
     .then((res) => res.json())
     .then((boards) => {
-      const ulStd = document.createElement("ul");
-      const lititle = document.createElement("li");
+      const content = c.div(
+        {class: "container px-2 py-4"},
+        c.h1("Boards"),
+        boardGenerator.listing(boards)
+      )
 
-      const textTitle = document.createTextNode("__BOARDS __");
-      ulStd.appendChild(lititle);
-
-      lititle.appendChild(textTitle);
-      mainContent.replaceChildren(ulStd);
-      boards.forEach(boardApend);
+      mainContent.replaceChildren(content);
 
       const navbarItems = [{ href: "#userDetails", text: "User" }];
       populateNavbar(navbarItems);
