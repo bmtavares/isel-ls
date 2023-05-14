@@ -1,45 +1,45 @@
-import * as c from "./createElement.js";
+import { footer, ul, li, a, div, h1, p } from "./createElement.js";
 
-function footer() {
-  return c.footer(
+function creditsFooter() {
+  return footer(
     {
       class: "fixed-bottom isel-bg-colour ms-1 mb-1 me-1 rounded",
     },
-    c.ul(
+    ul(
       {
         class: "nav justify-content-center",
       },
-      c.li(
+      li(
         {
           class: "nav-item",
         },
-        c.a("Made in Chelas by", {
+        a("Made in Chelas by", {
           class: "nav-link text-body text-opacity-70",
         })
       ),
-      c.li(
+      li(
         {
           class: "nav-item",
         },
-        c.a("Manuel Fonseca", {
+        a("Manuel Fonseca", {
           class: "nav-link link-light",
           href: "https://github.com/manuel-48052",
         })
       ),
-      c.li(
+      li(
         {
           class: "nav-item",
         },
-        c.a("Sérgio Zorro", {
+        a("Sérgio Zorro", {
           class: "nav-link link-light",
           href: "https://github.com/sergiomiguelzorro",
         })
       ),
-      c.li(
+      li(
         {
           class: "nav-item",
         },
-        c.a("Bruno Tavares", {
+        a("Bruno Tavares", {
           class: "nav-link link-light",
           href: "https://github.com/bmtavares",
         })
@@ -49,17 +49,16 @@ function footer() {
 }
 
 function content(token) {
-  return c.div(
+  return div(
     {
       class: "container-fluid text-center",
     },
-    c.div(
+    div(
       {
         class: "row justify-content-center",
       },
-
-      c.h1("Welcome to LEIC Fauxllo!"),
-      c.p(
+      h1("Welcome to LEIC Fauxllo!"),
+      p(
         token
           ? "You appear to be logged in!"
           : "Look's like you're not logged in..",
@@ -73,5 +72,5 @@ function content(token) {
 
 export default {
   content,
-  footer,
+  creditsFooter,
 };

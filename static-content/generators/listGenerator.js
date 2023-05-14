@@ -1,13 +1,13 @@
 import cardGenerator from "./cardGenerator.js";
-import * as c from "./createElement.js";
+import { div, a, h3, h1 } from "./createElement.js";
 
 function listingCard(list) {
-  return c.div(
+  return div(
     { class: "card text-center" },
-    c.div({ class: "card-body" }, c.h3(list.name, { class: "card-title" })),
-    c.div(
+    div({ class: "card-body" }, h3(list.name, { class: "card-title" })),
+    div(
       { class: "card-footer d-grid" },
-      c.a("Details", {
+      a("Details", {
         class: "btn btn-primary",
         href: `#boards/${list.boardId}/lists/${list.id}`,
       })
@@ -16,20 +16,17 @@ function listingCard(list) {
 }
 
 function listing(lists) {
-  return c.div(
+  return div(
     { class: "row gy-2" },
-    ...lists.map((list) => c.div({ class: "col-lg-4" }, listingCard(list)))
+    ...lists.map((list) => div({ class: "col-lg-4" }, listingCard(list)))
   );
 }
 
 function details(list, cards) {
-  return c.div(
-    c.h1(list.name),
-    cardGenerator.listing(cards)
-  );
+  return div(h1(list.name), cardGenerator.listing(cards));
 }
 
 export default {
   listing,
-  details
+  details,
 };

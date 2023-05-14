@@ -1,18 +1,18 @@
-import * as c from "./createElement.js";
+import { div, h3, p } from "./createElement.js";
 
 function listingCard(user) {
-  return c.div(
+  return div(
     {
       class: "card",
     },
-    c.div(
+    div(
       {
         class: "card-body",
       },
-      c.h3(`${user.name}`, {
+      h3(`${user.name}`, {
         class: "card-title",
       }),
-      c.p(`✉ ${user.email}`, {
+      p(`✉ ${user.email}`, {
         class: "card-text",
       })
     )
@@ -20,9 +20,9 @@ function listingCard(user) {
 }
 
 function listing(users) {
-  return c.div(
+  return div(
     { class: "row gy-2" },
-    ...users.map((user) => c.div({ class: "col-lg-3" }, listingCard(user)))
+    ...users.map((user) => div({ class: "col-lg-3" }, listingCard(user)))
   );
 }
 

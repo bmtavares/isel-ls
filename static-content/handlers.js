@@ -1,10 +1,10 @@
-import * as c from "./createElement.js";
+import { li, a, div, h1 } from "./generators/createElement.js";
 import userUtils from "./user.js";
-import boardGenerator from "./boardGenerator.js";
-import userGenerator from "./userGenerator.js";
-import homeGenerator from "./homeGenerator.js";
-import listGenerator from "./listGenerator.js";
-import cardGenerator from "./cardGenerator.js";
+import boardGenerator from "./generators/boardGenerator.js";
+import userGenerator from "./generators/userGenerator.js";
+import homeGenerator from "./generators/homeGenerator.js";
+import listGenerator from "./generators/listGenerator.js";
+import cardGenerator from "./generators/cardGenerator.js";
 const API_BASE_URL = "http://localhost:9000/";
 
 function populateNavbar(items) {
@@ -13,11 +13,11 @@ function populateNavbar(items) {
 
   items.forEach((i) => {
     navbar.appendChild(
-      c.li(
+      li(
         {
           class: "nav-item",
         },
-        c.a(i.text, {
+        a(i.text, {
           href: i.href,
           class: "nav-link link-light",
         })
@@ -29,7 +29,7 @@ function populateNavbar(items) {
 function getHome(mainContent) {
   mainContent.innerHTML = "";
   mainContent.appendChild(homeGenerator.content(userUtils.getToken()));
-  mainContent.appendChild(homeGenerator.footer());
+  mainContent.appendChild(homeGenerator.creditsFooter());
 
   const navbarItems = [
     { href: "#userDetails", text: "User" },
@@ -42,11 +42,11 @@ function getUser(mainContent) {
   fetch(API_BASE_URL + "users/" + userUtils.getId())
     .then((res) => res.json())
     .then((user) => {
-      const content = c.div(
+      const content = div(
         {
           class: "container",
         },
-        c.div(
+        div(
           {
             class: "position-absolute top-50 start-50 translate-middle",
           },
@@ -64,11 +64,11 @@ function getBoards(mainContent) {
   })
     .then((res) => res.json())
     .then((boards) => {
-      const content = c.div(
-        {class: "container px-2 py-4"},
-        c.h1("Boards"),
+      const content = div(
+        { class: "container px-2 py-4" },
+        h1("Boards"),
         boardGenerator.listing(boards)
-      )
+      );
 
       mainContent.replaceChildren(content);
 
@@ -91,7 +91,7 @@ function getBoardDetail(mainContent, params) {
       );
       const lists = await listsReq.json();
 
-      const content = c.div(
+      const content = div(
         { class: "container" },
         boardGenerator.details(board, lists)
       );
@@ -115,7 +115,7 @@ function getBoardsUsers(mainContent, params) {
   })
     .then((res) => res.json())
     .then((users) => {
-      const content = c.div(
+      const content = div(
         { class: "container px-2 py-4" },
         userGenerator.listing(users)
       );
@@ -152,7 +152,7 @@ function listDetails(mainContent, params) {
 
       const cards = await cardsReq.json();
 
-      const content = c.div(
+      const content = div(
         { class: "content" },
         listGenerator.details(list, cards)
       );
@@ -175,9 +175,9 @@ function cardDetail(mainContent, params) {
   })
     .then((res) => res.json())
     .then((card) => {
-      const content = c.div(
+      const content = div(
         { class: "container" },
-        c.div(
+        div(
           {
             class: "position-absolute top-50 start-50 translate-middle",
           },
@@ -185,7 +185,7 @@ function cardDetail(mainContent, params) {
         )
       );
       mainContent.replaceChildren(content);
-      
+
       const links = [
         {
           href: "#boards/" + params.boardId + "/lists/" + params.listId,

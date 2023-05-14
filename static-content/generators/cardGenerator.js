@@ -1,12 +1,12 @@
-import * as c from "./createElement.js";
+import { div, a, h3, p, small } from "./createElement.js";
 
 function listingCard(card) {
-  return c.div(
+  return div(
     { class: "card text-center" },
-    c.div({ class: "card-body" }, c.h3(card.name, {class: "card-title"})),
-    c.div(
+    div({ class: "card-body" }, h3(card.name, { class: "card-title" })),
+    div(
       { class: "card-footer d-grid" },
-      c.a("Details", {
+      a("Details", {
         class: "btn btn-primary",
         href: `#boards/${card.boardId}/lists/${card.listId}/cards/${card.id}`,
       })
@@ -15,23 +15,23 @@ function listingCard(card) {
 }
 
 function listing(cards) {
-  return c.div(
+  return div(
     { class: "row gy-2" },
-    ...cards.map((card) => c.div({ class: "col-lg-3" }, listingCard(card)))
+    ...cards.map((card) => div({ class: "col-lg-3" }, listingCard(card)))
   );
 }
 
 function details(card) {
-  return c.div(
+  return div(
     { class: "card text-center" },
-    c.div(
+    div(
       { class: "card-body" },
-      c.h3(card.name, { class: "card-title" }),
-      c.p(card.description, { class: "card-text" }),
+      h3(card.name, { class: "card-title" }),
+      p(card.description, { class: "card-text" }),
       card.dueDate &&
-        c.p(
+        p(
           { class: "card-text" },
-          c.small(`📅 ${new Date(card.dueDate).toLocaleString()}`, {
+          small(`📅 ${new Date(card.dueDate).toLocaleString()}`, {
             class: "text-body-secondary",
           })
         )
@@ -41,5 +41,5 @@ function details(card) {
 
 export default {
   listing,
-  details
+  details,
 };
