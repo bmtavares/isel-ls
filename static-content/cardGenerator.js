@@ -1,30 +1,29 @@
-import cardGenerator from "./cardGenerator.js";
 import * as c from "./createElement.js";
 
-function listingCard(list) {
+function listingCard(card) {
   return c.div(
     { class: "card text-center" },
-    c.div({ class: "card-body" }, c.h3(list.name, { class: "card-title" })),
+    c.div({ class: "card-body" }, c.h3(card.name)),
     c.div(
       { class: "card-footer d-grid" },
       c.a("Details", {
         class: "btn btn-primary",
-        href: `#boards/${list.boardId}/lists/${list.id}`,
+        href: `#boards/${card.boardId}/lists/${card.listId}/cards/${card.id}`,
       })
     )
   );
 }
 
-function listing(lists) {
+function listing(cards) {
   return c.div(
     { class: "row gy-2" },
-    ...lists.map((list) => c.div({ class: "col-lg-4" }, listingCard(list)))
+    ...cards.map((card) => c.div({ class: "col-lg-3" }, listingCard(card)))
   );
 }
 
-function details(list, cards) {
+function details(card) {
   return c.div(
-    c.h1(list.name),
+    c.h1(card.name),
     cardGenerator.listing(cards)
   );
 }

@@ -3,6 +3,7 @@ import userUtils from "./user.js";
 import boardGenerator from "./boardGenerator.js";
 import userGenerator from "./userGenerator.js";
 import homeGenerator from "./homeGenerator.js";
+import listGenerator from "./listGenerator.js";
 const API_BASE_URL = "http://localhost:9000/";
 
 function populateNavbar(items) {
@@ -130,28 +131,13 @@ function getBoardsUsers(mainContent, params) {
     });
 }
 
-function addCardsToPage(card) {
-  const mainContent = document.getElementById("mainContent");
-  const main = c.div(c.h3("card: " + card.name));
-  const detailsLink = document.createElement("a");
-  detailsLink.href =
-    "#boards/" + card.boardId + "/lists/" + card.listId + "/cards/" + card.id;
-  detailsLink.innerHTML = card.name;
-  main.appendChild(detailsLink);
-
-  mainContent.appendChild(main);
-}
-
 function listDetails(mainContent, params) {
   fetch(API_BASE_URL + "boards/" + params.boardId + "/lists/" + params.listId, {
     headers: userUtils.getAuthorizationHeader(),
   })
     .then((res) => res.json())
-    .then((list) => {
-      mainContent.innerHTML = "";
-      const main = c.div(c.h1("lista: " + list.name));
-      mainContent.appendChild(main);
-      fetch(
+    .then(async (list) => {
+      const cardsReq = await fetch(
         API_BASE_URL +
           "boards/" +
           params.boardId +
@@ -161,9 +147,16 @@ function listDetails(mainContent, params) {
         {
           headers: userUtils.getAuthorizationHeader(),
         }
-      )
-        .then((res) => res.json())
-        .then((cards) => cards.forEach(addCardsToPage));
+      );
+
+      const cards = await cardsReq.json();
+
+      const content = c.div(
+        { class: "content" },
+        listGenerator.details(list, cards)
+      );
+
+      mainContent.replaceChildren(content);
 
       const navbarItems = [
         {
