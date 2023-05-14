@@ -48,7 +48,7 @@ function createElement(tagType, args) {
 
     // All that remains should be HTML Elements
     argsArr.forEach((child) => {
-      el.appendChild(child);
+      child && el.appendChild(child);
     });
   }
 
@@ -165,4 +165,8 @@ export function select() {
 
 export function footer() {
   return createElement("footer", arguments);
+}
+
+export function small() {
+  return createElement("small", arguments);
 }
