@@ -1,4 +1,5 @@
-import * as c from './createElement.js'
+import * as c from "./createElement.js";
+import listGenerator from "./listGenerator.js";
 
 function listingCard(board) {
   return c.div(
@@ -16,9 +17,21 @@ function listingCard(board) {
 }
 
 function listing(boards) {
-  return c.div({ class: "row gy-2" }, ...boards.map((board) => c.div({ class: "col-lg-4" }, listingCard(board))));
+  return c.div(
+    { class: "row gy-2" },
+    ...boards.map((board) => c.div({ class: "col-lg-4" }, listingCard(board)))
+  );
+}
+
+function details(board, lists) {
+  return c.div(
+    c.h1(board.name),
+    c.h3(board.description, { class: "text-muted" }),
+    listGenerator.listing(lists)
+  );
 }
 
 export default {
-    listing
-}
+  listing,
+  details,
+};

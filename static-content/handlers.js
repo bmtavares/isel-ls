@@ -96,11 +96,6 @@ function getHome(mainContent) {
     )
   );
 
-  // const h1 = document.createElement("h1");
-  // const text = document.createTextNode("Home");
-  // h1.appendChild(text);
-  // mainContent.replaceChildren(h1);
-
   const navbarItems = [
     { href: "#userDetails", text: "User" },
     { href: "#boards", text: "Boards" },
@@ -158,60 +153,26 @@ function getBoards(mainContent) {
     });
 }
 
-function addListsToPage(itemList) {
-  const ulStd = document.createElement("ul");
-  const liName = document.createElement("li");
-  const textName = document.createTextNode("Name : " + itemList.name);
-
-  liName.appendChild(textName);
-  ulStd.appendChild(liName);
-
-  const detailsLink = document.createElement("a");
-  detailsLink.href = "#boards/" + itemList.boardId + "/lists/" + itemList.id; // modify the URL path to include the board ID
-  detailsLink.innerHTML = "link";
-
-  const par = document.createElement("p");
-  par.innerHTML = "details: ";
-  par.appendChild(detailsLink);
-
-  detailsLink.addEventListener("click", function (event) {
-    event.preventDefault(); // prevent the link from navigating away from the page
-    window.history.pushState(null, null, detailsLink.href); // update the URL without navigating
-    location.reload();
-  });
-  par.appendChild(detailsLink);
-  mainContent.appendChild(ulStd);
-  mainContent.appendChild(par);
-}
-
 function getBoardDetail(mainContent, params) {
   fetch(API_BASE_URL + "boards/" + params.boardId, {
     headers: userUtils.getAuthorizationHeader(),
   })
     .then((res) => res.json())
-    .then((board) => {
-      const ulStd = document.createElement("ul");
-
-      const liName = document.createElement("li");
-      const textName = document.createTextNode("Name : " + board.name);
-      liName.appendChild(textName);
-
-      const liNumber = document.createElement("li");
-      const textNumber = document.createTextNode(
-        "description : " + board.description
+    .then(async (board) => {
+      const listsReq = await fetch(
+        API_BASE_URL + "boards/" + params.boardId + "/lists",
+        {
+          headers: userUtils.getAuthorizationHeader(),
+        }
       );
-      liNumber.appendChild(textNumber);
-      ulStd.appendChild(liName);
-      ulStd.appendChild(liNumber);
-      mainContent.replaceChildren(ulStd);
+      const lists = await listsReq.json();
 
-      fetch(API_BASE_URL + "boards/" + params.boardId + "/lists", {
-        headers: userUtils.getAuthorizationHeader(),
-      })
-        .then((res) => res.json())
-        .then((lists) => {
-          lists.forEach(addListsToPage);
-        });
+      const content = c.div(
+        { class: "container" },
+        boardGenerator.details(board, lists)
+      );
+
+      mainContent.replaceChildren(content);
 
       const navbarItems = [
         { href: "#boards", text: "Boards" },
