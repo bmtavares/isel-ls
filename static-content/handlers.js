@@ -2,6 +2,7 @@ import * as c from "./createElement.js";
 import userUtils from "./user.js";
 import boardGenerator from "./boardGenerator.js";
 import userGenerator from "./userGenerator.js";
+import homeGenerator from "./homeGenerator.js";
 const API_BASE_URL = "http://localhost:9000/";
 
 function populateNavbar(items) {
@@ -25,77 +26,8 @@ function populateNavbar(items) {
 
 function getHome(mainContent) {
   mainContent.innerHTML = "";
-
-  mainContent.appendChild(
-    c.div(
-      {
-        class: "container-fluid text-center",
-      },
-      c.div(
-        {
-          class: "row justify-content-center",
-        },
-
-        c.h1("Welcome to LEIC Fauxllo!"),
-        c.p(
-          userUtils.getToken()
-            ? "You appear to be logged in!"
-            : "Look's like you're not logged in..",
-          {
-            class: "text-muted",
-          }
-        )
-      )
-    )
-  );
-
-  mainContent.appendChild(
-    c.footer(
-      {
-        class: "fixed-bottom isel-bg-colour ms-1 mb-1 me-1 rounded",
-      },
-      c.ul(
-        {
-          class: "nav justify-content-center",
-        },
-        c.li(
-          {
-            class: "nav-item",
-          },
-          c.a("Made in Chelas by", {
-            class: "nav-link text-body text-opacity-70",
-          })
-        ),
-        c.li(
-          {
-            class: "nav-item",
-          },
-          c.a("Manuel Fonseca", {
-            class: "nav-link link-light",
-            href: "https://github.com/manuel-48052",
-          })
-        ),
-        c.li(
-          {
-            class: "nav-item",
-          },
-          c.a("Sérgio Zorro", {
-            class: "nav-link link-light",
-            href: "https://github.com/sergiomiguelzorro",
-          })
-        ),
-        c.li(
-          {
-            class: "nav-item",
-          },
-          c.a("Bruno Tavares", {
-            class: "nav-link link-light",
-            href: "https://github.com/bmtavares",
-          })
-        )
-      )
-    )
-  );
+  mainContent.appendChild(homeGenerator.content(userUtils.getToken()));
+  mainContent.appendChild(homeGenerator.footer());
 
   const navbarItems = [
     { href: "#userDetails", text: "User" },
