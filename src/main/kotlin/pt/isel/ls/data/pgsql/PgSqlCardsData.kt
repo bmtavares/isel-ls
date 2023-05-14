@@ -32,9 +32,10 @@ object PgSqlCardsData : CardsData {
                 rs.getString("name"),
                 rs.getString("description"),
                 rs.getTimestamp("dueDate"),
-                if (rs.wasNull()) null else rs.getInt("listId"),
+                if (rs.getInt("listId") == 0 && rs.wasNull()) null else rs.getInt("listId"),
                 rs.getInt("boardId"),
-                rs.getInt("cIdx")
+                0
+//                rs.getInt("cIdx")
             )
         }
 
@@ -58,7 +59,7 @@ object PgSqlCardsData : CardsData {
                 rs.getString("name"),
                 rs.getString("description"),
                 rs.getTimestamp("dueDate"),
-                if (rs.wasNull()) null else rs.getInt("listId"),
+                if (rs.getInt("listId") == 0 && rs.wasNull()) null else rs.getInt("listId"),
                 rs.getInt("boardId"),
                 rs.getInt("cIdx")
             )
@@ -90,9 +91,10 @@ object PgSqlCardsData : CardsData {
                 rs.getString("name"),
                 rs.getString("description"),
                 rs.getTimestamp("dueDate"),
-                if (rs.wasNull()) null else rs.getInt("listId"),
+                if (rs.getInt("listId") == 0 && rs.wasNull()) null else rs.getInt("listId"),
                 rs.getInt("boardId"),
-                rs.getInt("cidx")
+                0
+//                rs.getInt("cidx")
             )
         }
 
@@ -188,7 +190,7 @@ object PgSqlCardsData : CardsData {
             val name = rs.getString("name")
             val description = rs.getString("description")
             val dueDate = rs.getTimestamp("dueDate")
-            val lId = if (rs.wasNull()) null else rs.getInt("listId")
+            val lId = if (rs.getInt("listId") == 0 && rs.wasNull()) null else rs.getInt("listId")
             val bId = rs.getInt("boardId")
             val cIdx = rs.getInt("cIdx")
 
