@@ -1,4 +1,5 @@
 const userData = {
+  id: 1,
   token: "26db00bb-4579-4cbb-86d3-93c0e702b8c6",
 };
 
@@ -14,13 +15,18 @@ function getToken() {
   return userData.token;
 }
 
+function getId() {
+  return userData.id;
+}
+
 function getAuthorizationHeader() {
   return { Authorization: `Bearer ${userData.token}` };
 }
 
 const userUtils = {
   getAuthorizationHeader,
-  getToken
+  getToken,
+  getId
 };
 
 export default userUtils;
