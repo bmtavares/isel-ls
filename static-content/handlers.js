@@ -108,26 +108,33 @@ function getHome(mainContent) {
 }
 
 function getUser(mainContent) {
-  fetch(API_BASE_URL + "users/1")
+  fetch(API_BASE_URL + "users/" + userUtils.getId())
     .then((res) => res.json())
     .then((user) => {
-      const ulStd = document.createElement("ul");
 
-      const liName = document.createElement("li");
-      const textName = document.createTextNode("Name : " + user.name);
-      liName.appendChild(textName);
+      const content = c.div(
+        {
+          class: "container",
+        },
+        c.div(
+          {
+            class: "card position-absolute top-50 start-50 translate-middle",
+          },
+          c.div(
+            {
+              class: "card-body",
+            },
+            c.h3(`${user.name}`, {
+              class: "card-title",
+            }),
+            c.p(`✉ ${user.email}`, {
+              class: "card-text",
+            })
+          )
+        )
+      );
 
-      const liNumber = document.createElement("li");
-      const textNumber = document.createTextNode("Number : " + user.email);
-      liNumber.appendChild(textNumber);
-
-      ulStd.appendChild(liName);
-      ulStd.appendChild(liNumber);
-
-      mainContent.replaceChildren(ulStd);
-
-      const navbarItems = [{ href: "#boards", text: "Boards" }];
-      populateNavbar(navbarItems);
+      mainContent.replaceChildren(content);
     });
 }
 
