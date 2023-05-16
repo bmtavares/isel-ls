@@ -14,4 +14,5 @@ interface BoardsData : Data<Board> {
     fun addUserToBoard(userId: Int, boardId: Int, connection: Connection? = null)
     fun deleteUserFromBoard(userId: Int, boardId: Int, connection: Connection? = null)
     fun getUsers(boardId: Int, user: User, limit: Int = 25, skip: Int = 0, connection: Connection? = null): List<User>
+    fun filterByName(user: User, searchField: String, con: Connection?): List<Board>
 }

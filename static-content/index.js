@@ -7,6 +7,7 @@ window.addEventListener("hashchange", hashChangeHandler);
 function loadHandler() {
   router.addRouteHandler("home", handlers.getHome);
   router.addRouteHandler("userDetails", handlers.getUser);
+  router.addRouteHandler("searchboards", handlers.getSearchBoards);
   router.addRouteHandler("boards", handlers.getBoards);
   router.addRouteHandler("boards/{boardId}", handlers.getBoardDetail);
   router.addRouteHandler("board/{boardId}/user-list", handlers.getBoardsUsers);

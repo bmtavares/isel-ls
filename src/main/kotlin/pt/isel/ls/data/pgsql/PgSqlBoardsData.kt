@@ -167,6 +167,28 @@ object PgSqlBoardsData : BoardsData {
         return results
     }
 
+    override fun filterByName(user:User, searchField: String, con: Connection?): List<Board> {
+        checkNotNull(con) { "Connection is need to use DB" }
+        val statement = con.prepareStatement(
+            "select b.* from Boards b join usersboards ub on b.id = ub.boardid where ub.userid = ? and LOWER(b.name) like LOWER(?) ;"
+        )
+        statement.setInt(1, user.id)
+        statement.setString(2, "%${searchField.lowercase()}%")
+        val boards = mutableListOf<Board>()
+
+        val rs = statement.executeQuery()
+        while (rs.next()) {
+            boards.add( Board(
+                rs.getInt("id"),
+                rs.getString("name"),
+                rs.getString("description")
+            ))
+            return boards
+        }
+
+        throw Exception("SQL exception") // TODO
+    }
+
     override fun deleteUserFromBoard(userId: Int, boardId: Int, connection: Connection?) {
         checkNotNull(connection) { "Connection is need to use DB" }
         val statement = connection.prepareStatement(
