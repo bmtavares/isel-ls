@@ -77,6 +77,7 @@ fun main() {
             "boards/{id}/lists" bind Method.GET to webApi::getLists, // working
             "boards/{id}/lists" bind Method.POST to webApi::createList, // working
             "boards/{id}/lists/{lid}" bind Method.PUT to webApi::editList, // working
+            "boards/{id}/lists/{lid}" bind Method.DELETE to webApi::deleteList,
             "boards/{id}/lists/{lid}" bind Method.GET to webApi::getList, // working
             "boards/{id}/lists/{lid}/move" bind Method.PUT to webApi::moveList,
             "boards/{id}/lists/{lid}/cards" bind Method.GET to webApi::getCardsFromList, // working

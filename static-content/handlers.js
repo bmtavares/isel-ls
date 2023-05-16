@@ -7,6 +7,7 @@ import listGenerator from "./generators/listGenerator.js";
 import cardGenerator from "./generators/cardGenerator.js";
 const API_BASE_URL = "http://localhost:9000/";
 
+
 function populateNavbar(items) {
   const navbar = document.getElementById("navbar-items");
   navbar.innerHTML = "";
@@ -196,6 +197,8 @@ function cardDetail(mainContent, params) {
       populateNavbar(links);
     });
 }
+
+
 
 const handlers = {
   getHome,

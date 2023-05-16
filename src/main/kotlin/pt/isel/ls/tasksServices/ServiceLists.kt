@@ -44,6 +44,15 @@ class ServiceLists(private val context: DataContext, private val listsRepo: List
         return boardList
     }
 
+    fun deleteBoardList(boardListId: Int) {
+        try {
+            context.handleData { con ->
+                listsRepo.delete(boardListId,con)
+            }
+        } catch (e: Exception) {
+            throw e
+        }
+    }
     fun editBoardList(editList: EditBoardListDto, boardListId: Int, boardId: Int) {
         try {
             context.handleData { con ->

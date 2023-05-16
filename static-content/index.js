@@ -4,6 +4,8 @@ import handlers from "./handlers.js";
 window.addEventListener("load", loadHandler);
 window.addEventListener("hashchange", hashChangeHandler);
 
+
+
 function loadHandler() {
   router.addRouteHandler("home", handlers.getHome);
   router.addRouteHandler("userDetails", handlers.getUser);
