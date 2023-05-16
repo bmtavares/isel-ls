@@ -8,7 +8,11 @@
         {
             class: "primary",   // If the tag has any attributes they should be given via an argument before other elements
             type: "button",
-            id: "cool-button"
+            id: "cool-button",
+            events: {
+              click: () => {console.log("hi")},
+              mouseover: handleOnHover
+            }
         },
         othertag(...),          // Any elements children of this should come after text and options
         ...
@@ -40,6 +44,15 @@ function createElement(tagType, args) {
       // If the class property exists, add everything using classList
       el.className = argsArr[0].class ?? "";
       delete argsArr[0].class;
+
+      if (argsArr[0].events) {
+        // Add all specified event listeners to element
+        Object.keys(argsArr[0].events).forEach((k) =>
+          el.addEventListener(k, argsArr[0].events[k])
+        );
+        delete argsArr[0].events;
+      }
+
       // Add all the remaining attributes
       Object.keys(argsArr[0]).forEach((k) => el.setAttribute(k, argsArr[0][k]));
       // Remove
