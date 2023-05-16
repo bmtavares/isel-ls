@@ -313,7 +313,25 @@ class WebApi(
     fun getAllCards(request: Request): Response {
         return TODO("Provide the return value")
     }
-
+    fun deleteList(request: Request): Response {
+        logRequest(request)
+        val boardId = request.path("id")?.toInt()
+        val boardListId = request.path("lid")?.toInt()
+        checkNotNull(boardId) { "Board Id must not be null" }
+        checkNotNull(boardListId) { "List Id must not be null" }
+        return try {
+            services.lists.deleteBoardList(boardListId)
+            Response(OK)
+        } catch (e: DataException) {
+            Response(BAD_REQUEST)
+                .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(e.message))
+        } catch (e: Exception) {
+            Response(INTERNAL_SERVER_ERROR)
+                .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+                .body(Json.encodeToString(e.message))
+        }
+    }
     fun editList(request: Request): Response {
         logRequest(request)
         val boardId = request.path("id")?.toInt()
