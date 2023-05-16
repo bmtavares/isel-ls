@@ -53,8 +53,9 @@ function getUser(mainContent) {
           userGenerator.listingCard(user)
         )
       );
-
       mainContent.replaceChildren(content);
+      const navbarItems = [{ href: "#boards", text: "boards" }];
+      populateNavbar(navbarItems);
     });
 }
 
