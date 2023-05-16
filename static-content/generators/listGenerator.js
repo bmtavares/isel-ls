@@ -4,44 +4,70 @@ import userUtils from "../user.js";
 
 const API_BASE_URL = "http://localhost:9000/";
 
-
-function listDelete(list) {
-        const question =`Do you want to delete list: ${list.name} ?`
-        const response = confirm(question);
-        if (response == true) {
-              fetch(API_BASE_URL + "boards/" + list.boardId + "/lists/" + list.id, {
-                method: 'DELETE',
-                headers: userUtils.getAuthorizationHeader(),
-              })
-
-
-          location.reload()
-        } else {
-          console.log("User does not want to delete the list.");
-        }
-      }
-
-
 function listingCard(list) {
   return div(
-    { class: "card text-center" },
-    div({ class: "card-body" }, h3(list.name, { class: "card-title" })),
+    { class: 'card text-center' },
+    div({ class: 'card-body' }, h3(list.name, { class: 'card-title' })),
     div(
-      { class: "card-footer d-grid" },
-      a("Details", {
-        class: "btn btn-primary",
+      { class: 'card-footer d-grid' },
+      a('Details', {
+        class: 'btn btn-primary',
         href: `#boards/${list.boardId}/lists/${list.id}`,
       }),
-      a("Delete", {
-        class: "btn btn-primary",
-                  events: {
-                    click: () => {listDelete(list)}
-                  }
-        //onclick:  "listDelete()", // call the function and return its result
+      a('Delete', {
+        class: 'btn btn-primary',
+        events: {
+          click: () => { listDelete(list); }
+        }
       })
     )
   );
 }
+
+
+function listDelete(list) {
+  const question = `Do you want to delete list: ${list.name} ?`;
+  const modalHtml = `
+    <div class="modal fade" id="deleteListModal" tabindex="-1" aria-labelledby="deleteListModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteListModalLabel">Delete List</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>${question}</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" id="confirmDeleteListButton">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  // Add the modal HTML to the page
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+  // Add event listener to the confirm button
+  const confirmButton = document.getElementById('confirmDeleteListButton');
+  confirmButton.addEventListener('click', () => {
+    fetch(API_BASE_URL + 'boards/' + list.boardId + '/lists/' + list.id, {
+      method: 'DELETE',
+      headers: userUtils.getAuthorizationHeader(),
+    })
+    location.reload();
+  });
+
+  // Show the modal
+  const modal = new bootstrap.Modal(document.getElementById('deleteListModal'), {
+    keyboard: false,
+    backdrop: 'static'
+  });
+  modal.show();
+}
+
+
 
 function listing(lists) {
   return div(
