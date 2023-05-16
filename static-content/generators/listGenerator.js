@@ -51,13 +51,25 @@ function listDelete(list) {
 
   // Add event listener to the confirm button
   const confirmButton = document.getElementById('confirmDeleteListButton');
-  confirmButton.addEventListener('click', () => {
-    fetch(API_BASE_URL + 'boards/' + list.boardId + '/lists/' + list.id, {
-      method: 'DELETE',
-      headers: userUtils.getAuthorizationHeader(),
-    })
-    location.reload();
-  });
+    confirmButton.addEventListener('click', () => {
+      fetch(API_BASE_URL + 'boards/' + list.boardId + '/lists/' + list.id, {
+        method: 'DELETE',
+        headers: userUtils.getAuthorizationHeader(),
+      })
+      .then(response => {
+        console.log(response);
+        if(response.ok){
+        location.reload();
+        }else{
+        alert(`Delete list failed   error: ${response.statusText}`);
+        location.reload();
+        }
+      })
+      .catch(error => {
+        console.log(error);
+      });
+    });
+
 
   // Show the modal
   const modal = new bootstrap.Modal(document.getElementById('deleteListModal'), {
