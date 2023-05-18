@@ -34,7 +34,7 @@ object PgSqlCardsData : CardsData {
                 rs.getTimestamp("dueDate"),
                 if (rs.getInt("listId") == 0 && rs.wasNull()) null else rs.getInt("listId"),
                 rs.getInt("boardId"),
-                0
+                rs.getInt("cidx"),
 //                rs.getInt("cIdx")
             )
         }
@@ -93,8 +93,7 @@ object PgSqlCardsData : CardsData {
                 rs.getTimestamp("dueDate"),
                 if (rs.getInt("listId") == 0 && rs.wasNull()) null else rs.getInt("listId"),
                 rs.getInt("boardId"),
-                0
-//                rs.getInt("cidx")
+                rs.getInt("cidx")
             )
         }
 
@@ -132,25 +131,69 @@ object PgSqlCardsData : CardsData {
             throw DataException("Failed to edit card.")
         }
     }
+
+    private fun updateList(updatedCards:List<Card>, connection: Connection){
+        val sql = "UPDATE Cards SET cIdx = ? WHERE id = ?"
+
+        try {
+            val statement = connection.prepareStatement(sql)
+
+            for (card in updatedCards) {
+                statement.setInt(1, card.cIdx)
+                statement.setInt(2, card.id)
+                statement.executeUpdate()
+            }
+
+            statement.close()
+        } catch (e: Exception) {
+            throw DataException(""+e.message)
+        }
+
+    }
+
+
     override fun move(inputList: InputMoveCardDto, boardId: Int, cardId: Int, connection: Connection?) {
         checkNotNull(connection)
-        val lidCardCount = getListCount(inputList.lid, boardId, connection)
         val cardInfo = getCardInfo(cardId, connection)
-        var offset = (inputList.cix - cardInfo.cIdx)
-        if (offset > 0) offset = 1
-        if (offset < 0) offset = -1
+        checkNotNull(cardInfo)
+        val cardOldPosition = cardInfo.cIdx
+        val newPosition = inputList.cix
+
         if (inputList.lid == cardInfo.listId) {
-            if (offset == 0) return
+            if (newPosition  == cardOldPosition) return
+
+            val  oldListOfCards  = getByList(boardId,cardInfo.listId,connection= connection)
+            val updatedCards = oldListOfCards.toMutableList()
+            updatedCards[updatedCards.indexOf(cardInfo)] = cardInfo.copy(cIdx = newPosition)
+
+            val cardWithSamePosition = oldListOfCards.find { it.cIdx == newPosition }
+            if (cardWithSamePosition != null) {
+                if(newPosition  > cardOldPosition){
+                    updatedCards[updatedCards.indexOf(cardWithSamePosition)] = cardWithSamePosition.copy(cIdx = newPosition-1)
+                }else{
+                    updatedCards[updatedCards.indexOf(cardWithSamePosition)] = cardWithSamePosition.copy(cIdx = newPosition+1)
+                }
+            }
+            val startIndex = minOf(cardOldPosition, newPosition)
+            val endIndex = maxOf(cardOldPosition, newPosition)
+            updatedCards.sortBy{it.cIdx}
+
+            for (i in startIndex..endIndex) {
+                val obj = updatedCards[i]
+                updatedCards[i] = obj.copy(cIdx = i)
+            }
+            updateList(updatedCards,connection)
+
         } else {
-            // diferent list
+            if(cardInfo.listId != null){
+                val  oldListOfCards  = getByList(boardId,cardInfo.listId,connection= connection)
+
+            }
+
+
         }
-        // 1 informação da lista 2 comparar indices 3 verificar se é na mesma lista 4 arranjar a/as listas 5 trocar
-        try {
-            updateCardLid(cardInfo.id, inputList.lid, boardId, connection)
-            updateCardIdx(cardInfo.id, inputList.cix, boardId, connection)
-        } catch (e: Exception) {
-            throw DataException("Failed to edit card.")
-        }
+
+
     }
 
     override fun getById(id: Int, connection: Connection?): Card {
@@ -158,7 +201,7 @@ object PgSqlCardsData : CardsData {
         return try {
             getCardInfo(id, connection)
         } catch (e: Exception) {
-            throw Exception("awdwa") // TODO
+            throw Exception(e.message)
         }
     }
 
