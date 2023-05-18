@@ -133,14 +133,19 @@ object PgSqlCardsData : CardsData {
     }
 
     private fun updateList(updatedCards:List<Card>, connection: Connection){
-        val sql = "UPDATE Cards SET cIdx = ? WHERE id = ?"
+        val sql = "UPDATE Cards SET cIdx = ?, listid = ? WHERE id = ?"
 
         try {
             val statement = connection.prepareStatement(sql)
 
             for (card in updatedCards) {
                 statement.setInt(1, card.cIdx)
-                statement.setInt(2, card.id)
+                if (card.listId != null) {
+                    statement.setInt(2, card.listId)
+                } else {
+                    statement.setNull(2, java.sql.Types.INTEGER)
+                }
+                statement.setInt(3, card.id)
                 statement.executeUpdate()
             }
 
@@ -159,9 +164,11 @@ object PgSqlCardsData : CardsData {
         val cardOldPosition = cardInfo.cIdx
         val newPosition = inputList.cix
 
+        val startIndex = minOf(cardOldPosition, newPosition)
+        val endIndex = maxOf(cardOldPosition, newPosition)
+
         if (inputList.lid == cardInfo.listId) {
             if (newPosition  == cardOldPosition) return
-
             val  oldListOfCards  = getByList(boardId,cardInfo.listId,connection= connection)
             val updatedCards = oldListOfCards.toMutableList()
             updatedCards[updatedCards.indexOf(cardInfo)] = cardInfo.copy(cIdx = newPosition)
@@ -174,8 +181,6 @@ object PgSqlCardsData : CardsData {
                     updatedCards[updatedCards.indexOf(cardWithSamePosition)] = cardWithSamePosition.copy(cIdx = newPosition+1)
                 }
             }
-            val startIndex = minOf(cardOldPosition, newPosition)
-            val endIndex = maxOf(cardOldPosition, newPosition)
             updatedCards.sortBy{it.cIdx}
 
             for (i in startIndex..endIndex) {
@@ -186,10 +191,43 @@ object PgSqlCardsData : CardsData {
 
         } else {
             if(cardInfo.listId != null){
-                val  oldListOfCards  = getByList(boardId,cardInfo.listId,connection= connection)
+               // delete(cardInfo.id,connection)
+                val  updatedCards  = getByList(boardId,cardInfo.listId,connection= connection).toMutableList()
+                updatedCards.remove(cardInfo)
+                updatedCards.sortBy{it.cIdx}
+                if ((updatedCards.size != 0) and (newPosition != updatedCards.size-1) ){
+                    for (i in startIndex..endIndex) {
+                        val obj = updatedCards[i]
+                        updatedCards[i] = obj.copy(cIdx = i)
+                    }
+                    updateList(updatedCards,connection)
+                }
 
             }
+            val  oldListOfCardsNewList  = getByList(boardId,inputList.lid,connection= connection)
+            val updatedCardsNewList = oldListOfCardsNewList.toMutableList()
 
+
+            val cardWithSamePosition = oldListOfCardsNewList.find { it.cIdx == newPosition }
+
+            if(newPosition<=updatedCardsNewList.size){
+                updatedCardsNewList.add(cardInfo.copy(listId = inputList.lid, cIdx = newPosition ))
+                if (cardWithSamePosition != null) {
+                        updatedCardsNewList[updatedCardsNewList.indexOf(cardWithSamePosition)] = cardWithSamePosition.copy(cIdx = newPosition+1)
+                }
+
+                updatedCardsNewList.sortBy{it.cIdx}
+                if ((updatedCardsNewList.size != 0) and (newPosition != updatedCardsNewList.size-1) ) {
+                    for (i in newPosition..(updatedCardsNewList.size-1)) {
+                        val obj = updatedCardsNewList[i]
+                        updatedCardsNewList[i] = obj.copy(cIdx = i)
+                    }
+                }
+            }else{
+                updatedCardsNewList.add(cardInfo.copy(listId = inputList.lid, cIdx = newPosition ))
+            }
+
+            updateList(updatedCardsNewList,connection)
 
         }
 
