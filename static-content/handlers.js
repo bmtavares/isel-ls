@@ -1,4 +1,4 @@
-import { li, a, div, h1 } from "./generators/createElement.js";
+import {li, a, div, h1, input, label, button, form} from "./generators/createElement.js";
 import userUtils from "./user.js";
 import boardGenerator from "./generators/boardGenerator.js";
 import userGenerator from "./generators/userGenerator.js";
@@ -34,7 +34,7 @@ function getHome(mainContent) {
 
   const navbarItems = [
     { href: "#userDetails", text: "User" },
-    { href: "#boards", text: "Boards" },
+    { href: "#searchboards", text: "Boards" },
   ];
   populateNavbar(navbarItems);
 }
@@ -78,7 +78,34 @@ function getBoards(mainContent) {
       populateNavbar(navbarItems);
     });
 }
+function getSearchBoards(mainContent) {
 
+            const content = form(
+                {class:"form-inline"},
+                div(
+                { class: "form-group mb-2" },
+                label("Search Boards"),
+                input( {type:"text", class:"form-control", id:"searchBoxInput", placeholder:"example group name"})),
+                button("Search Boards",{type:"submit" ,class:"btn btn-primary",events:{
+                    click:async (e) => {
+                        e.preventDefault()
+                        const a = document.getElementById("searchBoxInput")
+                        const boards = await fetch(API_BASE_URL + `boards?search=${a.value}`,{headers: userUtils.getAuthorizationHeader(),
+                    })
+                            .then((res) => res.json())
+                            .then((boards)=>{
+                                localStorage.setItem("searchBoardsResult",JSON.stringify(boards))
+                                window.location.hash = "boards"
+                            })
+                    }
+                    }})
+                );
+
+            mainContent.replaceChildren(content);
+
+            const navbarItems = [{ href: "#userDetails", text: "User" }];
+            populateNavbar(navbarItems);
+}
 function getBoardDetail(mainContent, params) {
   fetch(API_BASE_URL + "boards/" + params.boardId, {
     headers: userUtils.getAuthorizationHeader(),
@@ -201,13 +228,14 @@ function cardDetail(mainContent, params) {
 
 
 const handlers = {
-  getHome,
-  getUser,
-  getBoards,
-  getBoardDetail,
-  getBoardsUsers,
-  listDetails,
-  cardDetail,
+      getHome,
+      getUser,
+      getBoards,
+      getBoardDetail,
+      getBoardsUsers,
+      listDetails,
+      cardDetail,
+    getSearchBoards
 };
 
 export default handlers;

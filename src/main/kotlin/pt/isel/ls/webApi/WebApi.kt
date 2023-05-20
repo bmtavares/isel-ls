@@ -41,6 +41,7 @@ class WebApi(
         logRequest(request)
         try {
             val boardId = request.path("id")?.toInt()
+
             checkNotNull(boardId)
             val user: User? = contexts[request]["user"]
             checkNotNull(user)
@@ -135,9 +136,10 @@ class WebApi(
     fun getBoards(contexts: RequestContexts): HttpHandler = { request ->
         logRequest(request)
         val user: User? = contexts[request]["user"]
+        val search = request.query("search")
         checkNotNull(user)
         try {
-            val boards = services.boards.getUserBoards(user, getLimit(request), getSkip(request))
+            val boards = services.boards.getUserBoards(user,search, getLimit(request), getSkip(request))
             Response(OK)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(boards))
