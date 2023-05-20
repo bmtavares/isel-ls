@@ -104,7 +104,7 @@ function getBoards(mainContent) {
                 p(board.description, { class: "card-text" })
             ),
             div(
-                { class: "card-footer d-grid" },
+                { class: "card-footer d-grid",style:"justify-content: center" },
                 a("View", { class: "btn btn-primary",style:"width: 200px", href: `#boards/${board.id}` })
             )
         )
