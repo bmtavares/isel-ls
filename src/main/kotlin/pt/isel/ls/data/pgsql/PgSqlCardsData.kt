@@ -156,11 +156,11 @@ object PgSqlCardsData : CardsData {
 
     }
 
-
     override fun move(inputList: InputMoveCardDto, boardId: Int, cardId: Int, connection: Connection?) {
         checkNotNull(connection)
         val cardInfo = getCardInfo(cardId, connection)
         checkNotNull(cardInfo)
+        if (inputList.cix <0) throw DataException("new position cant be negative")
         val cardOldPosition = cardInfo.cIdx
         val newPosition = inputList.cix
 
@@ -191,7 +191,8 @@ object PgSqlCardsData : CardsData {
 
         } else {
             if(cardInfo.listId != null){
-               // delete(cardInfo.id,connection)
+                // delete(cardInfo.id,connection)
+
                 val  updatedCards  = getByList(boardId,cardInfo.listId,connection= connection).toMutableList()
                 updatedCards.remove(cardInfo)
                 updatedCards.sortBy{it.cIdx}
@@ -213,12 +214,12 @@ object PgSqlCardsData : CardsData {
             if(newPosition<=updatedCardsNewList.size){
                 updatedCardsNewList.add(cardInfo.copy(listId = inputList.lid, cIdx = newPosition ))
                 if (cardWithSamePosition != null) {
-                        updatedCardsNewList[updatedCardsNewList.indexOf(cardWithSamePosition)] = cardWithSamePosition.copy(cIdx = newPosition+1)
+                    updatedCardsNewList[updatedCardsNewList.indexOf(cardWithSamePosition)] = cardWithSamePosition.copy(cIdx = newPosition+1)
                 }
 
                 updatedCardsNewList.sortBy{it.cIdx}
                 if ((updatedCardsNewList.size != 0) and (newPosition != updatedCardsNewList.size-1) ) {
-                    for (i in newPosition..(updatedCardsNewList.size-1)) {
+                    for (i in newPosition until updatedCardsNewList.size) {
                         val obj = updatedCardsNewList[i]
                         updatedCardsNewList[i] = obj.copy(cIdx = i)
                     }
@@ -233,6 +234,9 @@ object PgSqlCardsData : CardsData {
 
 
     }
+
+
+
 
     override fun getById(id: Int, connection: Connection?): Card {
         checkNotNull(connection) { "Connection is need to use DB" }
