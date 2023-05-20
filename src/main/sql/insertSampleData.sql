@@ -64,3 +64,8 @@ commit; --transaction
 
 
 abort ;
+
+insert into boards(name, description) values
+    ('coisas aleatorias', 'mais coisas aleatorias');
+
+insert into usersboards(userid, boardid) values (1,4);

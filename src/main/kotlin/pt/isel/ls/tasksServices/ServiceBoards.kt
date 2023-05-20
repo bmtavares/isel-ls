@@ -36,7 +36,7 @@ class ServiceBoards(private val context: DataContext, private val boardRepositor
 
     fun getUserBoards(user: User,searchField: String?, limit: Int = 25, skip: Int = 0): List<Board> {
         lateinit var boards: List<Board>
-        if (searchField==null) {
+        if (searchField.isNullOrBlank()) {
             try {
                 context.handleData { con ->
                     boards = boardRepository.getUserBoards(user, limit, skip, con)

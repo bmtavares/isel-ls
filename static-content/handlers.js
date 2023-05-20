@@ -1,4 +1,4 @@
-import {li, a, div, h1, input, label, button, form} from "./generators/createElement.js";
+import {li, a, div, h1, input, label, button, form, h3, p} from "./generators/createElement.js";
 import userUtils from "./user.js";
 import boardGenerator from "./generators/boardGenerator.js";
 import userGenerator from "./generators/userGenerator.js";
@@ -59,25 +59,82 @@ function getUser(mainContent) {
       populateNavbar(navbarItems);
     });
 }
-
 function getBoards(mainContent) {
-  fetch(API_BASE_URL + "boards", {
-    headers: userUtils.getAuthorizationHeader(),
-  })
-    .then((res) => res.json())
-    .then((boards) => {
-      const content = div(
-        { class: "container px-2 py-4" },
-        h1("Boards"),
-        boardGenerator.listing(boards)
-      );
+    let boards =  JSON.parse(localStorage.getItem("searchBoardsResult"))
+    let idx = localStorage.getItem("boardIdx")
+    if (idx === null){
+        idx = 0
+        localStorage.setItem("boardIdx",idx.toString())
+    }else {
+        idx = Number(idx)
+    }
+    let board = boards[idx]
+    let prev;
+    let next;
+    if(idx-1<0){ prev = boards.length-1} else prev = idx-1
+    if(idx+1>=boards.length){ next = 0} else next = idx+1
+    const content =  div( {class: "container",style:"width: 500px"},
+        div(
+            {class: "d-flex justify-content-between"},
+            div(
+                button("<<Previous", { class: "btn btn-link",events:{
+                        click:async (e) => {
+                            e.preventDefault()
+                            localStorage.setItem("boardIdx",prev.toString())
+                            window.location.reload()
+                            } } } )
+            ),
+            div(
+                button("Next>>", { class: "btn btn-link" ,events:{
+                        click:async (e) => {
+                            e.preventDefault()
+                            localStorage.setItem("boardIdx",next.toString())
+                            window.location.reload()
+                        } } })
+            )
+        ),
+        div(
+            { class: "card text-center" },
+            div(
+                { class: "card-header d-grid" },
+                h3(board.name, { class: "card-title" }),
+            ),
+            div(
+                { class: "card-body" },
+                p(board.description, { class: "card-text" })
+            ),
+            div(
+                { class: "card-footer d-grid" },
+                a("View", { class: "btn btn-primary",style:"width: 200px", href: `#boards/${board.id}` })
+            )
+        )
+    )
 
-      mainContent.replaceChildren(content);
 
-      const navbarItems = [{ href: "#userDetails", text: "User" }];
-      populateNavbar(navbarItems);
-    });
+
+
+    mainContent.replaceChildren(content);
+    const navbarItems = [{ href: "#userDetails", text: "User" }];
+    populateNavbar(navbarItems);
 }
+// function getBoards(mainContent) {
+//   fetch(API_BASE_URL + "boards", {
+//     headers: userUtils.getAuthorizationHeader(),
+//   })
+//     .then((res) => res.json())
+//     .then((boards) => {
+//       const content = div(
+//         { class: "container px-2 py-4" },
+//         h1("Boards"),
+//         boardGenerator.listing(boards)
+//       );
+//
+//       mainContent.replaceChildren(content);
+//
+//       const navbarItems = [{ href: "#userDetails", text: "User" }];
+//       populateNavbar(navbarItems);
+//     });
+// }
 function getSearchBoards(mainContent) {
 
             const content = form(
@@ -95,6 +152,7 @@ function getSearchBoards(mainContent) {
                             .then((res) => res.json())
                             .then((boards)=>{
                                 localStorage.setItem("searchBoardsResult",JSON.stringify(boards))
+                                localStorage.setItem("boardIdx",String(0))
                                 window.location.hash = "boards"
                             })
                     }
