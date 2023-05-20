@@ -34,7 +34,7 @@ object PgSqlCardsData : CardsData {
                 rs.getTimestamp("dueDate"),
                 if (rs.getInt("listId") == 0 && rs.wasNull()) null else rs.getInt("listId"),
                 rs.getInt("boardId"),
-                0
+                rs.getInt("cidx"),
 //                rs.getInt("cIdx")
             )
         }
@@ -93,8 +93,7 @@ object PgSqlCardsData : CardsData {
                 rs.getTimestamp("dueDate"),
                 if (rs.getInt("listId") == 0 && rs.wasNull()) null else rs.getInt("listId"),
                 rs.getInt("boardId"),
-                0
-//                rs.getInt("cidx")
+                rs.getInt("cidx")
             )
         }
 
@@ -132,33 +131,119 @@ object PgSqlCardsData : CardsData {
             throw DataException("Failed to edit card.")
         }
     }
+
+    private fun updateList(updatedCards:List<Card>, connection: Connection){
+        val sql = "UPDATE Cards SET cIdx = ?, listid = ? WHERE id = ?"
+
+        try {
+            val statement = connection.prepareStatement(sql)
+
+            for (card in updatedCards) {
+                statement.setInt(1, card.cIdx)
+                if (card.listId != null) {
+                    statement.setInt(2, card.listId)
+                } else {
+                    statement.setNull(2, java.sql.Types.INTEGER)
+                }
+                statement.setInt(3, card.id)
+                statement.executeUpdate()
+            }
+
+            statement.close()
+        } catch (e: Exception) {
+            throw DataException(""+e.message)
+        }
+
+    }
+
     override fun move(inputList: InputMoveCardDto, boardId: Int, cardId: Int, connection: Connection?) {
         checkNotNull(connection)
-        val lidCardCount = getListCount(inputList.lid, boardId, connection)
         val cardInfo = getCardInfo(cardId, connection)
-        var offset = (inputList.cix - cardInfo.cIdx)
-        if (offset > 0) offset = 1
-        if (offset < 0) offset = -1
+        checkNotNull(cardInfo)
+        if (inputList.cix <0) throw DataException("new position cant be negative")
+        val cardOldPosition = cardInfo.cIdx
+        val newPosition = inputList.cix
+
+        val startIndex = minOf(cardOldPosition, newPosition)
+        val endIndex = maxOf(cardOldPosition, newPosition)
+
         if (inputList.lid == cardInfo.listId) {
-            if (offset == 0) return
+            if (newPosition  == cardOldPosition) return
+            val  oldListOfCards  = getByList(boardId,cardInfo.listId,connection= connection)
+            val updatedCards = oldListOfCards.toMutableList()
+            updatedCards[updatedCards.indexOf(cardInfo)] = cardInfo.copy(cIdx = newPosition)
+
+            val cardWithSamePosition = oldListOfCards.find { it.cIdx == newPosition }
+            if (cardWithSamePosition != null) {
+                if(newPosition  > cardOldPosition){
+                    updatedCards[updatedCards.indexOf(cardWithSamePosition)] = cardWithSamePosition.copy(cIdx = newPosition-1)
+                }else{
+                    updatedCards[updatedCards.indexOf(cardWithSamePosition)] = cardWithSamePosition.copy(cIdx = newPosition+1)
+                }
+            }
+            updatedCards.sortBy{it.cIdx}
+
+            for (i in startIndex..endIndex) {
+                val obj = updatedCards[i]
+                updatedCards[i] = obj.copy(cIdx = i)
+            }
+            updateList(updatedCards,connection)
+
         } else {
-            // diferent list
+            if(cardInfo.listId != null){
+                // delete(cardInfo.id,connection)
+
+                val  updatedCards  = getByList(boardId,cardInfo.listId,connection= connection).toMutableList()
+                updatedCards.remove(cardInfo)
+                updatedCards.sortBy{it.cIdx}
+                if ((updatedCards.size != 0) and (newPosition != updatedCards.size-1) ){
+                    for (i in startIndex..endIndex) {
+                        val obj = updatedCards[i]
+                        updatedCards[i] = obj.copy(cIdx = i)
+                    }
+                    updateList(updatedCards,connection)
+                }
+
+            }
+            val  oldListOfCardsNewList  = getByList(boardId,inputList.lid,connection= connection)
+            val updatedCardsNewList = oldListOfCardsNewList.toMutableList()
+
+
+            val cardWithSamePosition = oldListOfCardsNewList.find { it.cIdx == newPosition }
+
+            if(newPosition<=updatedCardsNewList.size){
+                updatedCardsNewList.add(cardInfo.copy(listId = inputList.lid, cIdx = newPosition ))
+                if (cardWithSamePosition != null) {
+                    updatedCardsNewList[updatedCardsNewList.indexOf(cardWithSamePosition)] = cardWithSamePosition.copy(cIdx = newPosition+1)
+                }
+
+                updatedCardsNewList.sortBy{it.cIdx}
+                if ((updatedCardsNewList.size != 0) and (newPosition != updatedCardsNewList.size-1) ) {
+                    for (i in newPosition until updatedCardsNewList.size) {
+                        val obj = updatedCardsNewList[i]
+                        updatedCardsNewList[i] = obj.copy(cIdx = i)
+                    }
+                }
+            }else{
+                updatedCardsNewList.add(cardInfo.copy(listId = inputList.lid, cIdx = newPosition ))
+            }
+
+            updateList(updatedCardsNewList,connection)
+
         }
-        // 1 informação da lista 2 comparar indices 3 verificar se é na mesma lista 4 arranjar a/as listas 5 trocar
-        try {
-            updateCardLid(cardInfo.id, inputList.lid, boardId, connection)
-            updateCardIdx(cardInfo.id, inputList.cix, boardId, connection)
-        } catch (e: Exception) {
-            throw DataException("Failed to edit card.")
-        }
+
+
     }
+
+
+
 
     override fun getById(id: Int, connection: Connection?): Card {
         checkNotNull(connection) { "Connection is need to use DB" }
         return try {
             getCardInfo(id, connection)
         } catch (e: Exception) {
-            throw Exception("awdwa") // TODO
+            throw Exception(e.message)
         }
     }
 

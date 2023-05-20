@@ -84,7 +84,7 @@ fun main() {
             "boards/{id}/lists/{lid}/cards" bind Method.POST to webApi::createCard, // working
             "boards/{id}/cards/{cid}" bind Method.GET to webApi::getCard, // working
             "boards/{id}/cards/{cid}" bind Method.PUT to webApi::editCard, // working but there's a problem with timestamps
-            "boards/{id}/cards/{cid}/move" bind Method.GET to webApi::alterCardListPosition, // working  todo channge to put add new position on the body
+            "boards/{id}/cards/{cid}/move" bind Method.PUT to webApi::alterCardListPosition, // working  todo channge to put add new position on the body
             filters.logRequest.then(
                 routes(
                     "boards/{id}/cards/{cid}" bind Method.DELETE to cardsApi::deleteCard,
