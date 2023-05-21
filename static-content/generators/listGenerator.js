@@ -6,22 +6,24 @@ const API_BASE_URL = "http://localhost:9000/";
 
 function listingCard(list) {
   return div(
-    { class: 'card text-center' },
-    div({ class: 'card-body' }, h3(list.name, { class: 'card-title' })),
-    div(
-      { class: 'card-footer d-grid' },
-      a('Details', {
-        class: 'btn btn-primary',
-        href: `#boards/${list.boardId}/lists/${list.id}`,
-      }),
-      a('Delete', {
-        class: 'btn btn-primary',
-        events: {
-          click: () => { listDelete(list); }
-        }
-      })
-    )
-  );
+      { class: 'card text-center' },
+      div({ class: 'card-body' }, h3(list.name, { class: 'card-title' })),
+      div(
+          { class: 'card-footer' },
+          div(
+              { class: 'd-flex justify-content-between' },
+              a('Details', {
+                class: 'btn btn-primary',
+                href: `#boards/${list.boardId}/lists/${list.id}`,
+              }),
+              a('Delete', {
+                class: 'btn btn-danger',
+                events: {
+                  click: () => { listDelete(list); }
+                }
+              })
+          )
+      ));
 }
 
 
@@ -51,24 +53,24 @@ function listDelete(list) {
 
   // Add event listener to the confirm button
   const confirmButton = document.getElementById('confirmDeleteListButton');
-    confirmButton.addEventListener('click', () => {
-      fetch(API_BASE_URL + 'boards/' + list.boardId + '/lists/' + list.id, {
-        method: 'DELETE',
-        headers: userUtils.getAuthorizationHeader(),
-      })
-      .then(response => {
-        console.log(response);
-        if(response.ok){
-        location.reload();
-        }else{
-        alert(`Delete list failed   error: ${response.statusText}`);
-        location.reload();
-        }
-      })
-      .catch(error => {
-        console.log(error);
-      });
-    });
+  confirmButton.addEventListener('click', () => {
+    fetch(API_BASE_URL + 'boards/' + list.boardId + '/lists/' + list.id, {
+      method: 'DELETE',
+      headers: userUtils.getAuthorizationHeader(),
+    })
+        .then(response => {
+          console.log(response);
+          if(response.ok){
+            location.reload();
+          }else{
+            alert(`Delete list failed   error: ${response.statusText}`);
+            location.reload();
+          }
+        })
+        .catch(error => {
+          console.log(error);
+        });
+  });
 
 
   // Show the modal
@@ -83,8 +85,8 @@ function listDelete(list) {
 
 function listing(lists) {
   return div(
-    { class: "row gy-2" },
-    ...lists.map((list) => div({ class: "col-lg-4" }, listingCard(list)))
+      { class: "row gy-2" },
+      ...lists.map((list) => div({ class: "col-lg-4" }, listingCard(list)))
   );
 }
 

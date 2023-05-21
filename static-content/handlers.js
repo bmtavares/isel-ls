@@ -60,61 +60,9 @@ function getUser(mainContent) {
     });
 }
 function getBoards(mainContent) {
-    let boards =  JSON.parse(localStorage.getItem("searchBoardsResult"))
-    let idx = localStorage.getItem("boardIdx")
-    if (idx === null){
-        idx = 0
-        localStorage.setItem("boardIdx",idx.toString())
-    }else {
-        idx = Number(idx)
-    }
-    let board = boards[idx]
-    let prev;
-    let next;
-    if(idx-1<0){ prev = boards.length-1} else prev = idx-1
-    if(idx+1>=boards.length){ next = 0} else next = idx+1
-    const content =  div( {class: "container",style:"width: 500px"},
-        div(
-            {class: "d-flex justify-content-between"},
-            div(
-                button("<<Previous", { class: "btn btn-link",events:{
-                        click:async (e) => {
-                            e.preventDefault()
-                            localStorage.setItem("boardIdx",prev.toString())
-                            window.location.reload()
-                            } } } )
-            ),
-            div(
-                button("Next>>", { class: "btn btn-link" ,events:{
-                        click:async (e) => {
-                            e.preventDefault()
-                            localStorage.setItem("boardIdx",next.toString())
-                            window.location.reload()
-                        } } })
-            )
-        ),
-        div(
-            { class: "card text-center" },
-            div(
-                { class: "card-header d-grid" },
-                h3(board.name, { class: "card-title" }),
-            ),
-            div(
-                { class: "card-body" },
-                p(board.description, { class: "card-text" })
-            ),
-            div(
-                { class: "card-footer d-grid",style:"justify-content: center" },
-                a("View", { class: "btn btn-primary",style:"width: 200px", href: `#boards/${board.id}` })
-            )
-        )
-    )
-
-
-
-
+    const content = boardGenerator.boardCycle()
     mainContent.replaceChildren(content);
-    const navbarItems = [{ href: "#userDetails", text: "User" }];
+    const navbarItems = [{ href: "#userDetails", text: "User" },{ href: "#searchboards", text: "Search Boards" }];
     populateNavbar(navbarItems);
 }
 // function getBoards(mainContent) {
@@ -137,64 +85,65 @@ function getBoards(mainContent) {
 // }
 function getSearchBoards(mainContent) {
 
-            const content = form(
-                {class:"form-inline"},
-                div(
-                { class: "form-group mb-2" },
-                label("Search Boards"),
-                input( {type:"text", class:"form-control", id:"searchBoxInput", placeholder:"example group name"})),
+    const content = div({class:"container mt-4" },
+        form(
+            {class:"form-inline"},
+            div(
+                { class: "form-group mb-2 text-center"},
+                label("Search Boards:"),
+                input( {type:"text", class:"form-control", id:"searchBoxInput", placeholder:"type group name here"})),
+            div({class:"text-center" },
                 button("Search Boards",{type:"submit" ,class:"btn btn-primary",events:{
-                    click:async (e) => {
-                        e.preventDefault()
-                        const a = document.getElementById("searchBoxInput")
-                        const boards = await fetch(API_BASE_URL + `boards?search=${a.value}`,{headers: userUtils.getAuthorizationHeader(),
-                    })
-                            .then((res) => res.json())
-                            .then((boards)=>{
-                                localStorage.setItem("searchBoardsResult",JSON.stringify(boards))
-                                localStorage.setItem("boardIdx",String(0))
-                                window.location.hash = "boards"
+                        click:async (e) => {
+                            e.preventDefault()
+                            const a = document.getElementById("searchBoxInput")
+                            await fetch(API_BASE_URL + `boards?search=${a.value}`,{headers: userUtils.getAuthorizationHeader(),
                             })
-                    }
+                                .then((res) => res.json())
+                                .then((boards)=>{
+                                    localStorage.setItem("searchBoardsResult",JSON.stringify(boards))
+                                    localStorage.setItem("boardIdx",String(0))
+                                    location.hash = "boards"
+                                })
+                        }
                     }})
-                );
+            )));
+
+    mainContent.replaceChildren(content);
+
+    const navbarItems = [{ href: "#userDetails", text: "User" }];
+    populateNavbar(navbarItems);
+}
+function getBoardDetail(mainContent, params) {
+    fetch(API_BASE_URL + "boards/" + params.boardId, {
+        headers: userUtils.getAuthorizationHeader(),
+    })
+        .then((res) => res.json())
+        .then(async (board) => {
+            const listsReq = await fetch(
+                API_BASE_URL + "boards/" + params.boardId + "/lists",
+                {
+                    headers: userUtils.getAuthorizationHeader(),
+                }
+            );
+            const lists = await listsReq.json();
+
+            const content = div(
+                { class: "container mt-4" },
+                boardGenerator.details(board, lists)
+            );
 
             mainContent.replaceChildren(content);
 
-            const navbarItems = [{ href: "#userDetails", text: "User" }];
+            const navbarItems = [
+                {href: "#searchboards", text: "Search Boards"},
+                {href: "#board/" + params.boardId + "/user-list", text: "Users"},
+                {href: "#boards", text: "Boards",}
+            ];
             populateNavbar(navbarItems);
+        });
 }
-function getBoardDetail(mainContent, params) {
-  fetch(API_BASE_URL + "boards/" + params.boardId, {
-    headers: userUtils.getAuthorizationHeader(),
-  })
-    .then((res) => res.json())
-    .then(async (board) => {
-      const listsReq = await fetch(
-        API_BASE_URL + "boards/" + params.boardId + "/lists",
-        {
-          headers: userUtils.getAuthorizationHeader(),
-        }
-      );
-      const lists = await listsReq.json();
 
-      const content = div(
-        { class: "container" },
-        boardGenerator.details(board, lists)
-      );
-
-      mainContent.replaceChildren(content);
-
-      const navbarItems = [
-        { href: "#boards", text: "Boards" },
-        {
-          href: "#board/" + params.boardId + "/user-list",
-          text: "Users",
-        },
-      ];
-      populateNavbar(navbarItems);
-    });
-}
 
 function getBoardsUsers(mainContent, params) {
   fetch(API_BASE_URL + "boards/" + params.boardId + "/user-list", {
