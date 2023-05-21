@@ -34,7 +34,7 @@ function getHome(mainContent) {
 
   const navbarItems = [
     { href: "#userDetails", text: "User" },
-    { href: "#searchboards", text: "Boards" },
+    { href: "#searchboards", text: "Search" },
   ];
   populateNavbar(navbarItems);
 }
@@ -55,7 +55,7 @@ function getUser(mainContent) {
         )
       );
       mainContent.replaceChildren(content);
-      const navbarItems = [{ href: "#boards", text: "boards" }];
+      const navbarItems = [{ href: "#searchboards", text: "Search" }];
       populateNavbar(navbarItems);
     });
 }
@@ -85,29 +85,7 @@ function getBoards(mainContent) {
 // }
 function getSearchBoards(mainContent) {
 
-    const content = div({class:"container mt-4" },
-        form(
-            {class:"form-inline"},
-            div(
-                { class: "form-group mb-2 text-center"},
-                label("Search Boards:"),
-                input( {type:"text", class:"form-control", id:"searchBoxInput", placeholder:"type group name here"})),
-            div({class:"text-center" },
-                button("Search Boards",{type:"submit" ,class:"btn btn-primary",events:{
-                        click:async (e) => {
-                            e.preventDefault()
-                            const a = document.getElementById("searchBoxInput")
-                            await fetch(API_BASE_URL + `boards?search=${a.value}`,{headers: userUtils.getAuthorizationHeader(),
-                            })
-                                .then((res) => res.json())
-                                .then((boards)=>{
-                                    localStorage.setItem("searchBoardsResult",JSON.stringify(boards))
-                                    localStorage.setItem("boardIdx",String(0))
-                                    location.hash = "boards"
-                                })
-                        }
-                    }})
-            )));
+    const content = boardGenerator.searchBoard()
 
     mainContent.replaceChildren(content);
 
@@ -138,7 +116,6 @@ function getBoardDetail(mainContent, params) {
             const navbarItems = [
                 {href: "#searchboards", text: "Search Boards"},
                 {href: "#board/" + params.boardId + "/user-list", text: "Users"},
-                {href: "#boards", text: "Boards",}
             ];
             populateNavbar(navbarItems);
         });

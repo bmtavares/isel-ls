@@ -183,10 +183,9 @@ object PgSqlBoardsData : BoardsData {
                 rs.getString("name"),
                 rs.getString("description")
             ))
-            return boards
-        }
 
-        throw Exception("SQL exception") // TODO
+        }
+        return boards
     }
 
     override fun deleteUserFromBoard(userId: Int, boardId: Int, connection: Connection?) {

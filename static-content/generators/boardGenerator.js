@@ -1,5 +1,7 @@
-import {div, h1, h3, p, a, button} from "./createElement.js";
+import {div, h1, h3, p, a, button, form, label, input, h2} from "./createElement.js";
 import listGenerator from "./listGenerator.js";
+import userUtils from "../user.js";
+const API_BASE_URL = "http://localhost:9000/";
 
 function listingCard(board) {
   return div(
@@ -33,7 +35,7 @@ function details(board, lists) {
 function boardCycle(){
   let boards =  JSON.parse(localStorage.getItem("searchBoardsResult"))
   let idx = localStorage.getItem("boardIdx")
-  if (idx === null){
+  if (idx === null || idx === undefined){
     idx = 0
     localStorage.setItem("boardIdx",idx.toString())
   }else {
@@ -47,22 +49,19 @@ function boardCycle(){
   return  div( {class: "container mt-4"},
       div(
           {class: "d-flex justify-content-between"},
-          div(
               button("<<Previous", { class: "btn btn-link",events:{
                   click:async (e) => {
                     e.preventDefault()
                     localStorage.setItem("boardIdx",prev.toString())
-                    window.location.reload()
-                  } } } )
-          ),
-          div(
+                      window.dispatchEvent(new HashChangeEvent("hashchange"))
+                  } } } ),
+                label(`${idx+1}/${boards.length}`),
               button("Next>>", { class: "btn btn-link" ,events:{
                   click:async (e) => {
                     e.preventDefault()
                     localStorage.setItem("boardIdx",next.toString())
-                    window.location.reload()
+                      window.dispatchEvent(new HashChangeEvent("hashchange"))
                   } } })
-          )
       ),
       div(
           { class: "card text-center" },
@@ -79,19 +78,43 @@ function boardCycle(){
               div(
                   { class: 'd-flex justify-content-between' },
                   a("View", { class: "btn btn-info",style:"width: 100px", href: `#boards/${board.id}` }),
-                  a("Edit", { class: "btn btn-primary",style:"width: 100px", href: `#boards/${board.id}` }),
                   a("+ Add", { class: "btn btn-success",style:"width: 100px", href: `#boards` }),
-                  a("Delete", { class: "btn btn-danger",style:"width: 100px", href: `#boards/${board.id}` }),
               )
           )
       ))
 }
 
+function searchBoard(){
+    return div({class:"container mt-4" },
+        form(
+            {class:"form-inline"},
+            div(
+                { class: "form-group mb-2 text-center"},
+                label("Search Boards:"),
+                input( {type:"text", class:"form-control", id:"searchBoxInput", placeholder:"type group name here"})),
+            div({class:"text-center" },
+                button("Search Boards",{type:"submit" ,class:"btn btn-primary",events:{
+                        click:async (e) => {
+                            e.preventDefault()
+                            const a = document.getElementById("searchBoxInput")
+                            await fetch(API_BASE_URL + `boards?search=${a.value}`,{headers: userUtils.getAuthorizationHeader(),
+                            })
+                                .then((res) => res.json())
+                                .then((boards)=>{
+                                    localStorage.setItem("searchBoardsResult",JSON.stringify(boards))
+                                    localStorage.setItem("boardIdx",String(0))
+                                    location.hash = "boards"
+                                })
+                        }
+                    }})
+            )));
+}
 
 
 
 export default {
   listing,
   details,
-  boardCycle
+  boardCycle,
+    searchBoard
 };
