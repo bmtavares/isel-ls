@@ -24,6 +24,10 @@ function listing(cards) {
 }
 
 function moveCard(card) {
+
+  for (let i = 0; i < GlobalLists.length; i++) {
+    listOptions += `<option value="${i}">${GlobalLists[i]}</option>`;
+  }
   const question = "mmove this card?";
   const modalHtml = `
     <div class="modal fade" id="MoveCardModal" tabindex="-1" aria-labelledby="MoveCardModalLabel" aria-hidden="true">
@@ -36,9 +40,7 @@ function moveCard(card) {
           <div class="modal-body">
             <p>${question}</p>
             <select id="listDropdown">
-            <option value="0">List 1</option>
-            <option value="1">List 2</option>
-             <option value="2">List 3</option>
+                ${listOptions}
              </select>
              <select id="positionDropdown">
               <option value="0">Position 1</option>
@@ -115,7 +117,6 @@ function details(card) {
                   click: () => { moveCard(card); }
                 }
               })
-
     )
   );
 }
