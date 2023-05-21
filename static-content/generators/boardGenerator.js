@@ -26,10 +26,12 @@ function listing(boards) {
   );
 }
 
-function details(board, lists) {
+function details(board, lists, authHeader) {
   return div(
+    listGenerator.createFormModal(authHeader, board.id),
     h1(board.name),
     h3(board.description, { class: "text-muted" }),
+    bootstrapGenerator.generateModalButton("Create new", "create-list-modal", "success"),
     listGenerator.listing(lists)
   );
 }
@@ -67,7 +69,7 @@ function newFormModal(authHeader) {
       "board",
       handleOnSubmitCreate,
       [
-        { type: "text", name: "Name", required: true },
+        { type: "text", name: "Name", required: true},
         { type: "text", name: "Description", required: true },
       ],
       "Create"

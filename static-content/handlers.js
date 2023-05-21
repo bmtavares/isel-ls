@@ -97,7 +97,7 @@ function getBoardDetail(mainContent, params) {
 
       const content = div(
         { class: "container" },
-        boardGenerator.details(board, lists)
+        boardGenerator.details(board, lists, userUtils.getAuthorizationHeader())
       );
 
       mainContent.replaceChildren(content);
