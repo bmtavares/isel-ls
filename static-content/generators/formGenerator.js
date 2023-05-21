@@ -4,11 +4,12 @@ function generateField(domain, options) {
   const name = `${domain}-${options.name.toLowerCase().split(" ").join("-")}`;
   const inputOptions = { ...options };
   inputOptions.id = name;
-  inputOptions.name = inputOptions.name.toLowerCase();
+  inputOptions.name = inputOptions.label ? inputOptions.name : inputOptions.name.toLowerCase();
   inputOptions.class = "form-control";
+  delete inputOptions.label;
   return div(
     { class: "mb-3" },
-    label(options.name, { for: name, class: "col-form-label" }),
+    label(options.label ? options.label : options.name, { for: name, class: "col-form-label" }),
     input(inputOptions)
   );
 }
