@@ -24,6 +24,7 @@ function listing(boards) {
 }
 
 function details(board, lists) {
+ localStorage.setItem("GlobalLists",JSON.stringify(lists))
   return div(
     h1(board.name),
     h3(board.description, { class: "text-muted" }),

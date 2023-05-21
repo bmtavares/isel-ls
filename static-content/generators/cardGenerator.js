@@ -24,10 +24,16 @@ function listing(cards) {
 }
 
 function moveCard(card) {
-
-  for (let i = 0; i < GlobalLists.length; i++) {
-    listOptions += `<option value="${i}">${GlobalLists[i]}</option>`;
+ let lists = JSON.parse(localStorage.getItem("GlobalLists"))
+ console.log(lists)
+ let listOptions = ""
+  for (let i = 0; i < lists.length; i++) {
+    listOptions += `<option value="${i}">List ${i}</option>`;
   }
+  let PositionOptions = ""
+    for (let i = 0; i < 100; i++) {
+      PositionOptions += `<option value="${i}">Position ${i}</option>`;
+    }
   const question = "mmove this card?";
   const modalHtml = `
     <div class="modal fade" id="MoveCardModal" tabindex="-1" aria-labelledby="MoveCardModalLabel" aria-hidden="true">
@@ -43,9 +49,8 @@ function moveCard(card) {
                 ${listOptions}
              </select>
              <select id="positionDropdown">
-              <option value="0">Position 1</option>
-              <option value="1">Position 2</option>
-              <option value="2">Position 3</option>
+             ${PositionOptions}
+
               </select>
           </div>
           <div class="modal-footer">
