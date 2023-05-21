@@ -25,8 +25,13 @@ function listing(lists) {
   );
 }
 
-function details(list, cards) {
-  return div(h1(list.name), cardGenerator.listing(cards));
+function details(boardId, list, cards, authHeader) {
+  return div(
+    cardGenerator.createFormModal(authHeader, boardId, list.id),
+    h1(list.name),
+    bootstrapGenerator.generateModalButton("Create new", "create-card-modal", "success"),
+    cardGenerator.listing(cards)
+    );
 }
 
 function createFormModal(authHeader, boardId) {
@@ -59,7 +64,7 @@ function createFormModal(authHeader, boardId) {
   return bootstrapGenerator.generateModal(
     id,
     generateFormModal(
-      "board",
+      "list",
       handleOnSubmitCreate,
       [
         { type: "text", name: "Name", required: true }

@@ -157,8 +157,8 @@ function listDetails(mainContent, params) {
       const cards = await cardsReq.json();
 
       const content = div(
-        { class: "content" },
-        listGenerator.details(list, cards)
+        { class: "container" },
+        listGenerator.details(params.boardId, list, cards, userUtils.getAuthorizationHeader())
       );
 
       mainContent.replaceChildren(content);
