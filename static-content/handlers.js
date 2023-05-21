@@ -1,4 +1,4 @@
-import { li, a, div, h1 } from "./generators/createElement.js";
+import {li, a, div, h1, input, label, button, form, h3, p} from "./generators/createElement.js";
 import userUtils from "./user.js";
 import boardGenerator from "./generators/boardGenerator.js";
 import userGenerator from "./generators/userGenerator.js";
@@ -7,6 +7,7 @@ import listGenerator from "./generators/listGenerator.js";
 import cardGenerator from "./generators/cardGenerator.js";
 import bootstrapGenerator from "./generators/bootstrapGenerator.js";
 const API_BASE_URL = "http://localhost:9000/";
+
 
 function populateNavbar(items) {
   const navbar = document.getElementById("navbar-items");
@@ -34,7 +35,7 @@ function getHome(mainContent) {
 
   const navbarItems = [
     { href: "#userDetails", text: "User" },
-    { href: "#boards", text: "Boards" },
+    { href: "#searchboards", text: "Search" },
   ];
   populateNavbar(navbarItems);
 }
@@ -55,63 +56,57 @@ function getUser(mainContent) {
         )
       );
       mainContent.replaceChildren(content);
-      const navbarItems = [{ href: "#boards", text: "boards" }];
+      const navbarItems = [{ href: "#searchboards", text: "Search" }];
       populateNavbar(navbarItems);
     });
 }
 
 function getBoards(mainContent) {
-  fetch(API_BASE_URL + "boards", {
-    headers: userUtils.getAuthorizationHeader(),
-  })
-    .then((res) => res.json())
-    .then((boards) => {
-      const content = div(
-        { class: "container px-2 py-4" },
-        boardGenerator.newFormModal(userUtils.getAuthorizationHeader()),
-        bootstrapGenerator.generateModalButton("Create new", "create-board-modal", "success"),
-        h1("Boards"),
-        boardGenerator.listing(boards)
-      );
+    const content = boardGenerator.boardCycle()
+    mainContent.replaceChildren(content);
+    const navbarItems = [{ href: "#userDetails", text: "User" },{ href: "#searchboards", text: "Search Boards" }];
+    populateNavbar(navbarItems);
+}
 
-      mainContent.replaceChildren(content);
+function getSearchBoards(mainContent) {
 
-      const navbarItems = [{ href: "#userDetails", text: "User" }];
-      populateNavbar(navbarItems);
-    });
+    const content = boardGenerator.searchBoard()
+
+    mainContent.replaceChildren(content);
+
+    const navbarItems = [{ href: "#userDetails", text: "User" }];
+    populateNavbar(navbarItems);
 }
 
 function getBoardDetail(mainContent, params) {
-  fetch(API_BASE_URL + "boards/" + params.boardId, {
-    headers: userUtils.getAuthorizationHeader(),
-  })
-    .then((res) => res.json())
-    .then(async (board) => {
-      const listsReq = await fetch(
-        API_BASE_URL + "boards/" + params.boardId + "/lists",
-        {
-          headers: userUtils.getAuthorizationHeader(),
-        }
-      );
-      const lists = await listsReq.json();
+    fetch(API_BASE_URL + "boards/" + params.boardId, {
+        headers: userUtils.getAuthorizationHeader(),
+    })
+        .then((res) => res.json())
+        .then(async (board) => {
+            const listsReq = await fetch(
+                API_BASE_URL + "boards/" + params.boardId + "/lists",
+                {
+                    headers: userUtils.getAuthorizationHeader(),
+                }
+            );
+            const lists = await listsReq.json();
 
-      const content = div(
-        { class: "container" },
-        boardGenerator.details(board, lists, userUtils.getAuthorizationHeader())
-      );
+            const content = div(
+                { class: "container mt-4" },
+                boardGenerator.details(board, lists, userUtils.getAuthorizationHeader())
+            );
 
-      mainContent.replaceChildren(content);
+            mainContent.replaceChildren(content);
 
-      const navbarItems = [
-        { href: "#boards", text: "Boards" },
-        {
-          href: "#board/" + params.boardId + "/user-list",
-          text: "Users",
-        },
-      ];
-      populateNavbar(navbarItems);
-    });
+            const navbarItems = [
+                {href: "#searchboards", text: "Search Boards"},
+                {href: "#board/" + params.boardId + "/user-list", text: "Users"},
+            ];
+            populateNavbar(navbarItems);
+        });
 }
+
 
 function getBoardsUsers(mainContent, params) {
   fetch(API_BASE_URL + "boards/" + params.boardId + "/user-list", {
@@ -200,14 +195,17 @@ function cardDetail(mainContent, params) {
     });
 }
 
+
+
 const handlers = {
-  getHome,
-  getUser,
-  getBoards,
-  getBoardDetail,
-  getBoardsUsers,
-  listDetails,
-  cardDetail,
+      getHome,
+      getUser,
+      getBoards,
+      getBoardDetail,
+      getBoardsUsers,
+      listDetails,
+      cardDetail,
+    getSearchBoards
 };
 
 export default handlers;

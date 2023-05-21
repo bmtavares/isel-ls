@@ -24,9 +24,13 @@ insert into cards(name, description, duedate, listid, boardid,cidx) values
     ('Roma','Italia',null,null,lastboardid,1),
     ('Llanfairpwllgwyngyllgogerychwyrndrobwllllantysiliogogogoch','Pais de Gales',null,null,lastboardid,2);
 
+
 insert into lists(name, boardid) values
     ('Reservas', lastboardid)
     returning id into lastlistid;
+
+insert into lists(name, boardid) values
+    ('ReservasExtra', lastboardid)
 
 insert into cards(name, description, duedate, listid, boardid,cidx) values
     ('Avião','Comprar os bilhetes para todos','2023-04-15 12:30:00',lastlistid,lastboardid,0),
@@ -60,3 +64,8 @@ commit; --transaction
 
 
 abort ;
+
+insert into boards(name, description) values
+    ('coisas aleatorias', 'mais coisas aleatorias');
+
+insert into usersboards(userid, boardid) values (1,4);
