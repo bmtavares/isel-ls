@@ -5,6 +5,7 @@ import userGenerator from "./generators/userGenerator.js";
 import homeGenerator from "./generators/homeGenerator.js";
 import listGenerator from "./generators/listGenerator.js";
 import cardGenerator from "./generators/cardGenerator.js";
+import bootstrapGenerator from "./generators/bootstrapGenerator.js";
 const API_BASE_URL = "http://localhost:9000/";
 
 function populateNavbar(items) {
@@ -67,6 +68,8 @@ function getBoards(mainContent) {
     .then((boards) => {
       const content = div(
         { class: "container px-2 py-4" },
+        boardGenerator.newFormModal(userUtils.getAuthorizationHeader()),
+        bootstrapGenerator.generateModalButton("Create new", "create-board-modal", "success"),
         h1("Boards"),
         boardGenerator.listing(boards)
       );
