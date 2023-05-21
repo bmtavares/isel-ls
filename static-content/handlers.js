@@ -5,6 +5,7 @@ import userGenerator from "./generators/userGenerator.js";
 import homeGenerator from "./generators/homeGenerator.js";
 import listGenerator from "./generators/listGenerator.js";
 import cardGenerator from "./generators/cardGenerator.js";
+import bootstrapGenerator from "./generators/bootstrapGenerator.js";
 const API_BASE_URL = "http://localhost:9000/";
 
 
@@ -59,30 +60,14 @@ function getUser(mainContent) {
       populateNavbar(navbarItems);
     });
 }
+
 function getBoards(mainContent) {
     const content = boardGenerator.boardCycle()
     mainContent.replaceChildren(content);
     const navbarItems = [{ href: "#userDetails", text: "User" },{ href: "#searchboards", text: "Search Boards" }];
     populateNavbar(navbarItems);
 }
-// function getBoards(mainContent) {
-//   fetch(API_BASE_URL + "boards", {
-//     headers: userUtils.getAuthorizationHeader(),
-//   })
-//     .then((res) => res.json())
-//     .then((boards) => {
-//       const content = div(
-//         { class: "container px-2 py-4" },
-//         h1("Boards"),
-//         boardGenerator.listing(boards)
-//       );
-//
-//       mainContent.replaceChildren(content);
-//
-//       const navbarItems = [{ href: "#userDetails", text: "User" }];
-//       populateNavbar(navbarItems);
-//     });
-// }
+
 function getSearchBoards(mainContent) {
 
     const content = boardGenerator.searchBoard()
@@ -92,6 +77,7 @@ function getSearchBoards(mainContent) {
     const navbarItems = [{ href: "#userDetails", text: "User" }];
     populateNavbar(navbarItems);
 }
+
 function getBoardDetail(mainContent, params) {
     fetch(API_BASE_URL + "boards/" + params.boardId, {
         headers: userUtils.getAuthorizationHeader(),
@@ -108,7 +94,7 @@ function getBoardDetail(mainContent, params) {
 
             const content = div(
                 { class: "container mt-4" },
-                boardGenerator.details(board, lists)
+                boardGenerator.details(board, lists, userUtils.getAuthorizationHeader())
             );
 
             mainContent.replaceChildren(content);
@@ -166,8 +152,8 @@ function listDetails(mainContent, params) {
       const cards = await cardsReq.json();
 
       const content = div(
-        { class: "content" },
-        listGenerator.details(list, cards)
+        { class: "container" },
+        listGenerator.details(params.boardId, list, cards, userUtils.getAuthorizationHeader())
       );
 
       mainContent.replaceChildren(content);
