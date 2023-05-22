@@ -2,11 +2,9 @@ package pt.isel.ls.tasksServices
 
 import pt.isel.ls.data.BoardsData
 import pt.isel.ls.data.DataContext
-import pt.isel.ls.data.DataException
 import pt.isel.ls.data.EntityNotFoundException
 import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.User
-import pt.isel.ls.data.pgsql.PgDataContext.handleData
 import pt.isel.ls.tasksServices.dtos.InputBoardDto
 
 class ServiceBoards(private val context: DataContext, private val boardRepository: BoardsData) {
@@ -60,8 +58,8 @@ class ServiceBoards(private val context: DataContext, private val boardRepositor
         lateinit var board: Board
         try {
             context.handleData {
-                board = boardRepository.add(newBoard)
-                boardRepository.addUserToBoard(user.id, board.id)
+                board = boardRepository.add(newBoard, it)
+                boardRepository.addUserToBoard(user.id, board.id, it)
             }
         } catch (e: Exception) {
             throw e
