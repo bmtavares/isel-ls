@@ -116,18 +116,20 @@ function boardCycle() {
             style: "width: 100px",
             href: `#boards/${board.id}`,
           }),
-          a("+ Add", {
-            class: "btn btn-success",
-            style: "width: 100px",
-            href: `#boards`,
-          })
+          // a("+ Add", {
+          //   class: "btn btn-success",
+          //   style: "width: 100px",
+          //   href: `#boards`,
+          // })
         )
       )
     )
   );
 }
 
-function searchBoard() {
+function searchBoard(authHeader) {
+  const id = "create-board";
+
   async function handleOnSearchClick(e) {
     e.preventDefault();
     const a = document.getElementById("searchBoxInput");
@@ -148,8 +150,48 @@ function searchBoard() {
       });
   }
 
+  async function handleOnSubmitCreate(e) {
+    e.preventDefault();
+
+    const formData = new FormData(e.target); // Using the FormData object we can quickly fetch all the inputs
+    const data = JSON.stringify(Object.fromEntries(formData.entries())); // Since we used names matching the desired keys in our input DTO, we can just send it directly
+
+    //TODO: Wrap in try .. catch
+
+    const creationReq = await fetch(`${appConstants.API_BASE_URL}boards`, {
+      method: "post",
+      headers: { ...authHeader, "Content-Type": "application/json" },
+      body: data,
+    });
+
+    //const result =
+    await creationReq.json(); // Just await a response for now
+
+    bootstrap.Modal.getInstance(document.querySelector(`#${id}-modal`)).hide(); // Hide the form modal
+
+    e.target.reset();
+  }
+
   return div(
     { class: "container mt-4" },
+    bootstrapGenerator.generateModal(
+      id,
+      generateFormModal(
+        "board",
+        handleOnSubmitCreate,
+        [
+          { type: "text", name: "Name", required: true },
+          { type: "text", name: "Description", required: true },
+        ],
+        "Create"
+      ),
+      "Create a new board"
+    ),
+    bootstrapGenerator.generateModalButton(
+      "Create new",
+      `${id}-modal`,
+      "success"
+    ),
     form(
       { class: "form-inline" },
       div(

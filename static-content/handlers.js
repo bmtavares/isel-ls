@@ -62,20 +62,24 @@ function getUser(mainContent) {
 }
 
 function getBoards(mainContent) {
-    const content = boardGenerator.boardCycle()
-    mainContent.replaceChildren(content);
-    const navbarItems = [{ href: "#userDetails", text: "User" },{ href: "#searchboards", text: "Search Boards" }];
-    populateNavbar(navbarItems);
+  const content = boardGenerator.boardCycle();
+  mainContent.replaceChildren(content);
+  const navbarItems = [
+    { href: "#userDetails", text: "User" },
+    { href: "#searchboards", text: "Search Boards" },
+  ];
+  populateNavbar(navbarItems);
 }
 
 function getSearchBoards(mainContent) {
+  const content = boardGenerator.searchBoard(
+    userUtils.getAuthorizationHeader()
+  );
 
-    const content = boardGenerator.searchBoard()
+  mainContent.replaceChildren(content);
 
-    mainContent.replaceChildren(content);
-
-    const navbarItems = [{ href: "#userDetails", text: "User" }];
-    populateNavbar(navbarItems);
+  const navbarItems = [{ href: "#userDetails", text: "User" }];
+  populateNavbar(navbarItems);
 }
 
 function getBoardDetail(mainContent, params) {
