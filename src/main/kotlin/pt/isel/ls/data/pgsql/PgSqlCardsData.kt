@@ -237,12 +237,28 @@ object PgSqlCardsData : CardsData {
         }
     }
 
+    private fun changeCardCount(id: Int, connection: Connection, delta: Int = 1) {
+        val statement = connection.prepareStatement(
+            "update Lists set nCards = nCards + 1 * ? where id = ?;"
+        )
+        statement.setInt(1, delta)
+        statement.setInt(2, id)
+        statement.executeUpdate()
+    }
+
     override fun add(newCard: InputCardDto, boardId: Int, listId: Int?, connection: Connection?): Card {
         checkNotNull(connection) { "Connection is need to use DB" }
-        val listCount = getListCount(listId, boardId, connection)
-        val statement = connection.prepareStatement(
-            "insert into Cards (name, description, dueDate, listId, boardId) values (?, ?, ?, ?, ?) returning id, name, description, dueDate, listId, boardId;"
-        )
+
+        val statement = if (listId != null) {
+            connection.prepareStatement(
+                "insert into Cards (name, description, dueDate, listId, boardId, cidx) values (?, ?, ?, ?, ?, (select l.nCards from lists l where l.id = ? and l.boardid = ?)) returning id, name, description, dueDate, listId, boardId, cidx;"
+            )
+        } else {
+            connection.prepareStatement(
+                "insert into Cards (name, description, dueDate, listId, boardId, cidx) values (?, ?, ?, ?, ?, -1) returning id, name, description, dueDate, listId, boardId, cidx;"
+            )
+        }
+
         statement.setString(1, newCard.name)
         statement.setString(2, newCard.description)
         if (newCard.dueDate == null) {
@@ -252,6 +268,8 @@ object PgSqlCardsData : CardsData {
         }
         if (listId != null) {
             statement.setInt(4, listId)
+            statement.setInt(6, listId)
+            statement.setInt(7, boardId)
         } else {
             statement.setNull(4, Types.INTEGER)
         }
@@ -260,6 +278,8 @@ object PgSqlCardsData : CardsData {
 
         val rs = statement.executeQuery()
 
+        if (listId != null) changeCardCount(listId, connection)
+
         while (rs.next()) {
             val id = rs.getInt("id")
             val name = rs.getString("name")
@@ -267,7 +287,7 @@ object PgSqlCardsData : CardsData {
             val dueDate = rs.getTimestamp("dueDate")
             val lId = if (rs.getInt("listId") == 0 && rs.wasNull()) null else rs.getInt("listId")
             val bId = rs.getInt("boardId")
-            val cIdx = rs.getInt("cIdx")
+            val cIdx = rs.getInt("cidx")
 
             return Card(
                 id,
