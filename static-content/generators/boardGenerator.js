@@ -53,8 +53,22 @@ function details(board, lists, authHeader) {
     listGenerator.listing(lists)
   );
 }
+
 function boardCycle() {
-  let boards = JSON.parse(localStorage.getItem("searchBoardsResult"));
+  async function handleOnPreviousClick(e) {
+    e.preventDefault();
+    localStorage.setItem("boardIdx", prev.toString());
+    window.dispatchEvent(new HashChangeEvent("hashchange"));
+  }
+
+  async function handleOnNextClick(e) {
+    e.preventDefault();
+    localStorage.setItem("boardIdx", next.toString());
+    window.dispatchEvent(new HashChangeEvent("hashchange"));
+  }
+
+  const boards = JSON.parse(localStorage.getItem("searchBoardsResult"));
+
   let idx = localStorage.getItem("boardIdx");
   if (idx === null || idx === undefined) {
     idx = 0;
@@ -62,15 +76,12 @@ function boardCycle() {
   } else {
     idx = Number(idx);
   }
+
   let board = boards[idx];
-  let prev;
-  let next;
-  if (idx - 1 < 0) {
-    prev = boards.length - 1;
-  } else prev = idx - 1;
-  if (idx + 1 >= boards.length) {
-    next = 0;
-  } else next = idx + 1;
+  
+  const prev = idx - 1 < 0 ? boards.length - 1 : idx - 1;
+  const next = idx + 1 >= boards.length ? 0 : idx + 1;
+
   return div(
     { class: "container mt-4" },
     div(
@@ -78,22 +89,14 @@ function boardCycle() {
       button("<<Previous", {
         class: "btn btn-link",
         events: {
-          click: async (e) => {
-            e.preventDefault();
-            localStorage.setItem("boardIdx", prev.toString());
-            window.dispatchEvent(new HashChangeEvent("hashchange"));
-          },
+          click: handleOnPreviousClick,
         },
       }),
       label(`${idx + 1}/${boards.length}`),
       button("Next>>", {
         class: "btn btn-link",
         events: {
-          click: async (e) => {
-            e.preventDefault();
-            localStorage.setItem("boardIdx", next.toString());
-            window.dispatchEvent(new HashChangeEvent("hashchange"));
-          },
+          click: handleOnNextClick,
         },
       })
     ),
@@ -125,6 +128,26 @@ function boardCycle() {
 }
 
 function searchBoard() {
+  async function handleOnSearchClick(e) {
+    e.preventDefault();
+    const a = document.getElementById("searchBoxInput");
+    await fetch(API_BASE_URL + `boards?search=${a.value}`, {
+      headers: userUtils.getAuthorizationHeader(),
+    })
+      .then((res) => res.json())
+      .then((boards) => {
+        if (boards.length === 0) {
+          const label = document.getElementById("board-search-failed-label");
+          label.innerText = "No boards found for this query. Please try again.";
+          return; // Early return since we got no results
+        }
+
+        localStorage.setItem("searchBoardsResult", JSON.stringify(boards));
+        localStorage.setItem("boardIdx", "0");
+        location.hash = "boards";
+      });
+  }
+
   return div(
     { class: "container mt-4" },
     form(
@@ -145,23 +168,12 @@ function searchBoard() {
           type: "submit",
           class: "btn btn-primary",
           events: {
-            click: async (e) => {
-              e.preventDefault();
-              const a = document.getElementById("searchBoxInput");
-              await fetch(API_BASE_URL + `boards?search=${a.value}`, {
-                headers: userUtils.getAuthorizationHeader(),
-              })
-                .then((res) => res.json())
-                .then((boards) => {
-                  localStorage.setItem(
-                    "searchBoardsResult",
-                    JSON.stringify(boards)
-                  );
-                  localStorage.setItem("boardIdx", String(0));
-                  location.hash = "boards";
-                });
-            },
+            click: handleOnSearchClick,
           },
+        }),
+        p({
+          id: "board-search-failed-label",
+          class: "text-danger",
         })
       )
     )
