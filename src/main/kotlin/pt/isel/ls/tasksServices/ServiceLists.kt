@@ -47,7 +47,7 @@ class ServiceLists(private val context: DataContext, private val listsRepo: List
     fun deleteBoardList(boardListId: Int) {
         try {
             context.handleData { con ->
-                listsRepo.delete(boardListId,con)
+                listsRepo.delete(boardListId, con)
             }
         } catch (e: Exception) {
             throw e

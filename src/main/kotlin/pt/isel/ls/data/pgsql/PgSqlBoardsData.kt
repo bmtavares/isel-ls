@@ -167,7 +167,7 @@ object PgSqlBoardsData : BoardsData {
         return results
     }
 
-    override fun filterByName(user:User, searchField: String, con: Connection?): List<Board> {
+    override fun filterByName(user: User, searchField: String, con: Connection?): List<Board> {
         checkNotNull(con) { "Connection is need to use DB" }
         val statement = con.prepareStatement(
             "select b.* from Boards b join usersboards ub on b.id = ub.boardid where ub.userid = ? and LOWER(b.name) like LOWER(?) ;"
@@ -178,12 +178,13 @@ object PgSqlBoardsData : BoardsData {
 
         val rs = statement.executeQuery()
         while (rs.next()) {
-            boards.add( Board(
-                rs.getInt("id"),
-                rs.getString("name"),
-                rs.getString("description")
-            ))
-
+            boards.add(
+                Board(
+                    rs.getInt("id"),
+                    rs.getString("name"),
+                    rs.getString("description")
+                )
+            )
         }
         return boards
     }

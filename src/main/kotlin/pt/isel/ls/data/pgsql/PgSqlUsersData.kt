@@ -85,7 +85,7 @@ object PgSqlUsersData : UsersData {
             )
         }
 
-        throw EntityNotFoundException("failed to get by id",User::class)
+        throw EntityNotFoundException("failed to get by id", User::class)
     }
 
     override fun add(newUser: InputUserDto, connection: Connection?): User {
@@ -100,17 +100,15 @@ object PgSqlUsersData : UsersData {
             while (rs.next()) {
                 val id = rs.getInt("id")
                 return User(id, newUser.name, newUser.email)
-
-
             }
             throw DataException("Failed to add user.")
-        }catch (e:PSQLException){
-                if(e.sqlState=="23505"){
-                    throw EntityAlreadyExistsException("email alredy in use",User::class)
-                }else{
-                    throw DataException("Failed to add user, PSQLException")
-                }
-        }catch (e:PSQLException){
+        } catch (e: PSQLException) {
+            if (e.sqlState == "23505") {
+                throw EntityAlreadyExistsException("email alredy in use", User::class)
+            } else {
+                throw DataException("Failed to add user, PSQLException")
+            }
+        } catch (e: PSQLException) {
             throw DataException("Failed to add user.")
         }
     }

@@ -64,7 +64,7 @@ object MemBoardsData : BoardsData {
         return MemDataSource.users.filter { it.id in usersIds }
     }
 
-    override fun filterByName(user:User, searchField: String, con: Connection?): List<Board> {
+    override fun filterByName(user: User, searchField: String, con: Connection?): List<Board> {
         val boards = MemDataSource.usersBoards.filter { it.userId == user.id }
 
         val boardIds = boards.map { it.boardId }

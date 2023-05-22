@@ -10,13 +10,13 @@ import pt.isel.ls.tasksServices.dtos.InputBoardDto
 class ServiceBoards(private val context: DataContext, private val boardRepository: BoardsData) {
     fun getBoard(boardId: Int, user: User): Board {
         lateinit var board: Board
-            try {
-                context.handleData { con ->
-                    board = boardRepository.getById(boardId, con)
-                }
-            } catch (e: Exception) {
-                throw EntityNotFoundException("Board not found", Board::class)
+        try {
+            context.handleData { con ->
+                board = boardRepository.getById(boardId, con)
             }
+        } catch (e: Exception) {
+            throw EntityNotFoundException("Board not found", Board::class)
+        }
         return board
     }
 
@@ -32,7 +32,7 @@ class ServiceBoards(private val context: DataContext, private val boardRepositor
         return board
     }
 
-    fun getUserBoards(user: User,searchField: String?, limit: Int = 25, skip: Int = 0): List<Board> {
+    fun getUserBoards(user: User, searchField: String?, limit: Int = 25, skip: Int = 0): List<Board> {
         lateinit var boards: List<Board>
         if (searchField.isNullOrBlank()) {
             try {
@@ -42,14 +42,14 @@ class ServiceBoards(private val context: DataContext, private val boardRepositor
             } catch (e: Exception) {
                 throw EntityNotFoundException("Board not found", Board::class)
             }
-        }else{
-                try {
-                    context.handleData { con ->
-                        boards = boardRepository.filterByName( user,searchField, con)
-                    }
-                } catch (e: Exception) {
-                    throw EntityNotFoundException("Board not found", Board::class)
+        } else {
+            try {
+                context.handleData { con ->
+                    boards = boardRepository.filterByName(user, searchField, con)
                 }
+            } catch (e: Exception) {
+                throw EntityNotFoundException("Board not found", Board::class)
+            }
         }
         return boards
     }

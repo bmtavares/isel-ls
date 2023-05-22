@@ -118,11 +118,11 @@ class WebApi(
             Response(CREATED)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(user))
-        }  catch (e: EntityAlreadyExistsException) {
+        } catch (e: EntityAlreadyExistsException) {
             Response(CONFLICT)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
-        }catch (e: DataException) {
+        } catch (e: DataException) {
             Response(BAD_REQUEST)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
@@ -139,7 +139,7 @@ class WebApi(
         val search = request.query("search")
         checkNotNull(user)
         try {
-            val boards = services.boards.getUserBoards(user,search, getLimit(request), getSkip(request))
+            val boards = services.boards.getUserBoards(user, search, getLimit(request), getSkip(request))
             Response(OK)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(boards))
