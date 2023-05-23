@@ -83,6 +83,9 @@ export function h2() {
 export function h3() {
   return createElement("h3", arguments);
 }
+export function h5() {
+  return createElement("h5", arguments);
+}
 
 export function hr() {
   return createElement("hr", arguments);

@@ -1,5 +1,5 @@
 import cardGenerator from "./cardGenerator.js";
-import { div, a, h3, h1 } from "./createElement.js";
+import { div, a, h3, h1,h5,p,button } from "./createElement.js";
 import userUtils from "../user.js";
 import { generateFormModal } from "./formGenerator.js";
 import bootstrapGenerator from "./bootstrapGenerator.js";
@@ -28,8 +28,72 @@ function listingCard(list) {
 }
 
 
-function listDelete(list) {
-  const question = `Do you want to delete list: ${list.name} ?`;
+function modalListDeleteGenericDOM(list){
+const question = `Do you want to delete list: ${list.name} ?`;
+const modal = document.createElement('div');
+        modal.classList.add('modal', 'fade');
+        modal.id = 'deleteListModal';
+        modal.setAttribute('tabindex', '-1');
+        modal.setAttribute('aria-labelledby', 'deleteListModalLabel');
+        modal.setAttribute('aria-hidden', 'true');
+
+        const modalDialog = document.createElement('div');
+        modalDialog.classList.add('modal-dialog');
+
+        const modalContent = document.createElement('div');
+        modalContent.classList.add('modal-content');
+
+        const modalHeader = document.createElement('div');
+        modalHeader.classList.add('modal-header');
+
+        const modalTitle = document.createElement('h5');
+        modalTitle.classList.add('modal-title');
+        modalTitle.id = 'deleteListModalLabel';
+        modalTitle.textContent = 'Delete List';
+
+        const closeButton = document.createElement('button');
+        closeButton.type = 'button';
+        closeButton.classList.add('btn-close');
+        closeButton.setAttribute('data-bs-dismiss', 'modal');
+        closeButton.setAttribute('aria-label', 'Close');
+
+        const modalBody = document.createElement('div');
+        modalBody.classList.add('modal-body');
+
+        const paragraph = document.createElement('p');
+        paragraph.textContent = question;
+
+        const modalFooter = document.createElement('div');
+        modalFooter.classList.add('modal-footer');
+
+        const cancelButton = document.createElement('button');
+        cancelButton.type = 'button';
+        cancelButton.classList.add('btn', 'btn-secondary');
+        cancelButton.setAttribute('data-bs-dismiss', 'modal');
+        cancelButton.textContent = 'Cancel';
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.classList.add('btn', 'btn-primary');
+        deleteButton.id = 'confirmDeleteListButton';
+        deleteButton.textContent = 'Delete';
+
+        modalHeader.appendChild(modalTitle);
+        modalHeader.appendChild(closeButton);
+        modalBody.appendChild(paragraph);
+        modalFooter.appendChild(cancelButton);
+        modalFooter.appendChild(deleteButton);
+        modalContent.appendChild(modalHeader);
+        modalContent.appendChild(modalBody);
+        modalContent.appendChild(modalFooter);
+        modalDialog.appendChild(modalContent);
+
+        modal.appendChild(modalDialog);
+        document.body.appendChild(modal);
+
+}
+
+function modalListDelete(list){
+/*
   const modalHtml = `
     <div class="modal fade" id="deleteListModal" tabindex="-1" aria-labelledby="deleteListModalLabel" aria-hidden="true">
       <div class="modal-dialog">
@@ -48,9 +112,43 @@ function listDelete(list) {
         </div>
       </div>
     </div>`;
+    */
+const question = `Do you want to delete list: ${list.name} ?`;
+ const content = div(
+          { class: "modal fade",
+           id: "deleteListModal",
+           tabindex: "-1",
+           "aria-labelledby": "deleteListModalLabel",
+            "aria-hidden": "true"
+           },
+          div(
+          {class:"modal-dialog"},
+            div({class:"modal-content"},
+                div({class:"modal-header"},
+                    h5("Delete List",{class:"modal-title",
+                        id:"deleteListModalLabel"
+                        }
+                    ),
+                    button({ type:"button", class:"btn-close" , "data-bs-dismiss":"modal", "aria-label":"Close" }
+                    )
+                ),
+                div({class:"modal-body"},
+                    p(question)
+                ),
+                div({class:"modal-footer"},
+                    button("Cancel",{type:"button", class:"btn btn-secondary", "data-bs-dismiss":"modal"}),
+                    button("Delete",{type:"button", class:"btn btn-primary", id:"confirmDeleteListButton"})
+                )
+            )
+          )
+        );
+document.body.appendChild(content);
+}
 
-  // Add the modal HTML to the page
-  document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+function listDelete(list) {
+        modalListDelete(list);
+
 
   // Add event listener to the confirm button
   const confirmButton = document.getElementById('confirmDeleteListButton');
@@ -72,15 +170,15 @@ function listDelete(list) {
           console.log(error);
         });
   });
-
-
   // Show the modal
-  const modal = new bootstrap.Modal(document.getElementById('deleteListModal'), {
+  const modall = new bootstrap.Modal(document.getElementById('deleteListModal'), {
     keyboard: false,
     backdrop: 'static'
   });
-  modal.show();
+  modall.show();
 }
+
+
 
 
 
