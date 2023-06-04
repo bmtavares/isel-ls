@@ -95,7 +95,7 @@ function getBoardDetail(mainContent, params) {
                 }
             );
             const lists = await listsReq.json();
-
+            console.log(lists)
             const content = div(
                 { class: "container mt-4" },
                 boardGenerator.details(board, lists, userUtils.getAuthorizationHeader())

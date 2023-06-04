@@ -26,15 +26,34 @@ function listing(cards) {
   );
 }
 
+
+function updatePositionOptions() {
+ let lists = JSON.parse(localStorage.getItem("GlobalLists"))
+  const selectedList = listDropdown.value;
+console.log(lists)
+  // Clear previous options
+  positionDropdown.innerHTML = '';
+  let PositionOptions = ""
+    let list = lists[selectedList]
+   for (let i = 0; i <= list.ncards; i++) {
+   console.log(i)
+      PositionOptions += `<option value="${i}">Position ${i}</option>`;
+    }
+
+  // Generate position options based on the selected list
+ document.getElementById('positionDropdown').innerHTML = PositionOptions
+}
+
 function moveCard(card) {
  let lists = JSON.parse(localStorage.getItem("GlobalLists"))
  console.log(lists)
  let listOptions = ""
   for (let i = 0; i < lists.length; i++) {
     listOptions += `<option value="${i}">List ${i}</option>`;
+
   }
   let PositionOptions = ""
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i <= lists[0].ncards; i++) {
       PositionOptions += `<option value="${i}">Position ${i}</option>`;
     }
   const question = "mmove this card?";
@@ -53,7 +72,6 @@ function moveCard(card) {
              </select>
              <select id="positionDropdown">
              ${PositionOptions}
-
               </select>
           </div>
           <div class="modal-footer">
@@ -96,6 +114,8 @@ function moveCard(card) {
       });
     });
 
+const listDropdown = document.getElementById('listDropdown');
+listDropdown.addEventListener('change', updatePositionOptions);
 
   // Show the modal
   const modal = new bootstrap.Modal(document.getElementById('MoveCardModal'), {
