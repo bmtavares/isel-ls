@@ -29,8 +29,6 @@ insert into lists(name, boardid) values
     ('Reservas', lastboardid)
     returning id into lastlistid;
 
-insert into lists(name, boardid) values
-    ('ReservasExtra', lastboardid);
 
 insert into cards(name, description, duedate, listid, boardid,cidx) values
     ('Avião','Comprar os bilhetes para todos','2023-04-15 12:30:00',lastlistid,lastboardid,0),
