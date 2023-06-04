@@ -10,7 +10,7 @@ object PgSqlListsData : ListsData {
     override fun getListsByBoard(boardId: Int, limit: Int, skip: Int, connection: Connection?): List<BoardList> {
         checkNotNull(connection) { "Connection is need to use DB" }
         val statement = connection.prepareStatement(
-            "select l.id , l.name , l.boardId  from Lists l join Boards b on l.boardId = b.id where b.id = ? offset ? limit ?;"
+            "select l.id , l.name , l.boardId, l.ncards  from Lists l join Boards b on l.boardId = b.id where b.id = ? offset ? limit ?;"
         )
         statement.setInt(1, boardId)
         statement.setInt(2, skip)
@@ -24,7 +24,8 @@ object PgSqlListsData : ListsData {
             results += BoardList(
                 rs.getInt("id"),
                 rs.getString("name"),
-                rs.getInt("boardId")
+                rs.getInt("boardId"),
+                rs.getInt("ncards")
             )
         }
 
@@ -43,7 +44,8 @@ object PgSqlListsData : ListsData {
             return BoardList(
                 rs.getInt("id"),
                 rs.getString("name"),
-                rs.getInt("boardId")
+                rs.getInt("boardId"),
+                rs.getInt("ncards")
             )
         }
 
@@ -53,22 +55,24 @@ object PgSqlListsData : ListsData {
     override fun add(newBoardList: InputBoardListDto, boardId: Int, connection: Connection?): BoardList {
         checkNotNull(connection) { "Connection is need to use DB" }
         val statement = connection.prepareStatement(
-            "insert into Lists (name, boardId) values (?, ?) returning id, name, boardId;"
+            "insert into Lists (name, boardId,ncards) values (?, ?,?) returning id, name, boardId;"
         )
         statement.setString(1, newBoardList.name)
         statement.setInt(2, boardId)
-
+        statement.setInt(3, 0)
         val rs = statement.executeQuery()
 
         while (rs.next()) {
             val id = rs.getInt("id")
             val name = rs.getString("name")
             val bId = rs.getInt("boardId")
+            val ncards = rs.getInt("ncards")
 
             return BoardList(
                 id,
                 name,
-                bId
+                bId,
+                ncards
             )
         }
 
@@ -89,14 +93,15 @@ object PgSqlListsData : ListsData {
         }
     }
 
-    override fun edit(editName: String, listId: Int, boardId: Int, connection: Connection?) {
+    override fun edit(editName: String, listId: Int, boardId: Int, ncards : Int ,connection: Connection?) {
         checkNotNull(connection) { "Connection is need to use DB" }
         val statement = connection.prepareStatement(
-            "update Lists set name = ? where id = ? and boardid = ?;"
+            "update Lists set name = ?,ncards = ? where id = ? and boardid = ?;"
         )
         statement.setString(1, editName)
-        statement.setInt(2, listId)
-        statement.setInt(3, boardId)
+        statement.setInt(2, ncards)
+        statement.setInt(3, listId)
+        statement.setInt(4, boardId)
 
         val count = statement.executeUpdate()
 

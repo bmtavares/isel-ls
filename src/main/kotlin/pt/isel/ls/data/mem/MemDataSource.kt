@@ -46,9 +46,9 @@ object MemDataSource {
 
         lists.addAll(
             listOf(
-                BoardList(1, "Reservas", 1),
-                BoardList(2, "Sitos para comer", 1),
-                BoardList(3, "Sitos para visitar", 1)
+                BoardList(1, "Reservas", 1,3), // chek add all TODO
+                BoardList(2, "Sitos para comer", 1,0),
+                BoardList(3, "Sitos para visitar", 1,0)
             )
         )
 
