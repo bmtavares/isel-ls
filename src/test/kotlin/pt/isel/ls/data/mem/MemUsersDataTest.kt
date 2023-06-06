@@ -1,8 +1,9 @@
 package pt.isel.ls.data.mem
 
 import pt.isel.ls.data.EntityNotFoundException
+import pt.isel.ls.tasksServices.dtos.CreateUserDto
 import pt.isel.ls.tasksServices.dtos.EditUserDto
-import pt.isel.ls.tasksServices.dtos.InputUserDto
+import pt.isel.ls.utils.PasswordUtils
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -22,9 +23,12 @@ class MemUsersDataTest {
         assertFailsWith<EntityNotFoundException> {
             MemUsersData.getById(1)
         }
-        val newUser = InputUserDto(
+        val salt = PasswordUtils.generateSalt()
+        val newUser = CreateUserDto(
             "Alberto",
-            "alberto@example.org"
+            "alberto@example.org",
+            PasswordUtils.hashPassword("olamundo", salt),
+            salt
         )
         val insertedUser = MemUsersData.add(newUser)
         assertEquals(newUser.email, insertedUser.email)
@@ -32,13 +36,19 @@ class MemUsersDataTest {
 
     @Test
     fun getUserByEmail() {
-        val newUser1 = InputUserDto(
+        val salt1 = PasswordUtils.generateSalt()
+        val newUser1 = CreateUserDto(
             "Alberto",
-            "alberto@example.org"
+            "alberto@example.org",
+            PasswordUtils.hashPassword("olamundo", salt1),
+            salt1
         )
-        val newUser2 = InputUserDto(
+        val salt2 = PasswordUtils.generateSalt()
+        val newUser2 = CreateUserDto(
             "Mariana",
-            "mariana@example.org"
+            "mariana@example.org",
+            PasswordUtils.hashPassword("olamundo", salt2),
+            salt2
         )
 
         val insertedUser1 = MemUsersData.add(newUser1)
@@ -53,9 +63,12 @@ class MemUsersDataTest {
 
     @Test
     fun getUserByToken() {
-        val newUser = InputUserDto(
+        val salt = PasswordUtils.generateSalt()
+        val newUser = CreateUserDto(
             "Alberto",
-            "alberto@example.org"
+            "alberto@example.org",
+            PasswordUtils.hashPassword("olamundo", salt),
+            salt
         )
 
         val insertedUser = MemUsersData.add(newUser)
@@ -69,9 +82,12 @@ class MemUsersDataTest {
 
     @Test
     fun existsUser() {
-        val newUser = InputUserDto(
+        val salt = PasswordUtils.generateSalt()
+        val newUser = CreateUserDto(
             "Alberto",
-            "alberto@example.org"
+            "alberto@example.org",
+            PasswordUtils.hashPassword("olamundo", salt),
+            salt
         )
 
         val insertedUser = MemUsersData.add(newUser)
@@ -82,9 +98,12 @@ class MemUsersDataTest {
 
     @Test
     fun updateUser() {
-        val newUser = InputUserDto(
+        val salt = PasswordUtils.generateSalt()
+        val newUser = CreateUserDto(
             "Alberto",
-            "alberto@example.org"
+            "alberto@example.org",
+            PasswordUtils.hashPassword("olamundo", salt),
+            salt
         )
 
         val insertedUser = MemUsersData.add(newUser)
@@ -101,9 +120,12 @@ class MemUsersDataTest {
 
     @Test
     fun deleteUser() {
-        val newUser = InputUserDto(
+        val salt = PasswordUtils.generateSalt()
+        val newUser = CreateUserDto(
             "Alberto",
-            "alberto@example.org"
+            "alberto@example.org",
+            PasswordUtils.hashPassword("olamundo", salt),
+            salt
         )
 
         val insertedUser = MemUsersData.add(newUser)

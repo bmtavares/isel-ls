@@ -9,7 +9,6 @@ import org.http4k.core.Status
 import org.http4k.routing.bind
 import org.http4k.routing.routes
 import org.junit.jupiter.api.Test
-import pt.isel.ls.data.entities.User
 import pt.isel.ls.data.mem.MemBoardsData
 import pt.isel.ls.data.mem.MemCardsData
 import pt.isel.ls.data.mem.MemDataContext
@@ -19,6 +18,7 @@ import pt.isel.ls.data.mem.MemUsersData
 import pt.isel.ls.tasksServices.TasksServices
 import pt.isel.ls.tasksServices.dtos.InputUserDto
 import pt.isel.ls.tasksServices.dtos.OutputUserDto
+import pt.isel.ls.tasksServices.dtos.SecureOutputUserDto
 import java.util.*
 import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
@@ -40,7 +40,7 @@ class UsersTest {
 
     @Test
     fun createUser() {
-        val createDto = InputUserDto("Maria", "maria@example.org")
+        val createDto = InputUserDto("Maria", "maria@example.org", "helloworld")
         val response = app(
             Request(
                 Method.POST,
@@ -56,7 +56,7 @@ class UsersTest {
 
     @Test
     fun getUserData() {
-        val createDto = InputUserDto("Maria", "maria@example.org")
+        val createDto = InputUserDto("Maria", "maria@example.org", "helloworld")
         val response = app(
             Request(
                 Method.POST,
@@ -78,7 +78,7 @@ class UsersTest {
         assertEquals(Status.OK, responseGet.status)
         assertEquals("application/json", responseGet.header("content-type"))
 
-        val returnedUser = Json.decodeFromString<User>(responseGet.bodyString())
+        val returnedUser = Json.decodeFromString<SecureOutputUserDto>(responseGet.bodyString())
 
         assertEquals(createDto.name, returnedUser.name)
         assertEquals(createDto.email, returnedUser.email)
