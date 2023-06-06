@@ -1,5 +1,5 @@
 import { footer, ul, li, a, div, h1, p } from "./createElement.js";
-
+import userUtils from "../user.js";
 function creditsFooter() {
   return footer(
     {
@@ -48,26 +48,28 @@ function creditsFooter() {
   );
 }
 
-function content(token) {
-  return div(
-    {
-      class: "container-fluid text-center",
-    },
-    div(
-      {
-        class: "row justify-content-center",
-      },
-      h1("Welcome to LEIC Fauxllo!"),
-      p(
-        token
-          ? "You appear to be logged in!"
-          : "Look's like you're not logged in..",
+function content() {
+    const user = userUtils.getUser()
+    const msg = user
+        ? `You are logged in as ${user.name}`
+        : "Look's like you're not logged in.."
+    return div(
         {
-          class: "text-muted",
-        }
-      )
-    )
-  );
+            class: "container-fluid text-center",
+        },
+        div(
+            {
+                class: "row justify-content-center",
+            },
+            h1("Welcome to LEIC Fauxllo!"),
+            p(
+                msg,
+                {
+                    class: "text-muted",
+                }
+            )
+        )
+    );
 }
 
 export default {

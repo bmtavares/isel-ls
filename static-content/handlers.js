@@ -30,12 +30,13 @@ function populateNavbar(items) {
 
 function getHome(mainContent) {
   mainContent.innerHTML = "";
-  mainContent.appendChild(homeGenerator.content(userUtils.getToken()));
+  mainContent.appendChild(homeGenerator.content());
   mainContent.appendChild(homeGenerator.creditsFooter());
 
   const navbarItems = [
     { href: "#userDetails", text: "User" },
     { href: "#searchboards", text: "Search" },
+    { href: "#signup", text: "Sign Up" },
   ];
   populateNavbar(navbarItems);
 }
@@ -199,7 +200,17 @@ function cardDetail(mainContent, params) {
     });
 }
 
-
+function getSignUp(mainContent) {
+    const content = userGenerator.signUpContent()
+    mainContent.replaceChildren(content);
+    const links = [
+        {
+            href: "#home",
+            text: "Home",
+        },
+    ];
+    populateNavbar(links);
+}
 
 const handlers = {
       getHome,
@@ -209,7 +220,8 @@ const handlers = {
       getBoardsUsers,
       listDetails,
       cardDetail,
-    getSearchBoards
+    getSearchBoards,
+    getSignUp
 };
 
 export default handlers;
