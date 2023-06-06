@@ -1,9 +1,10 @@
-import { div, a, h3, p, small } from "./createElement.js";
+import { div, a, h3, p, small,select,button ,option} from "./createElement.js";
 import userUtils from "../user.js";
 const API_BASE_URL = "http://localhost:9000/";
 import bootstrapGenerator from "./bootstrapGenerator.js";
 import { generateFormModal } from "./formGenerator.js";
 import appConstants from "../appConstants.js";
+import popup from "./popup.js";
 
 function listingCard(card) {
   return div(
@@ -29,6 +30,7 @@ function listing(cards) {
 
 function updatePositionOptions() {
  let lists = JSON.parse(localStorage.getItem("GlobalLists"))
+ //listDropdown  = document.getElementById('listDropdown');
   const selectedList = listDropdown.value;
 console.log(lists)
   // Clear previous options
@@ -44,18 +46,52 @@ console.log(lists)
  document.getElementById('positionDropdown').innerHTML = PositionOptions
 }
 
+
+
+function popfrommodal(listOptions,PositionOptions){
+/*
+            <p>${question}</p>
+            <select id="listDropdown">
+                ${listOptions}
+             </select>
+             <select id="positionDropdown">
+             ${PositionOptions}
+              </select>
+          </div>
+*/
+console.log( listOptions)
+var body = div( {class:"modal-body"},
+            p("move card ???"),
+            select({id:"listDropdown"},...listOptions),
+            select({id:"positionDropdown"},...PositionOptions)
+            );
+        popup.myGenerateModal(
+        "MoveCardModal",
+        "move card",
+        body,
+        button("Cancel",{type:"button", class:"btn btn-secondary", "data-bs-dismiss":"modal"}),
+        button("Delete",{type:"button", class:"btn btn-primary", id:"confirmMoveButton"})
+         )
+
+
+}
+
+
 function moveCard(card) {
  let lists = JSON.parse(localStorage.getItem("GlobalLists"))
  console.log(lists)
- let listOptions = ""
+ let listOptions = []
   for (let i = 0; i < lists.length; i++) {
-    listOptions += `<option value="${i}">List ${i}</option>`;
-
+    //listOptions += `<option value="${i}">List ${i}</option>`;
+    listOptions.push( option(`List ${i}`,{value:`${i}`}))
   }
-  let PositionOptions = ""
+  let PositionOptions = []
     for (let i = 0; i <= lists[0].ncards; i++) {
-      PositionOptions += `<option value="${i}">Position ${i}</option>`;
+      //PositionOptions += `<option value="${i}">Position ${i}</option>`;
+      PositionOptions.push( option(`Position ${i}`,{value:`${i}`}))
     }
+    popfrommodal(listOptions,PositionOptions)
+    /*
   const question = "mmove this card?";
   const modalHtml = `
     <div class="modal fade" id="MoveCardModal" tabindex="-1" aria-labelledby="MoveCardModalLabel" aria-hidden="true">
@@ -65,6 +101,7 @@ function moveCard(card) {
             <h5 class="modal-title" id="MoveCardModalLabel">Delete List</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
+
           <div class="modal-body">
             <p>${question}</p>
             <select id="listDropdown">
@@ -74,6 +111,7 @@ function moveCard(card) {
              ${PositionOptions}
               </select>
           </div>
+
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
             <button type="button" class="btn btn-primary" id="confirmMoveButton">Yes</button>
@@ -81,9 +119,9 @@ function moveCard(card) {
         </div>
       </div>
     </div>`;
-
+*/
   // Add the modal HTML to the page
-  document.body.insertAdjacentHTML('beforeend', modalHtml);
+ // document.body.insertAdjacentHTML('beforeend', modalHtml);
 
   // Add event listener to the confirm button
   const confirmButton = document.getElementById('confirmMoveButton');

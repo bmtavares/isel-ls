@@ -4,7 +4,7 @@ import userUtils from "../user.js";
 import { generateFormModal } from "./formGenerator.js";
 import bootstrapGenerator from "./bootstrapGenerator.js";
 import appConstants from "../appConstants.js";
-import myGenerateModal from "./popup.js";
+import popup from "./popup.js";
 
 function listingCard(list) {
   return div(
@@ -32,7 +32,7 @@ function listingCard(list) {
 
 function listDelete(list) {
 const question = `Do you want to delete list: ${list.name} ?`;
-        myGenerateModal.myGenerateModal("deleteListModal","Delete List",p(question), button("Cancel",{type:"button", class:"btn btn-secondary", "data-bs-dismiss":"modal"}),
+        popup.myGenerateModal("deleteListModal","Delete List",p(question), button("Cancel",{type:"button", class:"btn btn-secondary", "data-bs-dismiss":"modal"}),
          button("Delete",{type:"button", class:"btn btn-primary", id:"confirmDeleteListButton"})
          )
 
