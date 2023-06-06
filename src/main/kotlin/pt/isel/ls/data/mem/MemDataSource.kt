@@ -6,6 +6,7 @@ import pt.isel.ls.data.entities.Card
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.data.entities.UserBoard
 import pt.isel.ls.data.entities.UserToken
+import pt.isel.ls.utils.PasswordUtils
 import java.sql.Timestamp
 import java.util.*
 
@@ -18,11 +19,13 @@ object MemDataSource {
     val cards = mutableListOf<Card>()
 
     private fun initStorage() {
+        val salt = "aaaaaaaaaaaa"
+
         users.addAll(
             listOf(
-                User(1, "Beatriz", "beatriz@example.org"),
-                User(2, "Fatima", "fatima@example.org"),
-                User(3, "Miguel", "miguel@example.org")
+                User(1, "Beatriz", "beatriz@example.org", PasswordUtils.hashPassword("olamundo", "aaaaaaaaaaaa"), "aaaaaaaaaaaa"),
+                User(2, "Fatima", "fatima@example.org", PasswordUtils.hashPassword("olamundo", "bbbbbbbbbbbb"), "bbbbbbbbbbbb"),
+                User(3, "Miguel", "miguel@example.org", PasswordUtils.hashPassword("olamundo", "cccccccccccc"), "cccccccccccc")
             )
         )
 
@@ -46,9 +49,9 @@ object MemDataSource {
 
         lists.addAll(
             listOf(
-                BoardList(1, "Reservas", 1,3), // chek add all TODO
-                BoardList(2, "Sitos para comer", 1,0),
-                BoardList(3, "Sitos para visitar", 1,0)
+                BoardList(1, "Reservas", 1, 3), // chek add all TODO
+                BoardList(2, "Sitos para comer", 1, 0),
+                BoardList(3, "Sitos para visitar", 1, 0)
             )
         )
 

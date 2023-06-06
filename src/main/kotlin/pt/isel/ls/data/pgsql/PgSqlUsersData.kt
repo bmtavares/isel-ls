@@ -6,8 +6,8 @@ import pt.isel.ls.data.EntityAlreadyExistsException
 import pt.isel.ls.data.EntityNotFoundException
 import pt.isel.ls.data.UsersData
 import pt.isel.ls.data.entities.User
+import pt.isel.ls.tasksServices.dtos.CreateUserDto
 import pt.isel.ls.tasksServices.dtos.EditUserDto
-import pt.isel.ls.tasksServices.dtos.InputUserDto
 import java.sql.Connection
 import java.sql.Timestamp
 import java.util.UUID
@@ -43,7 +43,9 @@ object PgSqlUsersData : UsersData {
             return User(
                 rs.getInt("id"),
                 rs.getString("name"),
-                rs.getString("email")
+                rs.getString("email"),
+                rs.getString("passwordHash"),
+                rs.getString("salt")
             )
         }
 
@@ -62,7 +64,9 @@ object PgSqlUsersData : UsersData {
             return User(
                 rs.getInt("id"),
                 rs.getString("name"),
-                rs.getString("email")
+                rs.getString("email"),
+                rs.getString("passwordHash"),
+                rs.getString("salt")
             )
         }
 
@@ -81,30 +85,34 @@ object PgSqlUsersData : UsersData {
             return User(
                 rs.getInt("id"),
                 rs.getString("name"),
-                rs.getString("email")
+                rs.getString("email"),
+                rs.getString("passwordHash"),
+                rs.getString("salt")
             )
         }
 
         throw EntityNotFoundException("failed to get by id", User::class)
     }
 
-    override fun add(newUser: InputUserDto, connection: Connection?): User {
+    override fun add(newUser: CreateUserDto, connection: Connection?): User {
         checkNotNull(connection) { "Connection is need to use DB" }
         val statement = connection.prepareStatement(
-            "insert into Users (name, email) values (?, ?) returning id,name,email;"
+            "insert into Users (name, email, passwordHash, salt) values (?, ?, ?, ?) returning id,name,email;"
         )
         statement.setString(1, newUser.name)
         statement.setString(2, newUser.email)
+        statement.setString(3, newUser.passwordHash)
+        statement.setString(4, newUser.salt)
         try {
             val rs = statement.executeQuery()
             while (rs.next()) {
                 val id = rs.getInt("id")
-                return User(id, newUser.name, newUser.email)
+                return User(id, newUser.name, newUser.email, newUser.passwordHash, newUser.salt)
             }
             throw DataException("Failed to add user.")
         } catch (e: PSQLException) {
             if (e.sqlState == "23505") {
-                throw EntityAlreadyExistsException("email alredy in use", User::class)
+                throw EntityAlreadyExistsException("Email already in use.", User::class)
             } else {
                 throw DataException("Failed to add user, PSQLException")
             }

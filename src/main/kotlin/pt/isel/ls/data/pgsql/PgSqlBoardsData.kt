@@ -7,6 +7,7 @@ import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.tasksServices.dtos.EditBoardDto
 import pt.isel.ls.tasksServices.dtos.InputBoardDto
+import pt.isel.ls.tasksServices.dtos.SecureOutputUserDto
 import java.sql.Connection
 
 object PgSqlBoardsData : BoardsData {
@@ -144,7 +145,7 @@ object PgSqlBoardsData : BoardsData {
         statement.execute()
     }
 
-    override fun getUsers(boardId: Int, user: User, limit: Int, skip: Int, connection: Connection?): List<User> {
+    override fun getUsers(boardId: Int, user: User, limit: Int, skip: Int, connection: Connection?): List<SecureOutputUserDto> {
         checkNotNull(connection) { "Connection is need to use DB" }
         val statement = connection.prepareStatement(
             "select u.id, u.name, u.email from Users u join UsersBoards ub on u.id = ub.userid where ub.boardid = ? offset ? limit ?;"
@@ -155,10 +156,10 @@ object PgSqlBoardsData : BoardsData {
 
         val rs = statement.executeQuery()
 
-        val results = mutableListOf<User>()
+        val results = mutableListOf<SecureOutputUserDto>()
 
         while (rs.next()) {
-            results += User(
+            results += SecureOutputUserDto(
                 rs.getInt("id"),
                 rs.getString("name"),
                 rs.getString("email")
