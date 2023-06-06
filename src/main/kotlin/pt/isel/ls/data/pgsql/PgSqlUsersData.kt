@@ -34,7 +34,7 @@ object PgSqlUsersData : UsersData {
     override fun getByToken(token: String, connection: Connection?): User {
         checkNotNull(connection) { "Connection is need to use DB" }
         val statement = connection.prepareStatement(
-            "select id, name, email from Users u join UsersTokens ut on u.id = ut.userId where token = ?;"
+            "select u.id, u.name, u.email, u.passwordHash, u.salt from Users u join UsersTokens ut on u.id = ut.userId where token = ?;"
         )
         statement.setString(1, token)
 
