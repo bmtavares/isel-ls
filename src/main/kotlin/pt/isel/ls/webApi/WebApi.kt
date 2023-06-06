@@ -341,13 +341,13 @@ class WebApi(
         checkNotNull(boardId) { "Board Id must not be null" }
         checkNotNull(boardListId) { "List Id must not be null" }
         var ncards = request.path("ncards")?.toInt()
-        if( ncards == null){
+        if (ncards == null) {
             ncards = 0
         }
 
         val editList = Json.decodeFromString<EditBoardListDto>(request.bodyString())
         return try {
-            services.lists.editBoardList(editList, boardListId, boardId,ncards)
+            services.lists.editBoardList(editList, boardListId, boardId, ncards)
             Response(OK)
         } catch (e: DataException) {
             Response(BAD_REQUEST)

@@ -8,6 +8,8 @@ drop table if exists Users;
 create table Users (
     id serial primary key,
     name varchar(255) not null,
+    passwordHash char(64) not null,
+    salt char(12) not null,
     email varchar(254) not null unique
 );
 

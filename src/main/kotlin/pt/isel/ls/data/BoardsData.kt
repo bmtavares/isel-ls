@@ -4,6 +4,7 @@ import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.tasksServices.dtos.EditBoardDto
 import pt.isel.ls.tasksServices.dtos.InputBoardDto
+import pt.isel.ls.tasksServices.dtos.SecureOutputUserDto
 import java.sql.Connection
 
 interface BoardsData : Data<Board> {
@@ -13,6 +14,6 @@ interface BoardsData : Data<Board> {
     fun add(newBoard: InputBoardDto, connection: Connection? = null): Board
     fun addUserToBoard(userId: Int, boardId: Int, connection: Connection? = null)
     fun deleteUserFromBoard(userId: Int, boardId: Int, connection: Connection? = null)
-    fun getUsers(boardId: Int, user: User, limit: Int = 25, skip: Int = 0, connection: Connection? = null): List<User>
+    fun getUsers(boardId: Int, user: User, limit: Int = 25, skip: Int = 0, connection: Connection? = null): List<SecureOutputUserDto>
     fun filterByName(user: User, searchField: String, con: Connection?): List<Board>
 }

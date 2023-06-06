@@ -93,7 +93,7 @@ object PgSqlListsData : ListsData {
         }
     }
 
-    override fun edit(editName: String, listId: Int, boardId: Int, ncards : Int ,connection: Connection?) {
+    override fun edit(editName: String, listId: Int, boardId: Int, ncards: Int, connection: Connection?) {
         checkNotNull(connection) { "Connection is need to use DB" }
         val statement = connection.prepareStatement(
             "update Lists set name = ?,ncards = ? where id = ? and boardid = ?;"

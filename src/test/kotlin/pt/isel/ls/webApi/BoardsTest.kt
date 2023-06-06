@@ -24,6 +24,7 @@ import pt.isel.ls.tasksServices.TasksServices
 import pt.isel.ls.tasksServices.dtos.InputBoardDto
 import pt.isel.ls.tasksServices.dtos.InputUserDto
 import pt.isel.ls.tasksServices.dtos.OutputIdDto
+import pt.isel.ls.tasksServices.dtos.SecureOutputUserDto
 import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -325,7 +326,7 @@ class BoardsTest {
 
         assertEquals(Status.OK, responseGetBoard.status)
         assertEquals("application/json", responseGetBoard.header("content-type"))
-        val boardUsers = Json.decodeFromString<List<User>>(responseGetBoard.bodyString())
+        val boardUsers = Json.decodeFromString<List<SecureOutputUserDto>>(responseGetBoard.bodyString())
         assertEquals(1, boardUsers.size)
         assertEquals(user.id, boardUsers.first().id)
     }
@@ -345,8 +346,8 @@ class BoardsTest {
     @Test
     fun getBoardUserListWithOptionalLimit1() {
         val user = prepare.createUser()
-        val user1 = prepare.createUser(InputUserDto("Josephine", "josephine@example.org"))
-        val user2 = prepare.createUser(InputUserDto("Jonathan", "jonathan@example.org"))
+        val user1 = prepare.createUser(InputUserDto("Josephine", "josephine@example.org", "helloworld"))
+        val user2 = prepare.createUser(InputUserDto("Jonathan", "jonathan@example.org", "helloworld"))
 
         val createDto = InputBoardDto("New Board", "A really cool new board")
         val response = app(
@@ -374,7 +375,7 @@ class BoardsTest {
 
         assertEquals(Status.OK, responseGetBoard.status)
         assertEquals("application/json", responseGetBoard.header("content-type"))
-        val boardUsers = Json.decodeFromString<List<User>>(responseGetBoard.bodyString())
+        val boardUsers = Json.decodeFromString<List<SecureOutputUserDto>>(responseGetBoard.bodyString())
 
         assertEquals(1, boardUsers.size)
         assertNotNull(boardUsers.firstOrNull { it.id == user.id })
@@ -385,8 +386,8 @@ class BoardsTest {
     @Test
     fun getBoardUserListWithOptionalLimitOverSize() {
         val user = prepare.createUser()
-        val user1 = prepare.createUser(InputUserDto("Josephine", "josephine@example.org"))
-        val user2 = prepare.createUser(InputUserDto("Jonathan", "jonathan@example.org"))
+        val user1 = prepare.createUser(InputUserDto("Josephine", "josephine@example.org", "helloworld"))
+        val user2 = prepare.createUser(InputUserDto("Jonathan", "jonathan@example.org", "helloworld"))
 
         val createDto = InputBoardDto("New Board", "A really cool new board")
         val response = app(
@@ -414,7 +415,7 @@ class BoardsTest {
 
         assertEquals(Status.OK, responseGetBoard.status)
         assertEquals("application/json", responseGetBoard.header("content-type"))
-        val boardUsers = Json.decodeFromString<List<User>>(responseGetBoard.bodyString())
+        val boardUsers = Json.decodeFromString<List<SecureOutputUserDto>>(responseGetBoard.bodyString())
 
         assertEquals(3, boardUsers.size)
         assertNotNull(boardUsers.firstOrNull { it.id == user.id })
@@ -425,8 +426,8 @@ class BoardsTest {
     @Test
     fun getBoardUserListWithOptionalSkip1() {
         val user = prepare.createUser()
-        val user1 = prepare.createUser(InputUserDto("Josephine", "josephine@example.org"))
-        val user2 = prepare.createUser(InputUserDto("Jonathan", "jonathan@example.org"))
+        val user1 = prepare.createUser(InputUserDto("Josephine", "josephine@example.org", "helloworld"))
+        val user2 = prepare.createUser(InputUserDto("Jonathan", "jonathan@example.org", "helloworld"))
 
         val createDto = InputBoardDto("New Board", "A really cool new board")
         val response = app(
@@ -454,7 +455,7 @@ class BoardsTest {
 
         assertEquals(Status.OK, responseGetBoard.status)
         assertEquals("application/json", responseGetBoard.header("content-type"))
-        val boardUsers = Json.decodeFromString<List<User>>(responseGetBoard.bodyString())
+        val boardUsers = Json.decodeFromString<List<SecureOutputUserDto>>(responseGetBoard.bodyString())
 
         assertEquals(2, boardUsers.size)
         assertNull(boardUsers.firstOrNull { it.id == user.id })
@@ -465,8 +466,8 @@ class BoardsTest {
     @Test
     fun getBoardUserListWithOptionalSkipOverSize() {
         val user = prepare.createUser()
-        val user1 = prepare.createUser(InputUserDto("Josephine", "josephine@example.org"))
-        val user2 = prepare.createUser(InputUserDto("Jonathan", "jonathan@example.org"))
+        val user1 = prepare.createUser(InputUserDto("Josephine", "josephine@example.org", "helloworld"))
+        val user2 = prepare.createUser(InputUserDto("Jonathan", "jonathan@example.org", "helloworld"))
 
         val createDto = InputBoardDto("New Board", "A really cool new board")
         val response = app(
@@ -502,8 +503,8 @@ class BoardsTest {
     @Test
     fun getBoardUserListWithOptionalParameters() {
         val user = prepare.createUser()
-        val user1 = prepare.createUser(InputUserDto("Josephine", "josephine@example.org"))
-        val user2 = prepare.createUser(InputUserDto("Jonathan", "jonathan@example.org"))
+        val user1 = prepare.createUser(InputUserDto("Josephine", "josephine@example.org", "helloworld"))
+        val user2 = prepare.createUser(InputUserDto("Jonathan", "jonathan@example.org", "helloworld"))
 
         val createDto = InputBoardDto("New Board", "A really cool new board")
         val response = app(
@@ -531,7 +532,7 @@ class BoardsTest {
 
         assertEquals(Status.OK, responseGetBoard.status)
         assertEquals("application/json", responseGetBoard.header("content-type"))
-        val boardUsers = Json.decodeFromString<List<User>>(responseGetBoard.bodyString())
+        val boardUsers = Json.decodeFromString<List<SecureOutputUserDto>>(responseGetBoard.bodyString())
 
         assertEquals(1, boardUsers.size)
         assertNull(boardUsers.firstOrNull { it.id == user.id })
@@ -542,7 +543,7 @@ class BoardsTest {
     @Test
     fun addBoardUser() {
         val user = prepare.createUser()
-        val user2 = prepare.createUser(InputUserDto("Jose", "jose@example.org"))
+        val user2 = prepare.createUser(InputUserDto("Jose", "jose@example.org", "helloworld"))
 
         val createDto = InputBoardDto("New Board", "A really cool new board")
         val response = app(
@@ -573,7 +574,7 @@ class BoardsTest {
             )
                 .header("Authorization", "Bearer ${user.token}")
         )
-        val boardUsers = Json.decodeFromString<List<User>>(responseGetBoardUsers.bodyString())
+        val boardUsers = Json.decodeFromString<List<SecureOutputUserDto>>(responseGetBoardUsers.bodyString())
         assertNotNull(boardUsers.firstOrNull { it.id == user.id })
         assertNotNull(boardUsers.firstOrNull { it.id == user2.id })
     }
@@ -581,7 +582,7 @@ class BoardsTest {
     @Test
     fun removeBoardUser() {
         val user = prepare.createUser()
-        val user2 = prepare.createUser(InputUserDto("Jose", "jose@example.org"))
+        val user2 = prepare.createUser(InputUserDto("Jose", "jose@example.org", "helloworld"))
 
         val createDto = InputBoardDto("New Board", "A really cool new board")
         val response = app(
@@ -612,7 +613,7 @@ class BoardsTest {
             )
                 .header("Authorization", "Bearer ${user.token}")
         )
-        val boardUsers = Json.decodeFromString<List<User>>(responseGetBoardUsers.bodyString())
+        val boardUsers = Json.decodeFromString<List<SecureOutputUserDto>>(responseGetBoardUsers.bodyString())
         assertNotNull(boardUsers.firstOrNull { it.id == user.id })
         assertNotNull(boardUsers.firstOrNull { it.id == user2.id })
 
@@ -632,7 +633,7 @@ class BoardsTest {
             )
                 .header("Authorization", "Bearer ${user.token}")
         )
-        val boardUser = Json.decodeFromString<List<User>>(responseGetBoardUsersRemoved.bodyString())
+        val boardUser = Json.decodeFromString<List<SecureOutputUserDto>>(responseGetBoardUsersRemoved.bodyString())
         assertNotNull(boardUser.firstOrNull { it.id == user.id })
         assertNull(boardUser.firstOrNull { it.id == user2.id })
     }

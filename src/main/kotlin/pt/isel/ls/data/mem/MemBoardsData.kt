@@ -9,6 +9,7 @@ import pt.isel.ls.data.entities.User
 import pt.isel.ls.data.entities.UserBoard
 import pt.isel.ls.tasksServices.dtos.EditBoardDto
 import pt.isel.ls.tasksServices.dtos.InputBoardDto
+import pt.isel.ls.tasksServices.dtos.SecureOutputUserDto
 import java.sql.Connection
 
 object MemBoardsData : BoardsData {
@@ -51,7 +52,7 @@ object MemBoardsData : BoardsData {
         return board
     }
 
-    override fun getUsers(boardId: Int, user: User, limit: Int, skip: Int, connection: Connection?): List<User> {
+    override fun getUsers(boardId: Int, user: User, limit: Int, skip: Int, connection: Connection?): List<SecureOutputUserDto> {
         val users = MemDataSource.usersBoards.filter { it.boardId == boardId }
 
         if (skip > users.lastIndex) return emptyList()
@@ -61,7 +62,7 @@ object MemBoardsData : BoardsData {
             if (skip + limit <= users.lastIndex) skip + limit else users.lastIndex + 1
         ).map { it.userId }
 
-        return MemDataSource.users.filter { it.id in usersIds }
+        return MemDataSource.users.filter { it.id in usersIds }.map { SecureOutputUserDto(it.id, it.name, it.email) }
     }
 
     override fun filterByName(user: User, searchField: String, con: Connection?): List<Board> {

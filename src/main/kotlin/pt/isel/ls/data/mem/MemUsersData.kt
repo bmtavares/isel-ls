@@ -5,8 +5,8 @@ import pt.isel.ls.data.EntityNotFoundException
 import pt.isel.ls.data.UsersData
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.data.entities.UserToken
+import pt.isel.ls.tasksServices.dtos.CreateUserDto
 import pt.isel.ls.tasksServices.dtos.EditUserDto
-import pt.isel.ls.tasksServices.dtos.InputUserDto
 import java.sql.Connection
 import java.sql.Timestamp
 import java.util.UUID
@@ -30,17 +30,17 @@ object MemUsersData : UsersData {
         MemDataSource.users.firstOrNull { it.email == email }
             ?: throw EntityNotFoundException("User not found.", User::class)
 
-    override fun add(newUser: InputUserDto, connection: Connection?): User {
+    override fun add(newUser: CreateUserDto, connection: Connection?): User {
         if (MemDataSource.users.any { it.email == newUser.email }) throw EntityAlreadyExistsException("Email already in use.", User::class)
         val newId = if (MemDataSource.users.isEmpty()) 1 else MemDataSource.users.maxOf { it.id } + 1
-        val user = User(newId, newUser.name, newUser.email)
+        val user = User(newId, newUser.name, newUser.email, newUser.passwordHash, newUser.salt)
         MemDataSource.users.add(user)
         return user
     }
 
     override fun edit(editUser: EditUserDto, connection: Connection?) {
         val oldUser = MemDataSource.users.firstOrNull { it.id == editUser.id } ?: throw EntityNotFoundException("User not found.", User::class)
-        val newUser = User(oldUser.id, editUser.name, oldUser.email)
+        val newUser = User(oldUser.id, editUser.name, oldUser.email, oldUser.passwordHash, oldUser.salt)
         MemDataSource.users.remove(oldUser)
         MemDataSource.users.add(newUser)
     }

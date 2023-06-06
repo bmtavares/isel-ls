@@ -6,6 +6,7 @@ import pt.isel.ls.data.EntityNotFoundException
 import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.tasksServices.dtos.InputBoardDto
+import pt.isel.ls.tasksServices.dtos.SecureOutputUserDto
 
 class ServiceBoards(private val context: DataContext, private val boardRepository: BoardsData) {
     fun getBoard(boardId: Int, user: User): Board {
@@ -67,8 +68,8 @@ class ServiceBoards(private val context: DataContext, private val boardRepositor
         return board
     }
 
-    fun getUsersOnBoard(boardId: Int, user: User, limit: Int = 25, skip: Int = 0): List<User> {
-        lateinit var users: List<User>
+    fun getUsersOnBoard(boardId: Int, user: User, limit: Int = 25, skip: Int = 0): List<SecureOutputUserDto> {
+        lateinit var users: List<SecureOutputUserDto>
         try {
             context.handleData { con ->
                 users = boardRepository.getUsers(boardId, user, limit, skip, con)

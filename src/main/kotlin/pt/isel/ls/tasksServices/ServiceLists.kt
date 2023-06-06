@@ -53,10 +53,10 @@ class ServiceLists(private val context: DataContext, private val listsRepo: List
             throw e
         }
     }
-    fun editBoardList(editList: EditBoardListDto, boardListId: Int, boardId: Int,ncards :Int) {
+    fun editBoardList(editList: EditBoardListDto, boardListId: Int, boardId: Int, ncards: Int) {
         try {
             context.handleData { con ->
-                listsRepo.edit(editList.name, boardListId, boardId,ncards, con)
+                listsRepo.edit(editList.name, boardListId, boardId, ncards, con)
             }
         } catch (e: Exception) {
             throw e

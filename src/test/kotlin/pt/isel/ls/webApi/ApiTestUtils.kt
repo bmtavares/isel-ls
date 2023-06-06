@@ -68,7 +68,7 @@ class ApiTestUtils(api: WebApi, context: RequestContexts) {
             ),
             "users" bind Method.POST to api::createUser
         )
-        this.createUserDto = InputUserDto("Maria", "maria@example.org")
+        this.createUserDto = InputUserDto("Maria", "maria@example.org", "olamundo")
         this.createBoardDto = InputBoardDto("New Board", "A really cool new board")
         this.createListDto = InputBoardListDto("Cool List")
     }
