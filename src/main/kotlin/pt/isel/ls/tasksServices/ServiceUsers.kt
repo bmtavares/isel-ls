@@ -4,17 +4,26 @@ import pt.isel.ls.data.DataContext
 import pt.isel.ls.data.DataException
 import pt.isel.ls.data.UsersData
 import pt.isel.ls.data.entities.User
+import pt.isel.ls.tasksServices.dtos.CreateUserDto
 import pt.isel.ls.tasksServices.dtos.InputUserDto
 import pt.isel.ls.tasksServices.dtos.OutputUserDto
+import pt.isel.ls.tasksServices.dtos.SecureOutputUserDto
+import pt.isel.ls.utils.PasswordUtils
 
 class ServiceUsers(private val context: DataContext, private val userRepository: UsersData) {
     fun createUser(newUser: InputUserDto): OutputUserDto {
         lateinit var user: User
         lateinit var token: String
         if (!EmailValidator.isEmailValid(newUser.email)) throw DataException("Invalid Email")
+
+        val salt = PasswordUtils.generateSalt()
+        val passwordHash = PasswordUtils.hashPassword(newUser.password, salt)
+
+        val hashedNewUser = CreateUserDto(newUser.name, newUser.email, passwordHash, salt)
+
         try {
             context.handleData { con ->
-                user = userRepository.add(newUser, con)
+                user = userRepository.add(hashedNewUser, con)
                 token = userRepository.createToken(user, con)
             }
         } catch (e: Exception) {
@@ -23,7 +32,7 @@ class ServiceUsers(private val context: DataContext, private val userRepository:
         return OutputUserDto(token, user.id)
     }
 
-    fun getUser(userId: Int): User {
+    fun getUser(userId: Int): SecureOutputUserDto {
         lateinit var user: User
         try {
             context.handleData { con ->
@@ -32,7 +41,8 @@ class ServiceUsers(private val context: DataContext, private val userRepository:
         } catch (e: Exception) {
             throw e
         }
-        return user
+        // Wipe out mentions of password and salt
+        return SecureOutputUserDto(user.id, user.name, user.email)
     }
 
     fun getUserByToken(token: String): User {

@@ -3,4 +3,4 @@ package pt.isel.ls.tasksServices.dtos
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class InputUserDto(val name: String, val email: String) : Dto
+data class InputUserDto(val name: String, val email: String, val password: String) : Dto
