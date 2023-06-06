@@ -7,8 +7,9 @@ declare lastlistid integer;
 
 begin --anonymous scope
 
-insert into users(name, email) values
-    ('Beatriz', 'beatriz@example.org')
+    -- Password: HelloWorld
+insert into users(name, email, passwordHash, salt) values
+    ('Beatriz', 'beatriz@example.org', '407e065359cbd95453fa7248fc3927310fdab3aaf58827ad8ca3fa8feecbdea3', 'aaaaaaaaaaaa')
     returning id into lastuserid;
 insert into userstokens(token, userId, creationDate) values
     ('f52129ca-ccf1-42cc-a363-fdc89f71901b',lastuserid,'2023-02-23 18:30:00');
@@ -40,16 +41,18 @@ insert into lists(name, boardid) values
     ('Sitos para comer', lastboardid),
     ('Sitos para visitar', lastboardid);
 
-insert into users(name, email) values
-    ('Fatima', 'fatima@example.org')
+    -- Password: OlaMundo
+insert into users(name, email, passwordHash, salt) values
+    ('Fatima', 'fatima@example.org', '92fc0537a2de1271db4ce0c27579dc884e88297cadf55f815fcee116ba641d9c', 'bbbbbbbbbbbb')
     returning id into lastuserid;
 insert into userstokens(token, userId, creationDate) values
     ('6d061c83-707f-4143-9c66-5128a6c5ea63',lastuserid,'2023-02-23 18:31:00');
 
 insert into usersboards(userid, boardid) values (lastuserid,lastboardid);
 
-insert into users(name, email) values
-    ('Miguel', 'miguel@example.org')
+    -- Password: HejVerden
+insert into users(name, email, passwordHash, salt) values
+    ('Miguel', 'miguel@example.org', 'a7c037e3201faf3bef8be4edf64b98243fb93fbf2509721c0ae08cff226eb965', 'cccccccccccc')
     returning id into lastuserid;
 insert into userstokens(token, userId, creationDate) values
     ('95b36fe5-a100-462c-9123-dc310f92defc',lastuserid,'2023-02-23 18:31:30');
@@ -59,11 +62,3 @@ insert into usersboards(userid, boardid) values (lastuserid,lastboardid);
 end $$; --anonymous scope
 
 commit; --transaction
-
-
-abort ;
-
-insert into boards(name, description) values
-    ('coisas aleatorias', 'mais coisas aleatorias');
-
-insert into usersboards(userid, boardid) values (1,4);
