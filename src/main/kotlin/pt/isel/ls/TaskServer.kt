@@ -29,6 +29,7 @@ import pt.isel.ls.tasksServices.TasksServices
 import pt.isel.ls.webApi.CardsApi
 import pt.isel.ls.webApi.Filters
 import pt.isel.ls.webApi.ListsApi
+import pt.isel.ls.webApi.UsersApi
 import pt.isel.ls.webApi.WebApi
 import java.io.File
 
@@ -51,6 +52,7 @@ fun main() {
     val webApi = WebApi(services)
     val cardsApi = CardsApi(services)
     val listsApi = ListsApi(services)
+    val usersApi = UsersApi(services)
     val filters = Filters(services)
 
     val usersRoutes = routes(
@@ -95,6 +97,11 @@ fun main() {
     )
 
     val app = routes(
+        filters.logRequest.then(
+            routes(
+                "session" bind Method.POST to usersApi::loginUser
+            )
+        ),
         usersRoutes,
         boardRoutes,
         injectUserRoutes,

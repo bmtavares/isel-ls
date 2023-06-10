@@ -6,8 +6,10 @@ import pt.isel.ls.data.UsersData
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.tasksServices.dtos.CreateUserDto
 import pt.isel.ls.tasksServices.dtos.InputUserDto
+import pt.isel.ls.tasksServices.dtos.LoginUserDto
 import pt.isel.ls.tasksServices.dtos.OutputUserDto
 import pt.isel.ls.tasksServices.dtos.SecureOutputUserDto
+import pt.isel.ls.tasksServices.users.ChallengeFailureException
 import pt.isel.ls.utils.PasswordUtils
 
 class ServiceUsers(private val context: DataContext, private val userRepository: UsersData) {
@@ -55,6 +57,31 @@ class ServiceUsers(private val context: DataContext, private val userRepository:
             throw e
         }
         return user
+    }
+
+    fun authenticateUser(credentials: LoginUserDto): OutputUserDto {
+        lateinit var user: User
+        try {
+            context.handleData {
+                user = userRepository.getByEmail(credentials.email, it)
+            }
+        } catch (e: Exception) {
+            throw e
+        }
+
+        val hashedPasswordAttempt = PasswordUtils.hashPassword(credentials.password, user.salt)
+        if (hashedPasswordAttempt == user.passwordHash) {
+            lateinit var token: String
+            try {
+                context.handleData {
+                    token = userRepository.createToken(user, it)
+                }
+            } catch (e: Exception) {
+                throw e
+            }
+            return OutputUserDto(token, user.id)
+        }
+        throw ChallengeFailureException()
     }
 
     class EmailValidator {
