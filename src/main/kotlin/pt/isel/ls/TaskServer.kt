@@ -41,6 +41,8 @@ fun main() {
     // val usePostgresql = false
     if (!usePostgresql) MemDataSource.resetStorage()
 
+    val serverPort = System.getenv("PORT")?.toInt() ?: 9000
+
     val boardsRepo = if (usePostgresql) PgSqlBoardsData else MemBoardsData
     val usersRepo = if (usePostgresql) PgSqlUsersData else MemUsersData
     val listsRepo = if (usePostgresql) PgSqlListsData else MemListsData
@@ -112,7 +114,7 @@ fun main() {
         singlePageApp(ResourceLoader.Directory("static-content"))
     )
 
-    val jettyServer = app.asServer(Jetty(9000)).start()
+    val jettyServer = app.asServer(Jetty(serverPort)).start()
     logger.info("server started listening")
 
     readln()
