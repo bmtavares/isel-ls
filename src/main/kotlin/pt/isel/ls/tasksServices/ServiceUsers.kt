@@ -79,7 +79,7 @@ class ServiceUsers(private val context: DataContext, private val userRepository:
             } catch (e: Exception) {
                 throw e
             }
-            return OutputUserDto(token, user.id)
+            return OutputUserDto(token, user.id, user.name)
         }
         throw ChallengeFailureException()
     }
