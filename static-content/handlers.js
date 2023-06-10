@@ -37,6 +37,7 @@ function getHome(mainContent) {
     { href: "#userDetails", text: "User" },
     { href: "#searchboards", text: "Search" },
     { href: "#signup", text: "Sign Up" },
+    { href: "#login", text: "Login" },
   ];
   populateNavbar(navbarItems);
 }
@@ -211,6 +212,18 @@ function getSignUp(mainContent) {
     ];
     populateNavbar(links);
 }
+function getLoginForm(mainContent) {
+    const content = userGenerator.loginFormContent()
+    mainContent.replaceChildren(content);
+    const links = [
+        {
+            href: "#home",
+            text: "Home",
+        },
+    ];
+    populateNavbar(links);
+}
+
 
 const handlers = {
       getHome,
@@ -221,7 +234,8 @@ const handlers = {
       listDetails,
       cardDetail,
     getSearchBoards,
-    getSignUp
+    getSignUp,
+    getLoginForm
 };
 
 export default handlers;
