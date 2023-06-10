@@ -38,7 +38,6 @@ fun main() {
 
     // Make sure an env key for ``USE_POSTGRESQL`` exists with the value ``true`` to use the Postgresql for data
     val usePostgresql = System.getenv("USE_POSTGRESQL").lowercase() == "true"
-    // val usePostgresql = false
     if (!usePostgresql) MemDataSource.resetStorage()
 
     val serverPort = System.getenv("PORT")?.toInt() ?: 9000
@@ -89,29 +88,23 @@ fun main() {
             "boards/{id}/cards/{cid}" bind Method.GET to webApi::getCard, // working
             "boards/{id}/cards/{cid}" bind Method.PUT to webApi::editCard, // working but there's a problem with timestamps
             "boards/{id}/cards/{cid}/move" bind Method.PUT to webApi::alterCardListPosition, // working  todo channge to put add new position on the body
-            filters.logRequest.then(
-                routes(
-                    "boards/{id}/cards/{cid}" bind Method.DELETE to cardsApi::deleteCard,
-                    "boards/{id}/lists/{lid}" bind Method.DELETE to listsApi::deleteList
-                )
-            )
+            "boards/{id}/cards/{cid}" bind Method.DELETE to cardsApi::deleteCard,
+            "boards/{id}/lists/{lid}" bind Method.DELETE to listsApi::deleteList
         )
     )
 
-    val app = routes(
-        filters.logRequest.then(
-            routes(
-                "session" bind Method.POST to usersApi::loginUser
-            )
-        ),
-        usersRoutes,
-        boardRoutes,
-        injectUserRoutes,
-        "/open-api" bind Method.GET to { _: Request ->
-            val fileContents = File("./open-api.json").readText()
-            Response(OK).body(fileContents)
-        },
-        singlePageApp(ResourceLoader.Directory("static-content"))
+    val app = filters.logRequest(
+        routes(
+            "session" bind Method.POST to usersApi::loginUser,
+            usersRoutes,
+            boardRoutes,
+            injectUserRoutes,
+            "/open-api" bind Method.GET to { _: Request ->
+                val fileContents = File("./open-api.json").readText()
+                Response(OK).body(fileContents)
+            },
+            singlePageApp(ResourceLoader.Directory("static-content"))
+        )
     )
 
     val jettyServer = app.asServer(Jetty(serverPort)).start()

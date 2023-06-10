@@ -18,7 +18,6 @@ import pt.isel.ls.data.DataException
 import pt.isel.ls.data.EntityAlreadyExistsException
 import pt.isel.ls.data.EntityNotFoundException
 import pt.isel.ls.data.entities.User
-import pt.isel.ls.http.logRequest
 import pt.isel.ls.server.HeaderTypes
 import pt.isel.ls.tasksServices.TasksServices
 import pt.isel.ls.tasksServices.dtos.EditBoardListDto
@@ -35,7 +34,6 @@ class WebApi(
     private val services: TasksServices
 ) {
     fun getBoard(contexts: RequestContexts): HttpHandler = { request ->
-        logRequest(request)
         try {
             val boardId = request.path("id")?.toInt()
 
@@ -63,7 +61,6 @@ class WebApi(
     }
 
     fun createBoard(contexts: RequestContexts): HttpHandler = { request ->
-        logRequest(request)
         val user: User? = contexts[request]["user"]
         checkNotNull(user)
         try {
@@ -89,7 +86,6 @@ class WebApi(
     }
 
     fun getUser(request: Request): Response {
-        logRequest(request)
         val userId = request.path("id")?.toInt()
             ?: return Response(BAD_REQUEST).header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
 
@@ -108,7 +104,6 @@ class WebApi(
     }
 
     fun createUser(request: Request): Response {
-        logRequest(request)
         val newUser = Json.decodeFromString<InputUserDto>(request.bodyString())
         return try {
             val user = services.users.createUser(newUser)
@@ -131,7 +126,6 @@ class WebApi(
     }
 
     fun getBoards(contexts: RequestContexts): HttpHandler = { request ->
-        logRequest(request)
         val user: User? = contexts[request]["user"]
         val search = request.query("search")
         checkNotNull(user)
@@ -152,7 +146,6 @@ class WebApi(
     }
 
     fun getBoardUsers(contexts: RequestContexts): HttpHandler = { request ->
-        logRequest(request)
         try {
             val boardId = request.path("id")?.toInt()
             val user: User? = contexts[request]["user"]
@@ -181,7 +174,6 @@ class WebApi(
     }
 
     fun deleteUserFromBoard(request: Request): Response {
-        logRequest(request)
         val boardId = request.path("id")?.toInt()
         val userId = request.path("uid")?.toInt()
         checkNotNull(boardId) { "Board Id must not be null" }
@@ -204,7 +196,6 @@ class WebApi(
     }
 
     fun getLists(request: Request): Response {
-        logRequest(request)
         val boardId = request.path("id")?.toInt()
         checkNotNull(boardId) { "Board Id must not be null" }
         return try {
@@ -222,7 +213,6 @@ class WebApi(
     }
 
     fun createList(request: Request): Response {
-        logRequest(request)
         val boardId = request.path("id")?.toInt()
         checkNotNull(boardId) { "Board Id must not be null" }
         val listInput = Json.decodeFromString<InputBoardListDto>(request.bodyString())
@@ -265,7 +255,6 @@ class WebApi(
     }
 
     fun getCardsFromList(request: Request): Response {
-        logRequest(request)
         val boardId = request.path("id")?.toInt()
         val boardListId = request.path("lid")?.toInt()
         checkNotNull(boardId) { "Board Id must not be null" }
@@ -287,7 +276,6 @@ class WebApi(
     }
 
     fun createCard(request: Request): Response {
-        logRequest(request)
         val boardId = request.path("id")?.toInt()
         val boardListId = request.path("lid")?.toInt()
         checkNotNull(boardId) { "Board Id must not be null" }
@@ -313,7 +301,6 @@ class WebApi(
         return TODO("Provide the return value")
     }
     fun deleteList(request: Request): Response {
-        logRequest(request)
         val boardId = request.path("id")?.toInt()
         val boardListId = request.path("lid")?.toInt()
         checkNotNull(boardId) { "Board Id must not be null" }
@@ -332,7 +319,6 @@ class WebApi(
         }
     }
     fun editList(request: Request): Response {
-        logRequest(request)
         val boardId = request.path("id")?.toInt()
         val boardListId = request.path("lid")?.toInt()
         checkNotNull(boardId) { "Board Id must not be null" }
@@ -358,7 +344,6 @@ class WebApi(
     }
 
     fun getList(request: Request): Response {
-        logRequest(request)
         val boardId = request.path("id")?.toInt()
         val boardListId = request.path("lid")?.toInt()
         checkNotNull(boardId) { "Board Id must not be null" }
@@ -380,7 +365,6 @@ class WebApi(
     }
 
     fun alterCardListPosition(request: Request): Response {
-        logRequest(request)
         val boardId = request.path("id")?.toInt()
         val cardId = request.path("cid")?.toInt()
         checkNotNull(boardId) { "Board Id must not be null" }
@@ -401,7 +385,6 @@ class WebApi(
     }
 
     fun addUsersOnBoard(request: Request): Response {
-        logRequest(request)
         val boardId = request.path("id")?.toInt()
         val userId = request.path("uid")?.toInt()
         if ((boardId == null)or (userId == null)) {
@@ -426,7 +409,6 @@ class WebApi(
     }
 
     fun getCard(request: Request): Response {
-        logRequest(request)
         val boardId = request.path("id")?.toInt()
         val cardId = request.path("cid")?.toInt()
         checkNotNull(boardId) { "Board Id must not be null" }
@@ -448,7 +430,6 @@ class WebApi(
     }
 
     fun editCard(request: Request): Response {
-        logRequest(request)
         val boardId = request.path("id")?.toInt()
         val cardId = request.path("cid")?.toInt()
         checkNotNull(boardId) { "Board Id must not be null" }
