@@ -62,7 +62,7 @@ fun main() {
         "users" bind Method.POST to webApi::createUser // working
     )
     val contexts = RequestContexts()
-    val injectUserRoutes = ServerFilters.InitialiseRequestContext(contexts).then(webApi.filterUser(contexts)).then(
+    val injectUserRoutes = ServerFilters.InitialiseRequestContext(contexts).then(filters.filterUser(contexts)).then(
         routes(
             "boards/{id}/user-list" bind Method.GET to webApi.getBoardUsers(contexts),
             "boards/" bind Method.GET to webApi.getBoards(contexts),
@@ -70,7 +70,7 @@ fun main() {
             "boards/{id}" bind Method.GET to webApi.getBoard(contexts) // working
         )
     )
-    val boardRoutes = webApi.authFilter.then(
+    val boardRoutes = filters.authFilter.then(
         routes(
             // "boards/" bind Method.GET to webApi::getBoards, // working
             // "boards/" bind Method.POST to webApi::createBoard, // working

@@ -1,15 +1,12 @@
 package pt.isel.ls.webApi
 
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.http4k.core.ContentType
-import org.http4k.core.Filter
 import org.http4k.core.HttpHandler
 import org.http4k.core.Request
 import org.http4k.core.RequestContexts
 import org.http4k.core.Response
-import org.http4k.core.Status
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.CONFLICT
 import org.http4k.core.Status.Companion.CREATED
@@ -468,45 +465,6 @@ class WebApi(
             Response(INTERNAL_SERVER_ERROR)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
                 .body(Json.encodeToString(e.message))
-        }
-    }
-    fun filterUser(contexts: RequestContexts) = Filter { next ->
-        { request ->
-            val authHeader = request.header("Authorization")
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                val token = authHeader.substring(7)
-                try {
-                    val user = services.users.getUserByToken(token)
-                    contexts[request]["user"] = user
-                    next(request)
-                } catch (e: Exception) {
-                    when (e) {
-                        is DataException -> Response(Status.UNAUTHORIZED).body("Invalid token")
-                        else -> Response(Status.INTERNAL_SERVER_ERROR).body("Server Error")
-                    }
-                }
-            } else {
-                Response(Status.UNAUTHORIZED).body("Missing or invalid Authorization header")
-            }
-        }
-    }
-    val authFilter = Filter { next ->
-        { request ->
-            val authHeader = request.header("Authorization")
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                val token = authHeader.substring(7)
-                try {
-                    services.users.getUserByToken(token)
-                    next(request)
-                } catch (e: Exception) {
-                    when (e) {
-                        is DataException -> Response(Status.UNAUTHORIZED).body("Invalid token")
-                        else -> Response(Status.INTERNAL_SERVER_ERROR).body("Server Error")
-                    }
-                }
-            } else {
-                Response(Status.UNAUTHORIZED).body("Missing or invalid Authorization header")
-            }
         }
     }
 }
