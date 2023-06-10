@@ -55,7 +55,7 @@ object PgSqlListsData : ListsData {
     override fun add(newBoardList: InputBoardListDto, boardId: Int, connection: Connection?): BoardList {
         checkNotNull(connection) { "Connection is need to use DB" }
         val statement = connection.prepareStatement(
-            "insert into Lists (name, boardId,ncards) values (?, ?,?) returning id, name, boardId;"
+            "insert into Lists (name, boardId,ncards) values (?, ?,?) returning id, name, boardId, ncards;"
         )
         statement.setString(1, newBoardList.name)
         statement.setInt(2, boardId)
