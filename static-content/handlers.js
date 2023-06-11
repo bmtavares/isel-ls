@@ -37,10 +37,16 @@ function getHome(mainContent) {
   const navbarItems = [
     { href: "#userDetails", text: "User" },
     { href: "#searchboards", text: "Search" },
-    { href: "#signup", text: "Sign Up" },
-    { href: "#login", text: "Login" },
-    { href: "#logout", text: "Logout" },
   ];
+
+      const user = userUtils.getUser()
+      if (user){
+       navbarItems.push({ href: "#logout", text: "Logout" });
+      }else{
+         navbarItems.push( { href: "#signup", text: "Sign Up" });
+         navbarItems.push( { href: "#login", text: "Login" });
+      }
+
   populateNavbar(navbarItems);
 }
 
