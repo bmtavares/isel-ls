@@ -74,7 +74,7 @@ var body = div( {class:"modal-body"},
         "move card",
         body,
         button("Cancel",{type:"button", class:"btn btn-secondary", "data-bs-dismiss":"modal"}),
-        button("Delete",{type:"button", class:"btn btn-primary", id:"confirmMoveButton"})
+        button("Move",{type:"button", class:"btn btn-primary", id:"confirmMoveButton"})
          )
 }
 
@@ -100,7 +100,7 @@ function moveCard(card) {
         const positionDropdown = document.getElementById('positionDropdown');
         const lid = listDropdown.value;
         const cix = positionDropdown.value;
-      fetch(API_BASE_URL + 'boards/' + card.boardId + '/cards/' + card.id+"/move", {
+      fetch(appConstants.API_BASE_URL + 'boards/' + card.boardId + '/cards/' + card.id+"/move", {
         method: 'PUT',
         headers: userUtils.getAuthorizationHeader(),
         body: JSON.stringify({
