@@ -37,8 +37,13 @@ fun main() {
     val logger = LoggerFactory.getLogger("pt.isel.ls.http.HTTPServer")
 
     // Make sure an env key for ``USE_POSTGRESQL`` exists with the value ``true`` to use the Postgresql for data
-    val usePostgresql = System.getenv("USE_POSTGRESQL").lowercase() == "true"
-    if (!usePostgresql) MemDataSource.resetStorage()
+    val usePostgresql = System.getenv("USE_POSTGRESQL")?.lowercase() == "true"
+    if (!usePostgresql) {
+        logger.info("Using Memory for data.")
+        MemDataSource.resetStorage()
+    } else {
+        logger.info("Using Postgres for data.")
+    }
 
     val serverPort = System.getenv("PORT")?.toInt() ?: 9000
 
@@ -57,8 +62,8 @@ fun main() {
     val filters = Filters(services)
 
     val usersRoutes = routes(
-        "users/{id}" bind Method.GET to usersApi::getUser, // working
-        "users" bind Method.POST to usersApi::createUser // working
+        "users/{id}" bind Method.GET to usersApi::getUser,
+        "users" bind Method.POST to usersApi::createUser
     )
 
     val contexts = RequestContexts()
@@ -67,22 +72,22 @@ fun main() {
             "boards/{id}/user-list" bind Method.GET to boardsApi.getBoardUsers(contexts),
             "boards/" bind Method.GET to boardsApi.getBoards(contexts),
             "boards/" bind Method.POST to boardsApi.createBoard(contexts),
-            "boards/{id}" bind Method.GET to boardsApi.getBoard(contexts) // working
+            "boards/{id}" bind Method.GET to boardsApi.getBoard(contexts)
         )
     )
     val boardRoutes = filters.authFilter.then(
         routes(
-            "boards/{id}/user-list/{uid}" bind Method.PUT to boardsApi::addUsersOnBoard, // working// todo add user to body - url boards/{id}
-            "boards/{id}/user-list/{uid}" bind Method.DELETE to boardsApi::deleteUserFromBoard, // working todo not needed
-            "boards/{id}/lists" bind Method.GET to listsApi::getLists, // working
-            "boards/{id}/lists" bind Method.POST to listsApi::createList, // working
-            "boards/{id}/lists/{lid}" bind Method.PUT to listsApi::editList, // working
-            "boards/{id}/lists/{lid}" bind Method.GET to listsApi::getList, // working
-            "boards/{id}/lists/{lid}/cards" bind Method.GET to cardsApi::getCardsFromList, // working
-            "boards/{id}/lists/{lid}/cards" bind Method.POST to cardsApi::createCard, // working
-            "boards/{id}/cards/{cid}" bind Method.GET to cardsApi::getCard, // working
-            "boards/{id}/cards/{cid}" bind Method.PUT to cardsApi::editCard, // working but there's a problem with timestamps
-            "boards/{id}/cards/{cid}/move" bind Method.PUT to cardsApi::alterCardListPosition, // working  todo channge to put add new position on the body
+            "boards/{id}/user-list/{uid}" bind Method.PUT to boardsApi::addUsersOnBoard,
+            "boards/{id}/user-list/{uid}" bind Method.DELETE to boardsApi::deleteUserFromBoard,
+            "boards/{id}/lists" bind Method.GET to listsApi::getLists,
+            "boards/{id}/lists" bind Method.POST to listsApi::createList,
+            "boards/{id}/lists/{lid}" bind Method.PUT to listsApi::editList,
+            "boards/{id}/lists/{lid}" bind Method.GET to listsApi::getList,
+            "boards/{id}/lists/{lid}/cards" bind Method.GET to cardsApi::getCardsFromList,
+            "boards/{id}/lists/{lid}/cards" bind Method.POST to cardsApi::createCard,
+            "boards/{id}/cards/{cid}" bind Method.GET to cardsApi::getCard,
+            "boards/{id}/cards/{cid}" bind Method.PUT to cardsApi::editCard,
+            "boards/{id}/cards/{cid}/move" bind Method.PUT to cardsApi::alterCardListPosition,
             "boards/{id}/cards/{cid}" bind Method.DELETE to cardsApi::deleteCard,
             "boards/{id}/lists/{lid}" bind Method.DELETE to listsApi::deleteList
         )
