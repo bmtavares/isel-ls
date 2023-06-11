@@ -39,6 +39,7 @@ function getHome(mainContent) {
     { href: "#searchboards", text: "Search" },
     { href: "#signup", text: "Sign Up" },
     { href: "#login", text: "Login" },
+    { href: "#logout", text: "Logout" },
   ];
   populateNavbar(navbarItems);
 }
@@ -213,6 +214,10 @@ function getSignUp(mainContent) {
     ];
     populateNavbar(links);
 }
+function logout(mainContent){
+ sessionStorage.clear();
+ window.location.href = "/#home";
+}
 function getLoginForm(mainContent) {
     const content = userGenerator.loginFormContent()
     mainContent.replaceChildren(content);
@@ -236,6 +241,7 @@ const handlers = {
       cardDetail,
     getSearchBoards,
     getSignUp,
+    logout,
     getLoginForm
 };
 

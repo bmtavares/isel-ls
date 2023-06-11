@@ -10,6 +10,7 @@ window.addEventListener("hashchange", hashChangeHandler);
 function loadHandler() {
   router.addRouteHandler("home", handlers.getHome);
   router.addRouteHandler("login", handlers.getLoginForm);
+  router.addRouteHandler("logout", handlers.logout);
   router.addRouteHandler("signup", handlers.getSignUp);
   router.addRouteHandler("userDetails", handlers.getUser);
   router.addRouteHandler("searchboards", handlers.getSearchBoards);
