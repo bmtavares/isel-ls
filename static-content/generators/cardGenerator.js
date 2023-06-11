@@ -27,19 +27,21 @@ function listing(cards) {
 }
 
 
-function updatePositionOptions() {
+function updatePositionOptions(card) {
  let lists = JSON.parse(localStorage.getItem("GlobalLists"))
  //listDropdown  = document.getElementById('listDropdown');
   const selectedList = listDropdown.value;
-console.log(lists)
   // Clear previous options
   positionDropdown.innerHTML = '';
-  let list = lists[selectedList]
-
+  let list = lists.find(item => item.id === parseInt(selectedList));
  let PositionOptions = []
-     for (let i = 0; i <= list.ncards; i++) {
+     for (let i = 0; i < list.ncards; i++) {
        //PositionOptions += `<option value="${i}">Position ${i}</option>`;
        PositionOptions.push( option(`Position ${i}`,{value:`${i}`}))
+     }
+     if(list.id!=card.listId){
+
+      PositionOptions.push( option(`Position ${list.ncards}`,{value:`${list.ncards}`}))
      }
   console.log(PositionOptions)
   PositionOptions.forEach(object => {
@@ -81,16 +83,16 @@ var body = div( {class:"modal-body"},
 
 function moveCard(card) {
  let lists = JSON.parse(localStorage.getItem("GlobalLists"))
- console.log(lists)
  let listOptions = []
   for (let i = 0; i < lists.length; i++) {
-    //listOptions += `<option value="${i}">List ${i}</option>`;
-    listOptions.push( option(`List ${i}`,{value:`${i}`}))
+    listOptions.push( option(`List ${lists[i].name}`,{value: `${lists[i].id}`}))
   }
   let PositionOptions = []
-    for (let i = 0; i <= lists[0].ncards; i++) {
-      //PositionOptions += `<option value="${i}">Position ${i}</option>`;
+    for (let i = 0; i < lists[0].ncards; i++) {
       PositionOptions.push( option(`Position ${i}`,{value:`${i}`}))
+    }
+    if(lists[0].id!=card.listId){
+     PositionOptions.push( option(`Position ${lists[0].ncards}`,{value:`${lists[0].ncards}`}))
     }
     popfrommodal(listOptions,PositionOptions)
 
@@ -123,7 +125,7 @@ function moveCard(card) {
     });
 
 const listDropdown = document.getElementById('listDropdown');
-listDropdown.addEventListener('change', updatePositionOptions);
+listDropdown.addEventListener('change', ()=>{updatePositionOptions(card)});
 
   // Show the modal
   const modal = new bootstrap.Modal(document.getElementById('MoveCardModal'), {
