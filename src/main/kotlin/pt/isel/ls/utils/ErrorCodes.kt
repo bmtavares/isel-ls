@@ -6,6 +6,7 @@ import org.http4k.core.Status.Companion.CONFLICT
 import org.http4k.core.Status.Companion.INTERNAL_SERVER_ERROR
 import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.UNAUTHORIZED
+import org.http4k.core.Status.Companion.UNPROCESSABLE_ENTITY
 
 enum class ErrorCodes(val code: Int, val message: String) {
     UNDEFINED(500, "An error has occurred, please try again later."),
@@ -14,15 +15,18 @@ enum class ErrorCodes(val code: Int, val message: String) {
     JSON_BODY_ERROR(602, "There was an issue with the supplied body."),
     URL_PATH_TYPE_ERROR(603, "There was an issue with the type of one of the given parameters."),
     PGSQL_CONN_NULL(700, "An error has occurred, please try again later."),
+    PGSQL_UNEXPECTED(701, "An error has occurred, please try again later."),
     BOARD_READ_FAIL(1000, "Board not found."),
     BOARD_CREATE_FAIL(1001, "Board could not be created."),
     BOARD_DELETE_FAIL(1002, "Board could not be deleted."),
     BOARD_UPDATE_FAIL(1003, "Board could not be updated."),
     BOARD_NAME_IN_USE(1004, "Board name not unique."),
+    ADD_USER_FAIL(1005, "Could not add the specified user to the specified board."),
     LIST_READ_FAIL(2000, "List not found."),
     LIST_CREATE_FAIL(2001, "List could not be created."),
     LIST_DELETE_FAIL(2002, "List could not be deleted."),
     LIST_UPDATE_FAIL(2003, "List could not be updated."),
+    LIST_CREATE_FOREIGN_KEY_FAIL(2004, "List could not be created due to a failed reference."),
     AUTHENTICATION_CHALLENGE_FAILED(3000, "Authentication challenge failed."),
     NO_EMAIL_MATCH(3001, "Invalid email."),
     NO_TOKEN_MATCH(3002, "Invalid token."),
@@ -40,13 +44,15 @@ enum class ErrorCodes(val code: Int, val message: String) {
     CARD_DELETE_FAIL(4002, "Card could not be deleted."),
     CARD_MOVE_FAIL(4003, "Card could not be moved."),
     CARD_UPDATE_FAIL(4004, "Card could not be updated."),
-    CARD_MOVE_NEGATIVE(4005, "Card position cannot be negative.");
+    CARD_MOVE_NEGATIVE(4005, "Card position cannot be negative."),
+    CARD_CREATE_FOREIGN_KEY_FAIL(4006, "Card could not be created due to a failed reference.");
 
     fun http4kStatus(): Status =
         when (this) {
             URL_PATH_ERROR, URL_QUERY_ERROR, JSON_BODY_ERROR, EMAIL_FAILED_CHECK, URL_PATH_TYPE_ERROR -> BAD_REQUEST
             BOARD_READ_FAIL, LIST_READ_FAIL, USER_READ_FAIL, CARD_READ_FAIL -> NOT_FOUND
             EMAIL_ALREADY_IN_USE, BOARD_NAME_IN_USE -> CONFLICT
+            ADD_USER_FAIL, LIST_CREATE_FOREIGN_KEY_FAIL, CARD_CREATE_FOREIGN_KEY_FAIL -> UNPROCESSABLE_ENTITY
             AUTHENTICATION_CHALLENGE_FAILED, NO_EMAIL_MATCH, NO_TOKEN_MATCH, NOT_AUTHENTICATED, AUTH_HEADER_MISSING -> UNAUTHORIZED
             else -> INTERNAL_SERVER_ERROR
         }

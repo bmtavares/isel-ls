@@ -1,8 +1,8 @@
 package pt.isel.ls.data.pgsql
 
+import org.postgresql.util.PSQLState
 import pt.isel.ls.TaskAppException
 import pt.isel.ls.data.CardsData
-import pt.isel.ls.data.DataException
 import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.Card
 import pt.isel.ls.tasksServices.dtos.EditCardDto
@@ -82,7 +82,7 @@ object PgSqlCardsData : CardsData {
         while (rs.next()) {
             return rs.getInt("nCards")
         }
-        throw DataException("something went wrong")
+        throw TaskAppException(ErrorCodes.LIST_READ_FAIL)
     }
 
     internal fun getCardInfo(cardId: Int, connection: Connection): Card {
@@ -117,9 +117,7 @@ object PgSqlCardsData : CardsData {
 
         val count = statement.executeUpdate()
 
-        if (count == 0) {
-            throw DataException("Failed to edit card.")
-        }
+        if (count == 0) throw TaskAppException(ErrorCodes.CARD_UPDATE_FAIL)
     }
 
     private fun updateCardIdx(cardId: Int, cIdx: Int, bid: Int, connection: Connection) {
@@ -133,38 +131,31 @@ object PgSqlCardsData : CardsData {
         statement.setInt(2, cardId)
         statement.setInt(3, bid)
         val count = statement.executeUpdate()
-        if (count == 0) {
-            throw DataException("Failed to edit card.")
-        }
+        if (count == 0) throw TaskAppException(ErrorCodes.CARD_UPDATE_FAIL)
     }
 
     private fun updateList(updatedCards: List<Card>, connection: Connection) {
         val sql = "UPDATE Cards SET cIdx = ?, listid = ? WHERE id = ?"
 
-        try {
-            val statement = connection.prepareStatement(sql)
+        val statement = connection.prepareStatement(sql)
 
-            for (card in updatedCards) {
-                statement.setInt(1, card.cIdx)
-                if (card.listId != null) {
-                    statement.setInt(2, card.listId)
-                } else {
-                    statement.setNull(2, java.sql.Types.INTEGER)
-                }
-                statement.setInt(3, card.id)
-                statement.executeUpdate()
+        for (card in updatedCards) {
+            statement.setInt(1, card.cIdx)
+            if (card.listId != null) {
+                statement.setInt(2, card.listId)
+            } else {
+                statement.setNull(2, Types.INTEGER)
             }
-
-            statement.close()
-        } catch (e: Exception) {
-            throw DataException("" + e.message)
+            statement.setInt(3, card.id)
+            statement.executeUpdate()
         }
+
+        statement.close()
     }
 
     override fun move(inputList: InputMoveCardDto, boardId: Int, cardId: Int, connection: Connection?) {
         connection ?: throw IllegalConnException()
         val cardInfo = getCardInfo(cardId, connection)
-        checkNotNull(cardInfo)
         if (inputList.cix < 0) throw TaskAppException(ErrorCodes.CARD_MOVE_NEGATIVE)
         val cardOldPosition = cardInfo.cIdx
         val newPosition = inputList.cix
@@ -281,7 +272,11 @@ object PgSqlCardsData : CardsData {
         val rs = try {
             statement.executeQuery()
         } catch (ex: SQLException) {
-            TODO()
+            throw if (ex.sqlState == PSQLState.FOREIGN_KEY_VIOLATION.state) {
+                TaskAppException(ErrorCodes.CARD_CREATE_FOREIGN_KEY_FAIL)
+            } else {
+                ex
+            }
         }
 
         if (listId != null) changeCardCount(listId, connection)
@@ -315,11 +310,7 @@ object PgSqlCardsData : CardsData {
         )
         statement.setInt(1, id)
 
-        val count = try {
-            statement.executeUpdate()
-        } catch (ex: SQLException) {
-            TODO()
-        }
+        val count = statement.executeUpdate()
 
         if (count == 0) throw TaskAppException(ErrorCodes.CARD_DELETE_FAIL)
     }
@@ -344,11 +335,7 @@ object PgSqlCardsData : CardsData {
         statement.setInt(6, cardId)
         statement.setInt(8, cardId)
 
-        val count = try {
-            statement.executeUpdate()
-        } catch (ex: SQLException) {
-            TODO()
-        }
+        val count = statement.executeUpdate()
 
         if (count == 0) throw TaskAppException(ErrorCodes.CARD_UPDATE_FAIL)
     }

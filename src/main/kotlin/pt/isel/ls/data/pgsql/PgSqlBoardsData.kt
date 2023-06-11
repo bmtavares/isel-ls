@@ -1,5 +1,6 @@
 package pt.isel.ls.data.pgsql
 
+import org.postgresql.util.PSQLState
 import pt.isel.ls.TaskAppException
 import pt.isel.ls.data.BoardsData
 import pt.isel.ls.data.entities.Board
@@ -85,7 +86,11 @@ object PgSqlBoardsData : BoardsData {
         val rs = try {
             statement.executeQuery()
         } catch (ex: SQLException) {
-            TODO()
+            throw if (ex.sqlState == PSQLState.UNIQUE_VIOLATION.state) {
+                TaskAppException(ErrorCodes.BOARD_NAME_IN_USE)
+            } else {
+                ex
+            }
         }
 
         while (rs.next()) {
@@ -143,7 +148,15 @@ object PgSqlBoardsData : BoardsData {
         )
         statement.setInt(1, userId)
         statement.setInt(2, boardId)
-        statement.execute()
+        try {
+            statement.execute()
+        } catch (ex: SQLException) {
+            when (ex.sqlState) {
+                PSQLState.FOREIGN_KEY_VIOLATION.state -> throw TaskAppException(ErrorCodes.ADD_USER_FAIL)
+                PSQLState.UNIQUE_VIOLATION.state -> return // It's already there, so no harm done.
+                else -> throw ex
+            }
+        }
     }
 
     override fun getUsers(boardId: Int, user: User, limit: Int, skip: Int, connection: Connection?): List<SecureOutputUserDto> {

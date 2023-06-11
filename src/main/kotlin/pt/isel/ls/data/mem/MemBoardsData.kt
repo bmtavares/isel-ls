@@ -2,7 +2,6 @@ package pt.isel.ls.data.mem
 
 import pt.isel.ls.TaskAppException
 import pt.isel.ls.data.BoardsData
-import pt.isel.ls.data.EntityAlreadyExistsException
 import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.data.entities.UserBoard
@@ -72,13 +71,13 @@ object MemBoardsData : BoardsData {
 
     override fun addUserToBoard(userId: Int, boardId: Int, connection: Connection?) {
         val pair = UserBoard(userId, boardId)
-        if (MemDataSource.usersBoards.any { it == pair }) {
-            throw EntityAlreadyExistsException(
-                "User already in board.",
-                Board::class
-            )
+        if (MemDataSource.boards.any { it.id == boardId } && MemDataSource.users.any { it.id == userId }) {
+            if (!MemDataSource.usersBoards.any { it == pair }) {
+                MemDataSource.usersBoards.add(pair)
+            }
+        } else {
+            throw TaskAppException(ErrorCodes.ADD_USER_FAIL)
         }
-        MemDataSource.usersBoards.add(pair)
     }
 
     override fun deleteUserFromBoard(userId: Int, boardId: Int, connection: Connection?) {

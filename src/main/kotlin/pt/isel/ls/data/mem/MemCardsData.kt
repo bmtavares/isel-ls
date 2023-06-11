@@ -2,7 +2,6 @@ package pt.isel.ls.data.mem
 
 import pt.isel.ls.TaskAppException
 import pt.isel.ls.data.CardsData
-import pt.isel.ls.data.EntityNotFoundException
 import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.Card
 import pt.isel.ls.tasksServices.dtos.EditCardDto
@@ -72,7 +71,7 @@ object MemCardsData : CardsData {
     override fun move(inputList: InputMoveCardDto, boardId: Int, cardId: Int, connection: Connection?) {
         if (inputList.cix < 0) throw TaskAppException(ErrorCodes.CARD_MOVE_NEGATIVE)
         val oldCard = MemDataSource.cards.firstOrNull { it.id == cardId && it.boardId == boardId }
-            ?: throw EntityNotFoundException("Card not found.", Card::class)
+            ?: throw TaskAppException(ErrorCodes.CARD_READ_FAIL)
 
         val newCard = oldCard.copy(listId = inputList.lid)
 

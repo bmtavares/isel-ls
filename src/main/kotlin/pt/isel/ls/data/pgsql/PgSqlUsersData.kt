@@ -1,6 +1,7 @@
 package pt.isel.ls.data.pgsql
 
 import org.postgresql.util.PSQLException
+import org.postgresql.util.PSQLState
 import pt.isel.ls.TaskAppException
 import pt.isel.ls.data.UsersData
 import pt.isel.ls.data.entities.User
@@ -26,7 +27,11 @@ object PgSqlUsersData : UsersData {
         val count = try {
             statement.executeUpdate()
         } catch (ex: SQLException) {
-            TODO()
+            throw if (ex.sqlState == PSQLState.FOREIGN_KEY_VIOLATION.state) {
+                TaskAppException(ErrorCodes.TOKEN_GENERATION_FAILED)
+            } else {
+                ex
+            }
         }
 
         if (count == 0) throw TaskAppException(ErrorCodes.TOKEN_GENERATION_FAILED)
@@ -106,18 +111,19 @@ object PgSqlUsersData : UsersData {
         statement.setString(3, newUser.passwordHash)
         statement.setString(4, newUser.salt)
 
-        try {
-            val rs = statement.executeQuery()
-            while (rs.next()) {
-                val id = rs.getInt("id")
-                return User(id, newUser.name, newUser.email, newUser.passwordHash, newUser.salt)
-            }
-        } catch (e: PSQLException) {
-            if (e.sqlState == "23505") {
-                throw TaskAppException(ErrorCodes.EMAIL_ALREADY_IN_USE)
+        val rs = try {
+            statement.executeQuery()
+        } catch (ex: PSQLException) {
+            throw if (ex.sqlState == PSQLState.UNIQUE_VIOLATION.state) {
+                TaskAppException(ErrorCodes.EMAIL_ALREADY_IN_USE)
             } else {
-                throw TaskAppException(ErrorCodes.USER_CREATE_FAIL, message = e.message)
+                ex
             }
+        }
+
+        while (rs.next()) {
+            val id = rs.getInt("id")
+            return User(id, newUser.name, newUser.email, newUser.passwordHash, newUser.salt)
         }
 
         throw TaskAppException(ErrorCodes.USER_CREATE_FAIL)

@@ -1,5 +1,6 @@
 package pt.isel.ls.data.pgsql
 
+import org.postgresql.util.PSQLState
 import pt.isel.ls.TaskAppException
 import pt.isel.ls.data.ListsData
 import pt.isel.ls.data.entities.BoardList
@@ -66,7 +67,11 @@ object PgSqlListsData : ListsData {
         val rs = try {
             statement.executeQuery()
         } catch (ex: SQLException) {
-            TODO()
+            throw if (ex.sqlState == PSQLState.FOREIGN_KEY_VIOLATION.state) {
+                TaskAppException(ErrorCodes.LIST_CREATE_FOREIGN_KEY_FAIL)
+            } else {
+                ex
+            }
         }
 
         while (rs.next()) {

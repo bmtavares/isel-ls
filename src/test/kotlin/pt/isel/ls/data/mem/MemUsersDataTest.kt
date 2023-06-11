@@ -1,6 +1,6 @@
 package pt.isel.ls.data.mem
 
-import pt.isel.ls.data.EntityNotFoundException
+import pt.isel.ls.TaskAppException
 import pt.isel.ls.tasksServices.dtos.CreateUserDto
 import pt.isel.ls.tasksServices.dtos.EditUserDto
 import pt.isel.ls.utils.PasswordUtils
@@ -20,7 +20,7 @@ class MemUsersDataTest {
 
     @Test
     fun addUser() {
-        assertFailsWith<EntityNotFoundException> {
+        assertFailsWith<TaskAppException> {
             MemUsersData.getById(1)
         }
         val salt = PasswordUtils.generateSalt()
@@ -135,6 +135,6 @@ class MemUsersDataTest {
 
         MemUsersData.delete(insertedUser.id)
 
-        assertFailsWith<EntityNotFoundException> { MemUsersData.delete(insertedUser.id) }
+        assertFailsWith<TaskAppException> { MemUsersData.delete(insertedUser.id) }
     }
 }
