@@ -1,7 +1,9 @@
 import { div, h3, p } from "./createElement.js";
 import user from "../user.js";
 import {generateFormModal}  from "./formGenerator.js";
-const API_BASE_URL = "http://localhost:9000/";
+
+import appConstants from "../appConstants.js";
+
 function listingCard(user) {
   return div(
     {
@@ -39,7 +41,7 @@ function signUpContent(authHeader){
             delete dataForm.passwordconfirmation
             const data = JSON.stringify(dataForm)
 
-            const rsp = await fetch(API_BASE_URL + `users`, {
+            const rsp = await fetch(`${appConstants.API_BASE_URL}`+ `users`, {
                 headers: {...authHeader, "Content-Type": "application/json"},
                 method: "post",
                 body: data

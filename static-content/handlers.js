@@ -6,7 +6,8 @@ import homeGenerator from "./generators/homeGenerator.js";
 import listGenerator from "./generators/listGenerator.js";
 import cardGenerator from "./generators/cardGenerator.js";
 import bootstrapGenerator from "./generators/bootstrapGenerator.js";
-const API_BASE_URL = "http://localhost:9000/";
+import appConstants from "./appConstants.js";
+
 
 
 function populateNavbar(items) {
@@ -43,7 +44,7 @@ function getHome(mainContent) {
 }
 
 function getUser(mainContent) {
-  fetch(API_BASE_URL + "users/" + userUtils.getId())
+  fetch(`${appConstants.API_BASE_URL}` + "users/" + userUtils.getId())
     .then((res) => res.json())
     .then((user) => {
       const content = div(
@@ -85,13 +86,13 @@ function getSearchBoards(mainContent) {
 }
 
 function getBoardDetail(mainContent, params) {
-    fetch(API_BASE_URL + "boards/" + params.boardId, {
+    fetch(`${appConstants.API_BASE_URL}` + "boards/" + params.boardId, {
         headers: userUtils.getAuthorizationHeader(),
     })
         .then((res) => res.json())
         .then(async (board) => {
             const listsReq = await fetch(
-                API_BASE_URL + "boards/" + params.boardId + "/lists",
+                `${appConstants.API_BASE_URL}` + "boards/" + params.boardId + "/lists",
                 {
                     headers: userUtils.getAuthorizationHeader(),
                 }
@@ -115,7 +116,7 @@ function getBoardDetail(mainContent, params) {
 
 
 function getBoardsUsers(mainContent, params) {
-  fetch(API_BASE_URL + "boards/" + params.boardId + "/user-list", {
+  fetch(`${appConstants.API_BASE_URL}` + "boards/" + params.boardId + "/user-list", {
     headers: userUtils.getAuthorizationHeader(),
   })
     .then((res) => res.json())
@@ -138,13 +139,13 @@ function getBoardsUsers(mainContent, params) {
 }
 
 function listDetails(mainContent, params) {
-  fetch(API_BASE_URL + "boards/" + params.boardId + "/lists/" + params.listId, {
+  fetch(`${appConstants.API_BASE_URL}` + "boards/" + params.boardId + "/lists/" + params.listId, {
     headers: userUtils.getAuthorizationHeader(),
   })
     .then((res) => res.json())
     .then(async (list) => {
       const cardsReq = await fetch(
-        API_BASE_URL +
+        `${appConstants.API_BASE_URL}` +
           "boards/" +
           params.boardId +
           "/lists/" +
@@ -175,7 +176,7 @@ function listDetails(mainContent, params) {
 }
 
 function cardDetail(mainContent, params) {
-  fetch(API_BASE_URL + "boards/" + params.boardId + "/cards/" + params.cardId, {
+  fetch(`${appConstants.API_BASE_URL}` + "boards/" + params.boardId + "/cards/" + params.cardId, {
     headers: userUtils.getAuthorizationHeader(),
   })
     .then((res) => res.json())

@@ -44,7 +44,7 @@ const question = `Do you want to delete list: ${list.name} ?`;
   confirmButton = document.getElementById('confirmDeleteListButton');
 
   confirmButton.addEventListener('click', () => {
-    fetch(appConstants.API_BASE_URL + 'boards/' + list.boardId + '/lists/' + list.id, {
+    fetch(`${appConstants.API_BASE_URL}` + 'boards/' + list.boardId + '/lists/' + list.id, {
       method: 'DELETE',
       headers: userUtils.getAuthorizationHeader(),
     })

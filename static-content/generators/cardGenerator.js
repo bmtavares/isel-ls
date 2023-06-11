@@ -1,6 +1,5 @@
 import { div, a, h3, p, small,select,button ,option} from "./createElement.js";
 import userUtils from "../user.js";
-const API_BASE_URL = "http://localhost:9000/";
 import bootstrapGenerator from "./bootstrapGenerator.js";
 import { generateFormModal } from "./formGenerator.js";
 import appConstants from "../appConstants.js";
@@ -35,8 +34,10 @@ function updatePositionOptions() {
 console.log(lists)
   // Clear previous options
   positionDropdown.innerHTML = '';
+  let list = lists[selectedList]
+  /*
   let PositionOptions = ""
-    let list = lists[selectedList]
+
    for (let i = 0; i <= list.ncards; i++) {
    console.log(i)
       PositionOptions += `<option value="${i}">Position ${i}</option>`;
@@ -44,22 +45,18 @@ console.log(lists)
 
   // Generate position options based on the selected list
  document.getElementById('positionDropdown').innerHTML = PositionOptions
+ */
+ let PositionOptions = []
+     for (let i = 0; i <= lists[0].ncards; i++) {
+       //PositionOptions += `<option value="${i}">Position ${i}</option>`;
+       PositionOptions.push( option(`Position ${i}`,{value:`${i}`}))
+     }
+ document.getElementById('positionDropdown').innerHTML = PositionOptions
 }
 
 
 
 function popfrommodal(listOptions,PositionOptions){
-/*
-            <p>${question}</p>
-            <select id="listDropdown">
-                ${listOptions}
-             </select>
-             <select id="positionDropdown">
-             ${PositionOptions}
-              </select>
-          </div>
-*/
-console.log( listOptions)
 var body = div( {class:"modal-body"},
             p("move card ???"),
             select({id:"listDropdown"},...listOptions),
@@ -91,39 +88,7 @@ function moveCard(card) {
       PositionOptions.push( option(`Position ${i}`,{value:`${i}`}))
     }
     popfrommodal(listOptions,PositionOptions)
-    /*
-  const question = "mmove this card?";
-  const modalHtml = `
-    <div class="modal fade" id="MoveCardModal" tabindex="-1" aria-labelledby="MoveCardModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="MoveCardModalLabel">Delete List</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
 
-          <div class="modal-body">
-            <p>${question}</p>
-            <select id="listDropdown">
-                ${listOptions}
-             </select>
-             <select id="positionDropdown">
-             ${PositionOptions}
-              </select>
-          </div>
-
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
-            <button type="button" class="btn btn-primary" id="confirmMoveButton">Yes</button>
-          </div>
-        </div>
-      </div>
-    </div>`;
-*/
-  // Add the modal HTML to the page
- // document.body.insertAdjacentHTML('beforeend', modalHtml);
-
-  // Add event listener to the confirm button
   const confirmButton = document.getElementById('confirmMoveButton');
     confirmButton.addEventListener('click', () => {
         const listDropdown = document.getElementById('listDropdown');

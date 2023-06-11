@@ -13,6 +13,7 @@ import {
 import listGenerator from "./listGenerator.js";
 import userUtils from "../user.js";
 const API_BASE_URL = "http://localhost:9000/";
+
 import { generateFormModal } from "./formGenerator.js";
 import bootstrapGenerator from "./bootstrapGenerator.js";
 import appConstants from "../appConstants.js";
@@ -133,7 +134,7 @@ function searchBoard(authHeader) {
   async function handleOnSearchClick(e) {
     e.preventDefault();
     const a = document.getElementById("searchBoxInput");
-    await fetch(API_BASE_URL + `boards?search=${a.value}`, {
+    await fetch(appConstants.API_BASE_URL + `boards?search=${a.value}`, {
       headers: userUtils.getAuthorizationHeader(),
     })
       .then((res) => res.json())
