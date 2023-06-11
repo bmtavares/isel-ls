@@ -94,7 +94,7 @@ function loginFormContent(authHeader){
         const dataForm = Object.fromEntries(formData.entries())
         const data = JSON.stringify(dataForm)
 
-            const rsp = await fetch(`${appConstants.API_BASE_URL}`+ + `session`, {
+            const rsp = await fetch(`${appConstants.API_BASE_URL}` + `session`, {
                 headers: {...authHeader, "Content-Type": "application/json"},
                 method: "post",
                 body: data
