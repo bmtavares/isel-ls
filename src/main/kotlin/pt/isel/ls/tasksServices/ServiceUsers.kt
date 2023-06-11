@@ -2,7 +2,6 @@ package pt.isel.ls.tasksServices
 
 import pt.isel.ls.TaskAppException
 import pt.isel.ls.data.DataContext
-import pt.isel.ls.data.DataException
 import pt.isel.ls.data.UsersData
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.tasksServices.dtos.CreateUserDto
@@ -19,7 +18,7 @@ class ServiceUsers(private val context: DataContext, private val userRepository:
     fun createUser(newUser: InputUserDto): OutputUserDto {
         lateinit var user: User
         lateinit var token: String
-        if (!EmailValidator.isEmailValid(newUser.email)) throw DataException("Invalid Email")
+        if (!EmailValidator.isEmailValid(newUser.email)) throw TaskAppException(ErrorCodes.EMAIL_FAILED_CHECK)
 
         val salt = PasswordUtils.generateSalt()
         val passwordHash = PasswordUtils.hashPassword(newUser.password, salt)
