@@ -21,6 +21,9 @@ object PgDataContext : DataContext {
             con.autoCommit = false
             try {
                 block(con).also { con.commit() }
+            } catch (e: TaskAppException) {
+                con.rollback()
+                throw e
             } catch (e: SQLException) {
                 con.rollback()
                 throw UnexpectedSQLException(e.message)
