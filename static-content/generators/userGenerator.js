@@ -30,61 +30,78 @@ function listing(users) {
   );
 }
 
-function signUpContent(authHeader){
-    async function registerNewUser(e) {
-        e.preventDefault();
-        const formData = new FormData(e.target); // Using the FormData object we can quickly fetch all the inputs
-        const dataForm = Object.fromEntries(formData.entries())
-        if (dataForm.password !== dataForm.passwordConfirmation) {
-           const alertPwMismatch = div(
-               "Passwords Don't Match",
-            {class:"alert alert-danger alert-dismissible fade show",role:"alert"},
-               button(
-                   {class:"btn-close","data-bs-dismiss":"alert",type:"button"}
-               )
-           )
-            document.querySelector("#signUpContainer").append(alertPwMismatch)
-        } else {
-            delete dataForm.passwordConfirmation
-            const data = JSON.stringify(dataForm)
+function signUpContent(authHeader) {
+  async function registerNewUser(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target); // Using the FormData object we can quickly fetch all the inputs
+    const dataForm = Object.fromEntries(formData.entries());
+    if (dataForm.password !== dataForm.passwordConfirmation) {
+      const alertPwMismatch = div(
+        "Passwords Don't Match",
+        {
+          class: "alert alert-danger alert-dismissible fade show",
+          role: "alert",
+        },
+        button({
+          class: "btn-close",
+          "data-bs-dismiss": "alert",
+          type: "button",
+        })
+      );
+      document.querySelector("#signUpContainer").append(alertPwMismatch);
+    } else {
+      delete dataForm.passwordConfirmation;
+      const data = JSON.stringify(dataForm);
 
-            const rsp = await fetch(`${appConstants.API_BASE_URL}`+ `users`, {
-                headers: {...authHeader, "Content-Type": "application/json"},
-                method: "post",
-                body: data
-            })
-                const userInfo = await rsp.json()
-                if (!rsp.ok){
-                    const errorAlert = div(
-                        userInfo,
-                        {class:"alert alert-danger alert-dismissible fade show",role:"alert"},
-                        button(
-                            {class:"btn-close","data-bs-dismiss":"alert",type:"button"}
-                        )
-                    )
-                    document.querySelector("#signUpContainer").append(errorAlert)
-                }else {
-                    user.setUser(userInfo.token, userInfo.id, userInfo.name)
-                    location.hash="#home"
-                }
-        }
+      const rsp = await fetch(`${appConstants.API_BASE_URL}` + `users`, {
+        headers: { ...authHeader, "Content-Type": "application/json" },
+        method: "post",
+        body: data,
+      });
+      const responseData = await rsp.json();
+      if (!rsp.ok) {
+        const errorAlert = div(
+          responseData.message,
+          {
+            class: "alert alert-danger alert-dismissible fade show",
+            role: "alert",
+          },
+          button({
+            class: "btn-close",
+            "data-bs-dismiss": "alert",
+            type: "button",
+          })
+        );
+        document.querySelector("#signUpContainer").append(errorAlert);
+      } else {
+        user.setUser(responseData.token, responseData.id, responseData.name);
+        location.hash = "#home";
+      }
     }
+  }
+  
   const fields = [
-      { type: "text", name: "name", required: true,label:"Username" },
-      { type: "text", name: "email", required: true,label:"Email" },
-      { type: "text", name: "password", required: true,label:"Password" },
-      { type: "text", name: "passwordConfirmation", required: true,label:"Password Confirmation" },
-  ]
+    { type: "text", name: "name", required: true, label: "Username" },
+    {
+      type: "text",
+      name: "email",
+      required: true,
+      label: "Email",
+      pattern: "^[A-Za-z](.*)([@]{1})(.{1,})(\\.)(.{1,})",
+    },
+    { type: "password", name: "password", required: true, label: "Password" },
+    {
+      type: "password",
+      name: "passwordConfirmation",
+      required: true,
+      label: "Password Confirmation",
+    },
+  ];
 
   return div(
-      { class: "container mt-4",id:"signUpContainer"},
-      generateFormModal(
-          "signUp",
-          registerNewUser,
-          fields,
-          "Sign Up"
-      )
-  )
+    { class: "container mt-4", id: "signUpContainer" },
+    generateFormModal("signUp", registerNewUser, fields, "Sign Up", false)
+  );
 }
 
 function loginFormContent(authHeader){
@@ -117,19 +134,20 @@ function loginFormContent(authHeader){
 
         }
     const fields = [
-        { type: "text", name: "email", required: true,label:"Email" },
-        { type: "text", name: "password", required: true,label:"Password" },
-    ]
+      {
+        type: "text",
+        name: "email",
+        required: true,
+        label: "Email",
+        pattern: "^[A-Za-z](.*)([@]{1})(.{1,})(\\.)(.{1,})",
+      },
+      { type: "password", name: "password", required: true, label: "Password" },
+    ];
 
     return div(
-        { class: "container mt-4",id:"loginContainer" },
-        generateFormModal(
-            "login",
-            loginRequest,
-            fields,
-            "Login"
-        )
-    )
+      { class: "container mt-4", id: "loginContainer" },
+      generateFormModal("login", loginRequest, fields, "Login", false)
+    );
 }
 
 export default {

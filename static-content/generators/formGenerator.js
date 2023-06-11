@@ -25,14 +25,15 @@ export function generateFormModal(
   domain,
   onSubmit,
   fields,
-  submitButtonText = "Submit"
+  submitButtonText = "Submit",
+  hasCancel = true
 ) {
   return form(
     { id: `${domain}-form`, events: { submit: onSubmit } },
     ...fields.map((f) => generateField(domain, f)),
     div(
       { class: "modal-footer" },
-      button("Cancel", {
+      hasCancel && button("Cancel", {
         type: "button",
         class: "btn btn-secondary",
         "data-bs-dismiss": "modal",
