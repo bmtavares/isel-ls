@@ -35,26 +35,33 @@ console.log(lists)
   // Clear previous options
   positionDropdown.innerHTML = '';
   let list = lists[selectedList]
-  /*
-  let PositionOptions = ""
 
-   for (let i = 0; i <= list.ncards; i++) {
-   console.log(i)
-      PositionOptions += `<option value="${i}">Position ${i}</option>`;
-    }
-
-  // Generate position options based on the selected list
- document.getElementById('positionDropdown').innerHTML = PositionOptions
- */
  let PositionOptions = []
-     for (let i = 0; i <= lists[0].ncards; i++) {
+     for (let i = 0; i <= list.ncards; i++) {
        //PositionOptions += `<option value="${i}">Position ${i}</option>`;
        PositionOptions.push( option(`Position ${i}`,{value:`${i}`}))
      }
- document.getElementById('positionDropdown').innerHTML = PositionOptions
+  console.log(PositionOptions)
+  PositionOptions.forEach(object => {
+    document.getElementById('positionDropdown').appendChild(object);
+  });
+
+
 }
 
+function updateGlobalLis(boardId){
 
+fetch(
+    `${appConstants.API_BASE_URL}` + "boards/" + boardId + "/lists",
+    {
+        headers: userUtils.getAuthorizationHeader(),
+    }
+).then((res) => res.json())
+.then((lists) =>
+localStorage.setItem("GlobalLists", JSON.stringify(lists)))
+console.log(localStorage.getItem("GlobalLists"))
+
+}
 
 function popfrommodal(listOptions,PositionOptions){
 var body = div( {class:"modal-body"},
@@ -69,8 +76,6 @@ var body = div( {class:"modal-body"},
         button("Cancel",{type:"button", class:"btn btn-secondary", "data-bs-dismiss":"modal"}),
         button("Delete",{type:"button", class:"btn btn-primary", id:"confirmMoveButton"})
          )
-
-
 }
 
 
@@ -129,6 +134,8 @@ listDropdown.addEventListener('change', updatePositionOptions);
 }
 
 function details(card) {
+updateGlobalLis(card.boardId)
+
   return div(
     { class: "card text-center" },
     div(
@@ -152,10 +159,13 @@ function details(card) {
   );
 }
 
+
 function createFormModal(authHeader, boardId, listId) {
   const id = "create-card";
 
   async function handleOnSubmitCreate(e) {
+
+
     e.preventDefault();
 
     const formData = new FormData(e.srcElement); // Using the FormData object we can quickly fetch all the inputs
