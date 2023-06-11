@@ -1,5 +1,6 @@
 package pt.isel.ls.data.mem
 
+import pt.isel.ls.TaskAppException
 import pt.isel.ls.data.CardsData
 import pt.isel.ls.data.EntityNotFoundException
 import pt.isel.ls.data.entities.Board
@@ -7,6 +8,7 @@ import pt.isel.ls.data.entities.Card
 import pt.isel.ls.tasksServices.dtos.EditCardDto
 import pt.isel.ls.tasksServices.dtos.InputCardDto
 import pt.isel.ls.tasksServices.dtos.InputMoveCardDto
+import pt.isel.ls.utils.ErrorCodes
 import java.sql.Connection
 
 object MemCardsData : CardsData {
@@ -23,17 +25,11 @@ object MemCardsData : CardsData {
 
     override fun add(newCard: InputCardDto, boardId: Int, listId: Int?, connection: Connection?): Card {
         if (!MemDataSource.boards.any { it.id == boardId }) {
-            throw EntityNotFoundException(
-                "Board does not exist.",
-                Card::class
-            )
+            throw TaskAppException(ErrorCodes.BOARD_READ_FAIL)
         }
         if (listId != null) {
             if (!MemDataSource.lists.any { it.id == listId }) {
-                throw EntityNotFoundException(
-                    "List does not exist.",
-                    Card::class
-                )
+                throw TaskAppException(ErrorCodes.LIST_READ_FAIL)
             }
         }
         val newId = if (MemDataSource.cards.isEmpty()) 1 else MemDataSource.cards.maxOf { it.id } + 1
@@ -56,7 +52,7 @@ object MemCardsData : CardsData {
 
     override fun edit(editCardDto: EditCardDto, boardId: Int, cardId: Int, connection: Connection?) {
         val oldCard = MemDataSource.cards.firstOrNull { it.id == cardId }
-            ?: throw EntityNotFoundException("Card not found.", Card::class)
+            ?: throw TaskAppException(ErrorCodes.CARD_READ_FAIL)
         val newCard = Card(
             oldCard.id,
             editCardDto.name,
@@ -74,6 +70,7 @@ object MemCardsData : CardsData {
         MemDataSource.cards.filter { it.boardId == board.id }
 
     override fun move(inputList: InputMoveCardDto, boardId: Int, cardId: Int, connection: Connection?) {
+        if (inputList.cix < 0) throw TaskAppException(ErrorCodes.CARD_MOVE_NEGATIVE)
         val oldCard = MemDataSource.cards.firstOrNull { it.id == cardId && it.boardId == boardId }
             ?: throw EntityNotFoundException("Card not found.", Card::class)
 
@@ -84,16 +81,10 @@ object MemCardsData : CardsData {
     }
 
     override fun getById(id: Int, connection: Connection?): Card =
-        MemDataSource.cards.firstOrNull { it.id == id } ?: throw EntityNotFoundException(
-            "Card not found.",
-            Card::class
-        )
+        MemDataSource.cards.firstOrNull { it.id == id } ?: throw TaskAppException(ErrorCodes.CARD_READ_FAIL)
 
     override fun delete(id: Int, connection: Connection?) {
-        val card = MemDataSource.cards.firstOrNull { it.id == id } ?: throw EntityNotFoundException(
-            "Card not found.",
-            Card::class
-        )
+        val card = MemDataSource.cards.firstOrNull { it.id == id } ?: throw TaskAppException(ErrorCodes.CARD_READ_FAIL)
         MemDataSource.cards.remove(card)
     }
 
