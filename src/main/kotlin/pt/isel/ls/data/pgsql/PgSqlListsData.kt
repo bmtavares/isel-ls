@@ -6,6 +6,7 @@ import pt.isel.ls.data.entities.BoardList
 import pt.isel.ls.tasksServices.dtos.InputBoardListDto
 import pt.isel.ls.utils.ErrorCodes
 import java.sql.Connection
+import java.sql.SQLException
 
 object PgSqlListsData : ListsData {
     override fun getListsByBoard(boardId: Int, limit: Int, skip: Int, connection: Connection?): List<BoardList> {
@@ -61,7 +62,12 @@ object PgSqlListsData : ListsData {
         statement.setString(1, newBoardList.name)
         statement.setInt(2, boardId)
         statement.setInt(3, 0)
-        val rs = statement.executeQuery()
+
+        val rs = try {
+            statement.executeQuery()
+        } catch (ex: SQLException) {
+            TODO()
+        }
 
         while (rs.next()) {
             val id = rs.getInt("id")

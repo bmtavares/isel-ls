@@ -8,6 +8,7 @@ import pt.isel.ls.tasksServices.dtos.CreateUserDto
 import pt.isel.ls.tasksServices.dtos.EditUserDto
 import pt.isel.ls.utils.ErrorCodes
 import java.sql.Connection
+import java.sql.SQLException
 import java.sql.Timestamp
 import java.util.UUID
 
@@ -22,7 +23,11 @@ object PgSqlUsersData : UsersData {
         statement.setInt(2, user.id)
         statement.setTimestamp(3, Timestamp(System.currentTimeMillis()))
 
-        val count = statement.executeUpdate()
+        val count = try {
+            statement.executeUpdate()
+        } catch (ex: SQLException) {
+            TODO()
+        }
 
         if (count == 0) throw TaskAppException(ErrorCodes.TOKEN_GENERATION_FAILED)
         return token.toString()

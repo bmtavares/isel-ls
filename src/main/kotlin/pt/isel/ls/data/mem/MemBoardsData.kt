@@ -1,22 +1,22 @@
 package pt.isel.ls.data.mem
 
+import pt.isel.ls.TaskAppException
 import pt.isel.ls.data.BoardsData
-import pt.isel.ls.data.DataException
 import pt.isel.ls.data.EntityAlreadyExistsException
-import pt.isel.ls.data.EntityNotFoundException
 import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.data.entities.UserBoard
 import pt.isel.ls.tasksServices.dtos.EditBoardDto
 import pt.isel.ls.tasksServices.dtos.InputBoardDto
 import pt.isel.ls.tasksServices.dtos.SecureOutputUserDto
+import pt.isel.ls.utils.ErrorCodes
 import java.sql.Connection
 
 object MemBoardsData : BoardsData {
     private val CASCADE_DELETE = false
     override fun getByName(name: String, connection: Connection?): Board =
         MemDataSource.boards.firstOrNull { it.name == name }
-            ?: throw EntityNotFoundException("Board not found.", Board::class)
+            ?: throw TaskAppException(ErrorCodes.BOARD_READ_FAIL)
 
     override fun getUserBoards(user: User, limit: Int, skip: Int, connection: Connection?): List<Board> {
         val boards = MemDataSource.usersBoards.filter { it.userId == user.id }
@@ -33,7 +33,7 @@ object MemBoardsData : BoardsData {
 
     override fun edit(editBoard: EditBoardDto, connection: Connection?) {
         val oldBoard = MemDataSource.boards.firstOrNull { it.id == editBoard.id }
-            ?: throw EntityNotFoundException("Board not found.", Board::class)
+            ?: throw TaskAppException(ErrorCodes.BOARD_UPDATE_FAIL)
         val newBoard = Board(oldBoard.id, oldBoard.name, editBoard.description)
         MemDataSource.boards.remove(oldBoard)
         MemDataSource.boards.add(newBoard)
@@ -41,10 +41,7 @@ object MemBoardsData : BoardsData {
 
     override fun add(newBoard: InputBoardDto, connection: Connection?): Board {
         if (MemDataSource.boards.any { it.name == newBoard.name }) {
-            throw EntityAlreadyExistsException(
-                "Name already in use.",
-                Board::class
-            )
+            throw TaskAppException(ErrorCodes.BOARD_NAME_IN_USE)
         }
         val newId = if (MemDataSource.boards.isEmpty()) 1 else MemDataSource.boards.maxOf { it.id } + 1
         val board = Board(newId, newBoard.name, newBoard.description)
@@ -70,7 +67,7 @@ object MemBoardsData : BoardsData {
 
         val boardIds = boards.map { it.boardId }
 
-        return MemDataSource.boards.filter { it.id in boardIds && it.name.contains(searchField) }
+        return MemDataSource.boards.filter { it.id in boardIds && it.name.contains(searchField.lowercase()) }
     }
 
     override fun addUserToBoard(userId: Int, boardId: Int, connection: Connection?) {
@@ -83,28 +80,24 @@ object MemBoardsData : BoardsData {
         }
         MemDataSource.usersBoards.add(pair)
     }
+
     override fun deleteUserFromBoard(userId: Int, boardId: Int, connection: Connection?) {
         val pair = UserBoard(userId, boardId)
         MemDataSource.usersBoards.remove(pair)
     }
 
     override fun getById(id: Int, connection: Connection?): Board =
-        MemDataSource.boards.firstOrNull { it.id == id } ?: throw EntityNotFoundException(
-            "Board not found.",
-            Board::class
-        )
+        MemDataSource.boards.firstOrNull { it.id == id } ?: throw TaskAppException(ErrorCodes.BOARD_READ_FAIL)
 
     override fun delete(id: Int, connection: Connection?) {
-        val board = MemDataSource.boards.firstOrNull { it.id == id } ?: throw EntityNotFoundException(
-            "Board not found.",
-            Board::class
-        )
+        val board = MemDataSource.boards.firstOrNull { it.id == id } ?: TaskAppException(ErrorCodes.BOARD_DELETE_FAIL)
 
         if (MemDataSource.lists.any { it.boardId == id }) {
             if (CASCADE_DELETE) {
                 MemDataSource.lists.removeAll { it.boardId == id }
             } else {
-                throw DataException("Cannot delete a board that has lists.")
+                // Should never happen due to cascade being used in live, thus doesn't have a specific code
+                throw TaskAppException(message = "Cannot delete a board that has lists.")
             }
         }
 
@@ -112,7 +105,8 @@ object MemBoardsData : BoardsData {
             if (CASCADE_DELETE) {
                 MemDataSource.cards.removeAll { it.listId == id }
             } else {
-                throw DataException("Cannot delete a board that has cards.")
+                // Should never happen due to cascade being used in live, thus doesn't have a specific code
+                throw TaskAppException(message = "Cannot delete a board that has cards.")
             }
         }
 

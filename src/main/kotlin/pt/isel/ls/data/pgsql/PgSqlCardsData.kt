@@ -1,5 +1,6 @@
 package pt.isel.ls.data.pgsql
 
+import pt.isel.ls.TaskAppException
 import pt.isel.ls.data.CardsData
 import pt.isel.ls.data.DataException
 import pt.isel.ls.data.entities.Board
@@ -7,7 +8,9 @@ import pt.isel.ls.data.entities.Card
 import pt.isel.ls.tasksServices.dtos.EditCardDto
 import pt.isel.ls.tasksServices.dtos.InputCardDto
 import pt.isel.ls.tasksServices.dtos.InputMoveCardDto
+import pt.isel.ls.utils.ErrorCodes
 import java.sql.Connection
+import java.sql.SQLException
 import java.sql.Types
 
 object PgSqlCardsData : CardsData {
@@ -35,7 +38,6 @@ object PgSqlCardsData : CardsData {
                 if (rs.getInt("listId") == 0 && rs.wasNull()) null else rs.getInt("listId"),
                 rs.getInt("boardId"),
                 rs.getInt("cidx")
-//                rs.getInt("cIdx")
             )
         }
 
@@ -99,7 +101,7 @@ object PgSqlCardsData : CardsData {
             )
         }
 
-        throw Exception("awdwa") // TODO
+        throw TaskAppException(ErrorCodes.CARD_READ_FAIL)
     }
 
     private fun updateCardLid(cardId: Int, lid: Int, bid: Int, connection: Connection) {
@@ -163,7 +165,7 @@ object PgSqlCardsData : CardsData {
         connection ?: throw IllegalConnException()
         val cardInfo = getCardInfo(cardId, connection)
         checkNotNull(cardInfo)
-        if (inputList.cix < 0) throw DataException("new position cant be negative")
+        if (inputList.cix < 0) throw TaskAppException(ErrorCodes.CARD_MOVE_NEGATIVE)
         val cardOldPosition = cardInfo.cIdx
         val newPosition = inputList.cix
 
@@ -234,11 +236,7 @@ object PgSqlCardsData : CardsData {
 
     override fun getById(id: Int, connection: Connection?): Card {
         connection ?: throw IllegalConnException()
-        return try {
-            getCardInfo(id, connection)
-        } catch (e: Exception) {
-            throw Exception(e.message)
-        }
+        return getCardInfo(id, connection)
     }
 
     private fun changeCardCount(id: Int, connection: Connection, delta: Int = 1) {
@@ -280,7 +278,11 @@ object PgSqlCardsData : CardsData {
 
         statement.setInt(5, boardId)
 
-        val rs = statement.executeQuery()
+        val rs = try {
+            statement.executeQuery()
+        } catch (ex: SQLException) {
+            TODO()
+        }
 
         if (listId != null) changeCardCount(listId, connection)
 
@@ -303,7 +305,7 @@ object PgSqlCardsData : CardsData {
                 cIdx
             )
         }
-        throw DataException("Failed to add card.")
+        throw TaskAppException(ErrorCodes.CARD_CREATE_FAIL)
     }
 
     override fun delete(id: Int, connection: Connection?) {
@@ -313,11 +315,13 @@ object PgSqlCardsData : CardsData {
         )
         statement.setInt(1, id)
 
-        val count = statement.executeUpdate()
-
-        if (count == 0) {
-            throw DataException("Failed to delete card.")
+        val count = try {
+            statement.executeUpdate()
+        } catch (ex: SQLException) {
+            TODO()
         }
+
+        if (count == 0) throw TaskAppException(ErrorCodes.CARD_DELETE_FAIL)
     }
 
     override fun edit(editCardDto: EditCardDto, boardId: Int, cardId: Int, connection: Connection?) {
@@ -340,11 +344,13 @@ object PgSqlCardsData : CardsData {
         statement.setInt(6, cardId)
         statement.setInt(8, cardId)
 
-        val count = statement.executeUpdate()
-
-        if (count == 0) {
-            throw DataException("Failed to edit card.")
+        val count = try {
+            statement.executeUpdate()
+        } catch (ex: SQLException) {
+            TODO()
         }
+
+        if (count == 0) throw TaskAppException(ErrorCodes.CARD_UPDATE_FAIL)
     }
 
     override fun exists(id: Int, connection: Connection?): Boolean {

@@ -18,6 +18,7 @@ enum class ErrorCodes(val code: Int, val message: String) {
     BOARD_CREATE_FAIL(1001, "Board could not be created."),
     BOARD_DELETE_FAIL(1002, "Board could not be deleted."),
     BOARD_UPDATE_FAIL(1003, "Board could not be updated."),
+    BOARD_NAME_IN_USE(1004, "Board name not unique."),
     LIST_READ_FAIL(2000, "List not found."),
     LIST_CREATE_FAIL(2001, "List could not be created."),
     LIST_DELETE_FAIL(2002, "List could not be deleted."),
@@ -37,13 +38,15 @@ enum class ErrorCodes(val code: Int, val message: String) {
     CARD_READ_FAIL(4000, "Card not found."),
     CARD_CREATE_FAIL(4001, "Card could not be created."),
     CARD_DELETE_FAIL(4002, "Card could not be deleted."),
-    CARD_MOVE_FAIL(4003, "Card could not be moved.");
+    CARD_MOVE_FAIL(4003, "Card could not be moved."),
+    CARD_UPDATE_FAIL(4004, "Card could not be updated."),
+    CARD_MOVE_NEGATIVE(4005, "Card position cannot be negative.");
 
     fun http4kStatus(): Status =
         when (this) {
             URL_PATH_ERROR, URL_QUERY_ERROR, JSON_BODY_ERROR, EMAIL_FAILED_CHECK, URL_PATH_TYPE_ERROR -> BAD_REQUEST
             BOARD_READ_FAIL, LIST_READ_FAIL, USER_READ_FAIL, CARD_READ_FAIL -> NOT_FOUND
-            EMAIL_ALREADY_IN_USE -> CONFLICT
+            EMAIL_ALREADY_IN_USE, BOARD_NAME_IN_USE -> CONFLICT
             AUTHENTICATION_CHALLENGE_FAILED, NO_EMAIL_MATCH, NO_TOKEN_MATCH, NOT_AUTHENTICATED, AUTH_HEADER_MISSING -> UNAUTHORIZED
             else -> INTERNAL_SERVER_ERROR
         }

@@ -9,6 +9,7 @@ import pt.isel.ls.tasksServices.dtos.InputBoardDto
 import pt.isel.ls.tasksServices.dtos.SecureOutputUserDto
 import pt.isel.ls.utils.ErrorCodes
 import java.sql.Connection
+import java.sql.SQLException
 
 object PgSqlBoardsData : BoardsData {
     override fun getByName(name: String, connection: Connection?): Board {
@@ -81,7 +82,11 @@ object PgSqlBoardsData : BoardsData {
         statement.setString(1, newBoard.name)
         statement.setString(2, newBoard.description)
 
-        val rs = statement.executeQuery()
+        val rs = try {
+            statement.executeQuery()
+        } catch (ex: SQLException) {
+            TODO()
+        }
 
         while (rs.next()) {
             val id = rs.getInt("id")
