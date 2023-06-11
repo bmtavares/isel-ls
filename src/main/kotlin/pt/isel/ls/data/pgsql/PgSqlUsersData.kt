@@ -73,7 +73,7 @@ object PgSqlUsersData : UsersData {
             )
         }
 
-        throw TaskAppException(ErrorCodes.UNDEFINED, Status.UNAUTHORIZED,"Email doesnt exist") // TODO
+        throw TaskAppException(ErrorCodes.NO_EMAIL_MATCH, Status.UNAUTHORIZED,"Email doesnt exist")
     }
 
     override fun getById(id: Int, connection: Connection?): User {
