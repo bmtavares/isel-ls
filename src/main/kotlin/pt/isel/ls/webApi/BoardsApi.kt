@@ -29,8 +29,7 @@ class BoardsApi(
         val boardId = try {
             val boardId = it.path("id")?.toInt()
             checkNotNull(boardId) { "Board ID not provided in URL." }
-        } catch (ex: IllegalStateException) { throw TaskAppException(ErrorCodes.URL_PATH_ERROR, issue = ex.message) }
-        catch (ex: NumberFormatException) { throw TaskAppException(ErrorCodes.URL_PATH_TYPE_ERROR) }
+        } catch (ex: IllegalStateException) { throw TaskAppException(ErrorCodes.URL_PATH_ERROR, issue = ex.message) } catch (ex: NumberFormatException) { throw TaskAppException(ErrorCodes.URL_PATH_TYPE_ERROR) }
 
         val user: User = contexts[it]["user"] ?: throw TaskAppException(ErrorCodes.NOT_AUTHENTICATED)
 

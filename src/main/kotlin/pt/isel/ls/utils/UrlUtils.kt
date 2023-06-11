@@ -32,7 +32,6 @@ object UrlUtils {
         return try {
             val result = request.path(name)?.toInt()
             checkNotNull(result) { "$fragmentName not provided in URL." }
-        } catch (ex: IllegalStateException) { throw TaskAppException(ErrorCodes.URL_PATH_ERROR, issue = ex.message) }
-        catch (ex: NumberFormatException) { throw TaskAppException(ErrorCodes.URL_PATH_TYPE_ERROR, issue = "$fragmentName is of incorrect type.") }
+        } catch (ex: IllegalStateException) { throw TaskAppException(ErrorCodes.URL_PATH_ERROR, issue = ex.message) } catch (ex: NumberFormatException) { throw TaskAppException(ErrorCodes.URL_PATH_TYPE_ERROR, issue = "$fragmentName is of incorrect type.") }
     }
 }
