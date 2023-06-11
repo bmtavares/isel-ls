@@ -1,9 +1,13 @@
 ## Introduction
 
-This document contains the relevant design and implementation aspects of LS project's, the development of a like trello application with an API service and a Single Page Application.
+This document contains the relevant design and implementation aspects of LS project's, the development of a Trello-like application with a Web API and a Single Page Application served on a Cloud provider.
 
 ## Project Overview
-The LS project aims to develop a robust system for managing boards, lists, and cards. This system allows users to collaborate and organize tasks efficiently. In this phase, we focus on modeling the database and implementing the core functionalities.
+The LS project aims to develop a robust system for managing boards, lists, and cards. This system allows users to collaborate and organize tasks efficiently.
+
+Users can create the resources (Boards, lists...) which they can in turn share with other registered users of the service.
+
+The live application can be found [here](https://service-ls-2223-2-41n-g05.onrender.com/).
 
 ## Modeling the database
 
@@ -39,7 +43,7 @@ To interact with the system, we have defined a comprehensive Open-API Specificat
 * [As a JSON file](../open-api.json)
 * [As a Postman documentation webpage](https://documenter.getpostman.com/view/26358395/2s93RRvsbv)
 
-Certain endpoints require authorization using a token key to ensure secure access.
+Certain endpoints require authorization using a bearer token to ensure secure access and identification.
 
 ### Request Details
 
@@ -47,14 +51,15 @@ Requests follow a RESTFUL architecture, where each endpoint corresponds to a spe
 
 Internally, requests are processed by relevant classes and functions.
 
-Request parameters are validated using token validation.
+Authorization is handled at the beginning of a request, prior to handing information to the service layer, using http4k's filter system. Implementation can be found and reviewed on [this Kotlin class](../src/main/kotlin/pt/isel/ls/webApi/Filters.kt) for more information.
 
 ### Connection Management
 To utilize the database effectively, we rely on environment variables for configuration. Set the environment variable ``USE_POSTGRESQL`` to ``True`` to enable database usage. Otherwise, the system will utilize in-memory storage.
 
 Connections are created based on a connection string stored as an environment variable under the name ``JDBC_DATABASE_URL``.
 
-During each of the single units defined for our database interface, a connection is created and managed in the scope of the function via ``.use``, ensuring automatic disposal of the connection once the scope exits.
+For correct handling of our connections, one is is created and managed using ``handleData`` of the ``DataContext`` in use.
+In the case of PostgreSQL, this is implemented in [PgDataContext](../src/main/kotlin/pt/isel/ls/data/pgsql/PgDataContext.kt). This ensures that a single connection is used (in the scope of the function via ``.use``), ensuring automatic disposal of the connection once the scope exits and sane use and reuse of connections when possible.
 
 If the work being done with the connection may alter the database in any way, transactions are handled by disabling the connection's ``autoCommit``. If any error occurs, we issue a ``rollback()`` and throw an exception to the calling function. In all other cases we issue a ``commit()`` and if needed the correct return value.
 
@@ -67,7 +72,7 @@ Database is queried and data is returned to the class or function
 Data is transformed and returned to the client
 
 ### Other
-To indicate the service's listening port, set the environment variable PORT to the desired port number.
+To indicate the service's listening port, set the environment variable ``PORT`` to the desired port number.
 
 ### Data Access
 
@@ -84,8 +89,19 @@ Implementations were created for in-memory data storage and for PostgreSQL (loca
 
 ### Error Handling/Processing
 
+Most of the error handling is done via the [TaskAppException](../src/main/kotlin/pt/isel/ls/TaskAppException.kt) and the enum [ErrorCodes](../src/main/kotlin/pt/isel/ls/utils/ErrorCodes.kt) which it uses.
+
+These are then captured at the api level by the main filter, and a response is issued accordingly.
+
 ### Single page application
 
+The flow of the application is as follows:
+
+![SPA Navigation Graph](./navigation_graph.png)
+
+Via the Home view one can login or signup, creating an account on the server for further use.
+
+Home can be accessed in all pages, by clicking the app name (LEIC Fauxllo).
 
 ## Critical Evaluation
 
