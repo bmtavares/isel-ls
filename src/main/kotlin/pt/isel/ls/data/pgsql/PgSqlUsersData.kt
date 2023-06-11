@@ -111,7 +111,7 @@ object PgSqlUsersData : UsersData {
             if (e.sqlState == "23505") {
                 throw TaskAppException(ErrorCodes.EMAIL_ALREADY_IN_USE)
             } else {
-                throw TaskAppException(ErrorCodes.USER_CREATE_FAIL, e.message)
+                throw TaskAppException(ErrorCodes.USER_CREATE_FAIL, message = e.message)
             }
         }
 
