@@ -8,6 +8,7 @@ import org.http4k.core.Response
 import org.http4k.core.Status
 import org.http4k.routing.path
 import pt.isel.ls.data.DataException
+import pt.isel.ls.data.EntityNotFoundException
 import pt.isel.ls.server.HeaderTypes
 import pt.isel.ls.tasksServices.TasksServices
 import pt.isel.ls.tasksServices.dtos.EditBoardListDto
@@ -37,7 +38,12 @@ class ListsApi(
         Response(Status.BAD_REQUEST)
             .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
             .body(Json.encodeToString(ex.message))
-    } catch (ex: Exception) {
+    } catch (ex: EntityNotFoundException) {
+        Response(Status.NOT_FOUND)
+            .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
+            .body(Json.encodeToString(ex.message))
+    }
+    catch (ex: Exception) {
         Response(Status.INTERNAL_SERVER_ERROR)
             .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
             .body(Json.encodeToString(ex.message))

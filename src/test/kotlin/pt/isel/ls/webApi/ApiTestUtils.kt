@@ -1,6 +1,5 @@
 package pt.isel.ls.webApi
 
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.http4k.core.Method
@@ -17,7 +16,7 @@ import pt.isel.ls.tasksServices.dtos.InputUserDto
 import pt.isel.ls.tasksServices.dtos.OutputIdDto
 import pt.isel.ls.tasksServices.dtos.OutputUserDto
 
-class ApiTestUtils(api: WebApi, context: RequestContexts) {
+class ApiTestUtils(filters: Filters, boardsApi: BoardsApi, usersApi: UsersApi, listsApi: ListsApi, context: RequestContexts) {
     private val app: RoutingHttpHandler
 
     private val createUserDto: InputUserDto
@@ -60,13 +59,13 @@ class ApiTestUtils(api: WebApi, context: RequestContexts) {
 
     init {
         this.app = routes(
-            ServerFilters.InitialiseRequestContext(context).then(api.filterUser(context)).then(
+            ServerFilters.InitialiseRequestContext(context).then(filters.filterUser(context)).then(
                 routes(
-                    "boards/" bind Method.POST to api.createBoard(context),
-                    "boards/{id}/lists" bind Method.POST to api::createList
+                    "boards/" bind Method.POST to boardsApi.createBoard(context),
+                    "boards/{id}/lists" bind Method.POST to listsApi::createList
                 )
             ),
-            "users" bind Method.POST to api::createUser
+            "users" bind Method.POST to usersApi::createUser
         )
         this.createUserDto = InputUserDto("Maria", "maria@example.org", "olamundo")
         this.createBoardDto = InputBoardDto("New Board", "A really cool new board")

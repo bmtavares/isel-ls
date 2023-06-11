@@ -1,6 +1,5 @@
 package pt.isel.ls.webApi
 
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.http4k.core.Method
@@ -30,17 +29,20 @@ import kotlin.test.assertNull
 
 class CardsTest {
     private val services = TasksServices(MemDataContext, MemBoardsData, MemUsersData, MemListsData, MemCardsData)
-    private val api = WebApi(services)
+    private val filters = Filters(services)
+    private val boardsApi = BoardsApi(services)
+    private val usersApi = UsersApi(services)
+    private val listsApi = ListsApi(services)
     private val unitApi = CardsApi(services)
     private val context = RequestContexts()
-    private val prepare = ApiTestUtils(api, context)
+    private val prepare = ApiTestUtils(filters, boardsApi, usersApi, listsApi, context)
 
-    private val app = api.authFilter.then(
+    private val app = filters.authFilter.then(
         routes(
-            "boards/{id}/lists/{lid}/cards" bind Method.POST to api::createCard,
-            "boards/{id}/lists/{lid}/cards" bind Method.GET to api::getCardsFromList,
-            "boards/{id}/cards/{cid}" bind Method.GET to api::getCard,
-            "boards/{id}/cards/{cid}/move" bind Method.GET to api::alterCardListPosition,
+            "boards/{id}/lists/{lid}/cards" bind Method.POST to unitApi::createCard,
+            "boards/{id}/lists/{lid}/cards" bind Method.GET to unitApi::getCardsFromList,
+            "boards/{id}/cards/{cid}" bind Method.GET to unitApi::getCard,
+            "boards/{id}/cards/{cid}/move" bind Method.GET to unitApi::alterCardListPosition,
             "boards/{id}/cards/{cid}" bind Method.DELETE to unitApi::deleteCard
         )
     )

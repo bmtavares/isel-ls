@@ -1,6 +1,5 @@
 package pt.isel.ls.webApi
 
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.http4k.core.Method
@@ -32,24 +31,27 @@ import kotlin.test.assertNull
 
 class BoardsTest {
     private val services = TasksServices(MemDataContext, MemBoardsData, MemUsersData, MemListsData, MemCardsData)
-    private val api = WebApi(services)
+    private val filters = Filters(services)
+    private val unitApi = BoardsApi(services)
+    private val usersApi = UsersApi(services)
+    private val listsApi = ListsApi(services)
     private val context = RequestContexts()
-    private val prepare = ApiTestUtils(api, context)
+    private val prepare = ApiTestUtils(filters, unitApi, usersApi, listsApi, context)
 
     private val app =
         routes(
-            ServerFilters.InitialiseRequestContext(context).then(api.filterUser(context)).then(
+            ServerFilters.InitialiseRequestContext(context).then(filters.filterUser(context)).then(
                 routes(
-                    "boards/{id}" bind Method.GET to api.getBoard(context),
-                    "boards/" bind Method.GET to api.getBoards(context),
-                    "boards/" bind Method.POST to api.createBoard(context),
-                    "boards/{id}/user-list" bind Method.GET to api.getBoardUsers(context)
+                    "boards/{id}" bind Method.GET to unitApi.getBoard(context),
+                    "boards/" bind Method.GET to unitApi.getBoards(context),
+                    "boards/" bind Method.POST to unitApi.createBoard(context),
+                    "boards/{id}/user-list" bind Method.GET to unitApi.getBoardUsers(context)
                 )
             ),
-            api.authFilter.then(
+            filters.authFilter.then(
                 routes(
-                    "boards/{id}/user-list/{uid}" bind Method.PUT to api::addUsersOnBoard,
-                    "boards/{id}/user-list/{uid}" bind Method.DELETE to api::deleteUserFromBoard
+                    "boards/{id}/user-list/{uid}" bind Method.PUT to unitApi::addUsersOnBoard,
+                    "boards/{id}/user-list/{uid}" bind Method.DELETE to unitApi::deleteUserFromBoard
                 )
             )
         )

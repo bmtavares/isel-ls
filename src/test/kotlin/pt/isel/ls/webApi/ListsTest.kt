@@ -1,6 +1,5 @@
 package pt.isel.ls.webApi
 
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.http4k.core.Method
@@ -28,16 +27,18 @@ import kotlin.test.assertNull
 
 class ListsTest {
     private val services = TasksServices(MemDataContext, MemBoardsData, MemUsersData, MemListsData, MemCardsData)
-    private val api = WebApi(services)
+    private val filters = Filters(services)
+    private val boardsApi = BoardsApi(services)
+    private val usersApi = UsersApi(services)
     private val unitApi = ListsApi(services)
     private val context = RequestContexts()
-    private val prepare = ApiTestUtils(api, context)
+    private val prepare = ApiTestUtils(filters, boardsApi, usersApi, unitApi, context)
 
-    private val app = api.authFilter.then(
+    private val app = filters.authFilter.then(
         routes(
-            "boards/{id}/lists" bind Method.GET to api::getLists,
-            "boards/{id}/lists" bind Method.POST to api::createList,
-            "boards/{id}/lists/{lid}" bind Method.GET to api::getList,
+            "boards/{id}/lists" bind Method.GET to unitApi::getLists,
+            "boards/{id}/lists" bind Method.POST to unitApi::createList,
+            "boards/{id}/lists/{lid}" bind Method.GET to unitApi::getList,
             "boards/{id}/lists/{lid}" bind Method.DELETE to unitApi::deleteList
         )
     )
@@ -345,7 +346,7 @@ class ListsTest {
             )
                 .header("Authorization", "Bearer ${user.token}")
         ).let {
-            assertEquals(Status.BAD_REQUEST, it.status)
+            assertEquals(Status.NOT_FOUND, it.status)
             assertEquals("application/json", it.header("content-type"))
             assertEquals("List not found.", Json.decodeFromString(it.bodyString()))
         }
