@@ -1,6 +1,5 @@
 package pt.isel.ls.webApi
 
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.http4k.core.Method
@@ -26,11 +25,11 @@ import kotlin.test.assertEquals
 class UsersTest {
     private val services = TasksServices(MemDataContext, MemBoardsData, MemUsersData, MemListsData, MemCardsData)
 
-    private val api = WebApi(services)
+    private val unitApi = UsersApi(services)
 
     private val app = routes(
-        "users/{id}" bind Method.GET to api::getUser,
-        "users" bind Method.POST to api::createUser
+        "users/{id}" bind Method.GET to unitApi::getUser,
+        "users" bind Method.POST to unitApi::createUser
     )
 
     @BeforeTest
