@@ -164,36 +164,33 @@ function createFormModal(authHeader, boardId, listId) {
   const id = "create-card";
 
   async function handleOnSubmitCreate(e) {
-
-
     e.preventDefault();
 
     const formData = new FormData(e.srcElement); // Using the FormData object we can quickly fetch all the inputs
 
     const formEntries = Object.fromEntries(formData.entries());
-    formEntries.dueDate = formEntries.dueDate ? new Date(`${formEntries.dueDate}+00:00`).getTime() : null; // Convert to Unix Timestamp as UTC
+    formEntries.dueDate = formEntries.dueDate
+      ? new Date(`${formEntries.dueDate}+00:00`).getTime()
+      : null; // Convert to Unix Timestamp as UTC
 
     const data = JSON.stringify(formEntries); // Since we used names matching the desired keys in our input DTO, we can just send it directly
 
-    //TODO: Wrap in try .. catch
-
-
     console.log(data);
 
-    const creationReq = await fetch(`${appConstants.API_BASE_URL}boards/${boardId}/lists/${listId}/cards`, {
-      method: "post",
-      headers: { ...authHeader, "Content-Type": "application/json" },
-      body: data,
-    });
+    const creationReq = await fetch(
+      `${appConstants.API_BASE_URL}boards/${boardId}/lists/${listId}/cards`,
+      {
+        method: "post",
+        headers: { ...authHeader, "Content-Type": "application/json" },
+        body: data,
+      }
+    );
 
-    //const result =
-    await creationReq.json(); // Just await a response for now
+    await creationReq.json();
 
     bootstrap.Modal.getInstance(document.querySelector(`#${id}-modal`)).hide(); // Hide the form modal
 
     window.dispatchEvent(new HashChangeEvent("hashchange")); // Assume everything went very much OK and do a soft refresh!
-
-    console.log(result.id);
   }
 
   return bootstrapGenerator.generateModal(
@@ -204,7 +201,7 @@ function createFormModal(authHeader, boardId, listId) {
       [
         { type: "text", name: "Name", required: true },
         { type: "text", name: "Description", required: true },
-        { type: "datetime-local", name: "dueDate", label: "Due date" }
+        { type: "datetime-local", name: "dueDate", label: "Due date" },
       ],
       "Create"
     ),

@@ -98,22 +98,17 @@ function createFormModal(authHeader, boardId) {
     const formData = new FormData(e.srcElement); // Using the FormData object we can quickly fetch all the inputs
     const data = JSON.stringify(Object.fromEntries(formData.entries())); // Since we used names matching the desired keys in our input DTO, we can just send it directly
 
-    //TODO: Wrap in try .. catch
-
     const creationReq = await fetch(`${appConstants.API_BASE_URL}boards/${boardId}/lists`, {
       method: "post",
       headers: { ...authHeader, "Content-Type": "application/json" },
       body: data,
     });
 
-    //const result =
     await creationReq.json(); // Just await a response for now
 
     bootstrap.Modal.getInstance(document.querySelector(`#${id}-modal`)).hide(); // Hide the form modal
 
     window.dispatchEvent(new HashChangeEvent("hashchange")); // Assume everything went very much OK and do a soft refresh!
-
-    // console.log(result.id);
   }
 
   return bootstrapGenerator.generateModal(

@@ -157,16 +157,29 @@ function searchBoard(authHeader) {
     const formData = new FormData(e.target); // Using the FormData object we can quickly fetch all the inputs
     const data = JSON.stringify(Object.fromEntries(formData.entries())); // Since we used names matching the desired keys in our input DTO, we can just send it directly
 
-    //TODO: Wrap in try .. catch
-
     const creationReq = await fetch(`${appConstants.API_BASE_URL}boards`, {
       method: "post",
       headers: { ...authHeader, "Content-Type": "application/json" },
       body: data,
     });
 
-    //const result =
-    await creationReq.json(); // Just await a response for now
+    const responseData = await creationReq.json();
+    if (!creationReq.ok) {
+      const errorAlert = div(
+        responseData.message,
+        {
+          class: "alert alert-danger alert-dismissible fade show",
+          role: "alert",
+        },
+        button({
+          class: "btn-close",
+          "data-bs-dismiss": "alert",
+          type: "button",
+        })
+      );
+      document.querySelector("#board-form").prepend(errorAlert);
+      return;
+    }
 
     bootstrap.Modal.getInstance(document.querySelector(`#${id}-modal`)).hide(); // Hide the form modal
 
