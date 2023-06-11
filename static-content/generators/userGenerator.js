@@ -53,20 +53,20 @@ function signUpContent(authHeader){
                 method: "post",
                 body: data
             })
-            try {
                 const userInfo = await rsp.json()
-                user.setUser(userInfo.token, userInfo.id, userInfo.name)
-                location.hash="#home"
-            } catch (e) {
-                const errorAlert = div(
-                    `${e.message}`,
-                    {class:"alert alert-danger alert-dismissible fade show",role:"alert"},
-                    button(
-                        {class:"btn-close","data-bs-dismiss":"alert",type:"button"}
+                if (rsp.status !== 200 && rsp.status !== 201){
+                    const errorAlert = div(
+                        userInfo,
+                        {class:"alert alert-danger alert-dismissible fade show",role:"alert"},
+                        button(
+                            {class:"btn-close","data-bs-dismiss":"alert",type:"button"}
+                        )
                     )
-                )
-                document.querySelector("#signUpContainer").appendChild(errorAlert)
-            }
+                    document.querySelector("#signUpContainer").appendChild(errorAlert)
+                }else {
+                    user.setUser(userInfo.token, userInfo.id, userInfo.name)
+                    location.hash="#home"
+                }
         }
     }
   const fields = [
@@ -94,7 +94,7 @@ function loginFormContent(authHeader){
         const dataForm = Object.fromEntries(formData.entries())
         const data = JSON.stringify(dataForm)
 
-            const rsp = await fetch(API_BASE_URL + `session`, {
+            const rsp = await fetch(`${appConstants.API_BASE_URL}`+ + `session`, {
                 headers: {...authHeader, "Content-Type": "application/json"},
                 method: "post",
                 body: data
