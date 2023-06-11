@@ -1,6 +1,8 @@
 package pt.isel.ls.data.pgsql
 
+import org.http4k.core.Status
 import org.postgresql.util.PSQLException
+import pt.isel.ls.TaskAppException
 import pt.isel.ls.data.DataException
 import pt.isel.ls.data.EntityAlreadyExistsException
 import pt.isel.ls.data.EntityNotFoundException
@@ -8,6 +10,7 @@ import pt.isel.ls.data.UsersData
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.tasksServices.dtos.CreateUserDto
 import pt.isel.ls.tasksServices.dtos.EditUserDto
+import pt.isel.ls.utils.ErrorCodes
 import java.sql.Connection
 import java.sql.Timestamp
 import java.util.UUID
@@ -70,7 +73,7 @@ object PgSqlUsersData : UsersData {
             )
         }
 
-        throw Exception("failed to get by email") // TODO
+        throw TaskAppException(ErrorCodes.UNDEFINED, Status.UNAUTHORIZED,"Email doesnt exist") // TODO
     }
 
     override fun getById(id: Int, connection: Connection?): User {

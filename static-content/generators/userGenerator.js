@@ -43,7 +43,7 @@ function signUpContent(authHeader){
                    {class:"btn-close","data-bs-dismiss":"alert",type:"button"}
                )
            )
-            document.querySelector("#signUpContainer").appendChild(alertPwMismatch)
+            document.querySelector("#signUpContainer").append(alertPwMismatch)
         } else {
             delete dataForm.passwordConfirmation
             const data = JSON.stringify(dataForm)
@@ -54,7 +54,7 @@ function signUpContent(authHeader){
                 body: data
             })
                 const userInfo = await rsp.json()
-                if (rsp.status !== 200 && rsp.status !== 201){
+                if (!rsp.ok){
                     const errorAlert = div(
                         userInfo,
                         {class:"alert alert-danger alert-dismissible fade show",role:"alert"},
@@ -62,7 +62,7 @@ function signUpContent(authHeader){
                             {class:"btn-close","data-bs-dismiss":"alert",type:"button"}
                         )
                     )
-                    document.querySelector("#signUpContainer").appendChild(errorAlert)
+                    document.querySelector("#signUpContainer").append(errorAlert)
                 }else {
                     user.setUser(userInfo.token, userInfo.id, userInfo.name)
                     location.hash="#home"
@@ -99,13 +99,22 @@ function loginFormContent(authHeader){
                 method: "post",
                 body: data
             })
-            try {
                 const userInfo = await rsp.json()
-                user.setUser(userInfo.token, userInfo.id, userInfo.name)
-                location.hash="#home"
-            } catch (e) {
+                if(!rsp.ok){
+                    const errorAlert = div(
+                        userInfo.message,
+                        {class:"alert alert-danger alert-dismissible fade show",role:"alert"},
+                        button(
+                            {class:"btn-close","data-bs-dismiss":"alert",type:"button"}
+                        )
+                    )
+                    document.querySelector("#loginContainer").append(errorAlert)
+                }else{
+                    user.setUser(userInfo.token, userInfo.id, userInfo.name)
+                    location.hash="#home"
+                }
 
-            }
+
         }
     const fields = [
         { type: "text", name: "email", required: true,label:"Email" },
@@ -113,7 +122,7 @@ function loginFormContent(authHeader){
     ]
 
     return div(
-        { class: "container mt-4" },
+        { class: "container mt-4",id:"loginContainer" },
         generateFormModal(
             "login",
             loginRequest,

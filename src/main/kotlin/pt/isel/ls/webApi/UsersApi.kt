@@ -30,7 +30,7 @@ class UsersApi(
         } catch (ex: TaskAppException) {
             Response(ex.status)
                 .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
-                .body(Json.encodeToString(ErrorDto(ex.errorCode.message, ex.errorCode.code)))
+                .body(Json.encodeToString(ErrorDto(ex.message, ex.errorCode.code)))
         }
 
     fun getUser(request: Request): Response {
