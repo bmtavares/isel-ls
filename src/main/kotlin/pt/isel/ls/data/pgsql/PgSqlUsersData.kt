@@ -164,8 +164,4 @@ object PgSqlUsersData : UsersData {
 
         return false
     }
-
-    operator fun invoke(): UsersData {
-        return this
-    }
 }

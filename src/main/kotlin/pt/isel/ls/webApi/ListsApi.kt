@@ -42,8 +42,7 @@ class ListsApi(
         Response(Status.NOT_FOUND)
             .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
             .body(Json.encodeToString(ex.message))
-    }
-    catch (ex: Exception) {
+    } catch (ex: Exception) {
         Response(Status.INTERNAL_SERVER_ERROR)
             .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
             .body(Json.encodeToString(ex.message))

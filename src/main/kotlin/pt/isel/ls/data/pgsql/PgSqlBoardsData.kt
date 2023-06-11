@@ -199,8 +199,4 @@ object PgSqlBoardsData : BoardsData {
         statement.setInt(2, boardId)
         statement.execute()
     }
-
-    operator fun invoke(): BoardsData {
-        return this
-    }
 }
