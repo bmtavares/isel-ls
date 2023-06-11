@@ -10,7 +10,6 @@ The Entity-Relationship (ER) diagram below shows the conceptual model for the in
 
 ![Entity-Relationship Model Diagram](./er-diagram.svg)
 
-
 The conceptual model includes entities for users, boards, lists, and cards, each with their corresponding attributes.
 Each board can be associated with one or several users, and each list must belong to a specific board.
 Cards are always associated with a board and must belong to a list, except if they are archived.
@@ -48,8 +47,9 @@ Internally, requests are processed by relevant classes and functions.
 Request parameters are validated using token validation.
 
 ### Connection Management
+To use the database we must set the environment variable under the name ``USE_POSTGRESQL`` as True, if false we will use de information on RAM only. 
 
-At the time of writing, connections are created based on a connection string stored as an environment variable under the name ``JDBC_DATABASE_URL``.
+Connections are created based on a connection string stored as an environment variable under the name ``JDBC_DATABASE_URL``.
 
 During each of the single units defined for our database interface, a connection is created and managed in the scope of the function via ``.use``, ensuring automatic disposal of the connection once the scope exits.
 
@@ -62,6 +62,9 @@ Request is validated and authenticated
 Request is processed by the appropriate class or function
 Database is queried and data is returned to the class or function
 Data is transformed and returned to the client
+
+### Other
+We must ser a environment variable under the name ``PORT`` to indicate the port that the service will be listening to. 
 
 
 ### Data Access
@@ -79,15 +82,11 @@ Implementations were created for in-memory data storage and for PostgreSQL (loca
 
 ### Error Handling/Processing
 
+### Single page application
 
 
 ## Critical Evaluation
 
-defects:
-missing error messages / proper error handeling
 
-Improvements for the next phase include:
 
-Improved error handling and data validation.
-Implementation of missing functionality.
-Optimization of database queries for performance.
+
