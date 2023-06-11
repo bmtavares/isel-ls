@@ -1,5 +1,5 @@
-const APP_PORT = 9000;
-const API_BASE_URL  = document.location.origin;
+const APP_PORT = document.location.port;
+const API_BASE_URL  = document.location.origin +"/";
 
 export default {
     APP_PORT,

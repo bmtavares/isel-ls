@@ -1,4 +1,4 @@
-import { div, h3, p } from "./createElement.js";
+import {button, div, h3, p} from "./createElement.js";
 import user from "../user.js";
 import {generateFormModal}  from "./formGenerator.js";
 
@@ -35,10 +35,17 @@ function signUpContent(authHeader){
         e.preventDefault();
         const formData = new FormData(e.target); // Using the FormData object we can quickly fetch all the inputs
         const dataForm = Object.fromEntries(formData.entries())
-        if (dataForm.password !== dataForm.passwordconfirmation) {
-
+        if (dataForm.password !== dataForm.passwordConfirmation) {
+           const alertPwMismatch = div(
+               "Passwords Don't Match",
+            {class:"alert alert-danger alert-dismissible fade show",role:"alert"},
+               button(
+                   {class:"btn-close","data-bs-dismiss":"alert",type:"button"}
+               )
+           )
+            document.querySelector("#signUpContainer").appendChild(alertPwMismatch)
         } else {
-            delete dataForm.passwordconfirmation
+            delete dataForm.passwordConfirmation
             const data = JSON.stringify(dataForm)
 
             const rsp = await fetch(`${appConstants.API_BASE_URL}`+ `users`, {
@@ -51,7 +58,14 @@ function signUpContent(authHeader){
                 user.setUser(userInfo.token, userInfo.id, userInfo.name)
                 location.hash="#home"
             } catch (e) {
-
+                const errorAlert = div(
+                    `${e.message}`,
+                    {class:"alert alert-danger alert-dismissible fade show",role:"alert"},
+                    button(
+                        {class:"btn-close","data-bs-dismiss":"alert",type:"button"}
+                    )
+                )
+                document.querySelector("#signUpContainer").appendChild(errorAlert)
             }
         }
     }
@@ -63,7 +77,7 @@ function signUpContent(authHeader){
   ]
 
   return div(
-      { class: "container mt-4" },
+      { class: "container mt-4",id:"signUpContainer"},
       generateFormModal(
           "signUp",
           registerNewUser,
