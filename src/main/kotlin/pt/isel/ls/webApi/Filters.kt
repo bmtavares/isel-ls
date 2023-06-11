@@ -36,6 +36,7 @@ class Filters(
                 next(it)
             } catch (ex: TaskAppException) {
                 if (ex.message != null) logger.error(ex.message)
+                if (ex.issue != null) logger.error(ex.issue)
 
                 Response(ex.errorCode.http4kStatus())
                     .header(HeaderTypes.CONTENT_TYPE.field, ContentType.APPLICATION_JSON.value)
