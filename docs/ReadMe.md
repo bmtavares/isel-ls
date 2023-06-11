@@ -1,6 +1,9 @@
 ## Introduction
 
-This document contains the relevant design and implementation aspects of LS project's first phase.
+This document contains the relevant design and implementation aspects of LS project's, the development of a like trello application with an API service and a Single Page Application.
+
+## Project Overview
+The LS project aims to develop a robust system for managing boards, lists, and cards. This system allows users to collaborate and organize tasks efficiently. In this phase, we focus on modeling the database and implementing the core functionalities.
 
 ## Modeling the database
 
@@ -31,12 +34,12 @@ Relationships between tables are enforced through foreign keys.
 
 ### Open-API Specification ###
 
-The specification of the API is available:
+To interact with the system, we have defined a comprehensive Open-API Specification. You can access it in the following formats:
 
 * [As a JSON file](../open-api.json)
 * [As a Postman documentation webpage](https://documenter.getpostman.com/view/26358395/2s93RRvsbv)
 
-Authorization is required for some endpoints with the token key.
+Certain endpoints require authorization using a token key to ensure secure access.
 
 ### Request Details
 
@@ -47,7 +50,7 @@ Internally, requests are processed by relevant classes and functions.
 Request parameters are validated using token validation.
 
 ### Connection Management
-To use the database we must set the environment variable under the name ``USE_POSTGRESQL`` as True, if false we will use de information on RAM only. 
+To utilize the database effectively, we rely on environment variables for configuration. Set the environment variable ``USE_POSTGRESQL`` to ``True`` to enable database usage. Otherwise, the system will utilize in-memory storage.
 
 Connections are created based on a connection string stored as an environment variable under the name ``JDBC_DATABASE_URL``.
 
@@ -64,8 +67,7 @@ Database is queried and data is returned to the class or function
 Data is transformed and returned to the client
 
 ### Other
-We must ser a environment variable under the name ``PORT`` to indicate the port that the service will be listening to. 
-
+To indicate the service's listening port, set the environment variable PORT to the desired port number.
 
 ### Data Access
 
