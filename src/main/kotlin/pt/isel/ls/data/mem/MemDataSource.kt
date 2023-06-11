@@ -19,13 +19,11 @@ object MemDataSource {
     val cards = mutableListOf<Card>()
 
     private fun initStorage() {
-        val salt = "aaaaaaaaaaaa"
-
         users.addAll(
             listOf(
-                User(1, "Beatriz", "beatriz@example.org", PasswordUtils.hashPassword("olamundo", "aaaaaaaaaaaa"), "aaaaaaaaaaaa"),
-                User(2, "Fatima", "fatima@example.org", PasswordUtils.hashPassword("olamundo", "bbbbbbbbbbbb"), "bbbbbbbbbbbb"),
-                User(3, "Miguel", "miguel@example.org", PasswordUtils.hashPassword("olamundo", "cccccccccccc"), "cccccccccccc")
+                User(1, "Beatriz", "beatriz@example.org", PasswordUtils.hashPassword("HelloWorld", "aaaaaaaaaaaa"), "aaaaaaaaaaaa"),
+                User(2, "Fatima", "fatima@example.org", PasswordUtils.hashPassword("OlaMundo", "bbbbbbbbbbbb"), "bbbbbbbbbbbb"),
+                User(3, "Miguel", "miguel@example.org", PasswordUtils.hashPassword("HejVerden", "cccccccccccc"), "cccccccccccc")
             )
         )
 
@@ -49,7 +47,7 @@ object MemDataSource {
 
         lists.addAll(
             listOf(
-                BoardList(1, "Reservas", 1, 3), // chek add all TODO
+                BoardList(1, "Reservas", 1, 3),
                 BoardList(2, "Sitos para comer", 1, 0),
                 BoardList(3, "Sitos para visitar", 1, 0)
             )
