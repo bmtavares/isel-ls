@@ -25,12 +25,16 @@ import kotlin.test.assertEquals
 class UsersTest {
     private val services = TasksServices(MemDataContext, MemBoardsData, MemUsersData, MemListsData, MemCardsData)
 
+    private val filters = Filters(services)
     private val unitApi = UsersApi(services)
 
-    private val app = routes(
-        "users/{id}" bind Method.GET to unitApi::getUser,
-        "users" bind Method.POST to unitApi::createUser
-    )
+    private val app =
+        filters.logRequest(
+            routes(
+                "users/{id}" bind Method.GET to unitApi::getUser,
+                "users" bind Method.POST to unitApi::createUser
+            )
+        )
 
     @BeforeTest
     fun clearStorage() {
