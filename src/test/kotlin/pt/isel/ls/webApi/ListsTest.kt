@@ -18,8 +18,10 @@ import pt.isel.ls.data.mem.MemDataSource
 import pt.isel.ls.data.mem.MemListsData
 import pt.isel.ls.data.mem.MemUsersData
 import pt.isel.ls.tasksServices.TasksServices
+import pt.isel.ls.tasksServices.dtos.ErrorDto
 import pt.isel.ls.tasksServices.dtos.InputBoardListDto
 import pt.isel.ls.tasksServices.dtos.OutputIdDto
+import pt.isel.ls.utils.ErrorCodes
 import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -34,14 +36,17 @@ class ListsTest {
     private val context = RequestContexts()
     private val prepare = ApiTestUtils(filters, boardsApi, usersApi, unitApi, context)
 
-    private val app = filters.authFilter.then(
-        routes(
-            "boards/{id}/lists" bind Method.GET to unitApi::getLists,
-            "boards/{id}/lists" bind Method.POST to unitApi::createList,
-            "boards/{id}/lists/{lid}" bind Method.GET to unitApi::getList,
-            "boards/{id}/lists/{lid}" bind Method.DELETE to unitApi::deleteList
+    private val app =
+        filters.logRequest(
+            filters.authFilter.then(
+                routes(
+                    "boards/{id}/lists" bind Method.GET to unitApi::getLists,
+                    "boards/{id}/lists" bind Method.POST to unitApi::createList,
+                    "boards/{id}/lists/{lid}" bind Method.GET to unitApi::getList,
+                    "boards/{id}/lists/{lid}" bind Method.DELETE to unitApi::deleteList
+                )
+            )
         )
-    )
 
     @BeforeTest
     fun resetStorage() {
@@ -339,16 +344,16 @@ class ListsTest {
             assertEquals("application/json", it.header("content-type"))
         }
 
-        app(
+        val res = app(
             Request(
                 Method.DELETE,
                 "boards/${board.id}/lists/-1"
             )
                 .header("Authorization", "Bearer ${user.token}")
-        ).let {
-            assertEquals(Status.NOT_FOUND, it.status)
-            assertEquals("application/json", it.header("content-type"))
-            assertEquals("List not found.", Json.decodeFromString(it.bodyString()))
-        }
+        )
+        assertEquals(Status.NOT_FOUND, res.status)
+        assertEquals("application/json", res.header("content-type"))
+        val expectedCode = ErrorCodes.LIST_READ_FAIL
+        assertEquals(ErrorDto(expectedCode.message, expectedCode.code), Json.decodeFromString(res.bodyString()))
     }
 }

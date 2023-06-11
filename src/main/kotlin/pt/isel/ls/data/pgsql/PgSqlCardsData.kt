@@ -1,5 +1,6 @@
 package pt.isel.ls.data.pgsql
 
+import pt.isel.ls.TaskAppException
 import pt.isel.ls.data.CardsData
 import pt.isel.ls.data.DataException
 import pt.isel.ls.data.entities.Board
@@ -7,13 +8,15 @@ import pt.isel.ls.data.entities.Card
 import pt.isel.ls.tasksServices.dtos.EditCardDto
 import pt.isel.ls.tasksServices.dtos.InputCardDto
 import pt.isel.ls.tasksServices.dtos.InputMoveCardDto
+import pt.isel.ls.utils.ErrorCodes
 import java.sql.Connection
+import java.sql.SQLException
 import java.sql.Types
 
 object PgSqlCardsData : CardsData {
 
     override fun getByList(boardId: Int, listId: Int, limit: Int, skip: Int, connection: Connection?): List<Card> {
-        checkNotNull(connection) { "Connection is need to use DB" }
+        connection ?: throw IllegalConnException()
         val statement = connection.prepareStatement(
             "select * from Cards where listId = ? and boardid = ? offset ? limit ?;"
         )
@@ -35,7 +38,6 @@ object PgSqlCardsData : CardsData {
                 if (rs.getInt("listId") == 0 && rs.wasNull()) null else rs.getInt("listId"),
                 rs.getInt("boardId"),
                 rs.getInt("cidx")
-//                rs.getInt("cIdx")
             )
         }
 
@@ -43,7 +45,7 @@ object PgSqlCardsData : CardsData {
     }
 
     override fun getByBoard(board: Board, connection: Connection?): List<Card> {
-        checkNotNull(connection) { "Connection is need to use DB" }
+        connection ?: throw IllegalConnException()
         val statement = connection.prepareStatement(
             "select * from Cards where boardId = ?;"
         )
@@ -67,6 +69,7 @@ object PgSqlCardsData : CardsData {
 
         return results
     }
+
     internal fun getListCount(lid: Int?, boardId: Int, connection: Connection): Int {
         val statement = connection.prepareStatement("select nCards from lists where id = ? and boardid = ?;")
         if (lid != null) {
@@ -81,6 +84,7 @@ object PgSqlCardsData : CardsData {
         }
         throw DataException("something went wrong")
     }
+
     internal fun getCardInfo(cardId: Int, connection: Connection): Card {
         val statement = connection.prepareStatement("select * from cards where id = ?;")
         statement.setInt(1, cardId)
@@ -97,8 +101,9 @@ object PgSqlCardsData : CardsData {
             )
         }
 
-        throw Exception("awdwa") // TODO
+        throw TaskAppException(ErrorCodes.CARD_READ_FAIL)
     }
+
     private fun updateCardLid(cardId: Int, lid: Int, bid: Int, connection: Connection) {
         val statement = connection.prepareStatement(
             "update Cards set listid = ? where id = ? and boardid = ?;"
@@ -116,6 +121,7 @@ object PgSqlCardsData : CardsData {
             throw DataException("Failed to edit card.")
         }
     }
+
     private fun updateCardIdx(cardId: Int, cIdx: Int, bid: Int, connection: Connection) {
         val statement = connection.prepareStatement(
             "update Cards set cIdx = ? where id = ? and boardid = ?;"
@@ -156,10 +162,10 @@ object PgSqlCardsData : CardsData {
     }
 
     override fun move(inputList: InputMoveCardDto, boardId: Int, cardId: Int, connection: Connection?) {
-        checkNotNull(connection)
+        connection ?: throw IllegalConnException()
         val cardInfo = getCardInfo(cardId, connection)
         checkNotNull(cardInfo)
-        if (inputList.cix < 0) throw DataException("new position cant be negative")
+        if (inputList.cix < 0) throw TaskAppException(ErrorCodes.CARD_MOVE_NEGATIVE)
         val cardOldPosition = cardInfo.cIdx
         val newPosition = inputList.cix
 
@@ -229,12 +235,8 @@ object PgSqlCardsData : CardsData {
     }
 
     override fun getById(id: Int, connection: Connection?): Card {
-        checkNotNull(connection) { "Connection is need to use DB" }
-        return try {
-            getCardInfo(id, connection)
-        } catch (e: Exception) {
-            throw Exception(e.message)
-        }
+        connection ?: throw IllegalConnException()
+        return getCardInfo(id, connection)
     }
 
     private fun changeCardCount(id: Int, connection: Connection, delta: Int = 1) {
@@ -247,7 +249,7 @@ object PgSqlCardsData : CardsData {
     }
 
     override fun add(newCard: InputCardDto, boardId: Int, listId: Int?, connection: Connection?): Card {
-        checkNotNull(connection) { "Connection is need to use DB" }
+        connection ?: throw IllegalConnException()
 
         val statement = if (listId != null) {
             connection.prepareStatement(
@@ -276,7 +278,11 @@ object PgSqlCardsData : CardsData {
 
         statement.setInt(5, boardId)
 
-        val rs = statement.executeQuery()
+        val rs = try {
+            statement.executeQuery()
+        } catch (ex: SQLException) {
+            TODO()
+        }
 
         if (listId != null) changeCardCount(listId, connection)
 
@@ -299,25 +305,27 @@ object PgSqlCardsData : CardsData {
                 cIdx
             )
         }
-        throw DataException("Failed to add card.")
+        throw TaskAppException(ErrorCodes.CARD_CREATE_FAIL)
     }
 
     override fun delete(id: Int, connection: Connection?) {
-        checkNotNull(connection) { "Connection is need to use DB" }
+        connection ?: throw IllegalConnException()
         val statement = connection.prepareStatement(
             "delete from Cards where id = ?;"
         )
         statement.setInt(1, id)
 
-        val count = statement.executeUpdate()
-
-        if (count == 0) {
-            throw DataException("Failed to delete card.")
+        val count = try {
+            statement.executeUpdate()
+        } catch (ex: SQLException) {
+            TODO()
         }
+
+        if (count == 0) throw TaskAppException(ErrorCodes.CARD_DELETE_FAIL)
     }
 
     override fun edit(editCardDto: EditCardDto, boardId: Int, cardId: Int, connection: Connection?) {
-        checkNotNull(connection) { "Connection is need to use DB" }
+        connection ?: throw IllegalConnException()
         val statement = connection.prepareStatement(
             "update Cards set name = ? where id = ?;" +
                 "update Cards set description = ? where id = ?;" +
@@ -336,15 +344,17 @@ object PgSqlCardsData : CardsData {
         statement.setInt(6, cardId)
         statement.setInt(8, cardId)
 
-        val count = statement.executeUpdate()
-
-        if (count == 0) {
-            throw DataException("Failed to edit card.")
+        val count = try {
+            statement.executeUpdate()
+        } catch (ex: SQLException) {
+            TODO()
         }
+
+        if (count == 0) throw TaskAppException(ErrorCodes.CARD_UPDATE_FAIL)
     }
 
     override fun exists(id: Int, connection: Connection?): Boolean {
-        checkNotNull(connection) { "Connection is need to use DB" }
+        connection ?: throw IllegalConnException()
         val statement = connection.prepareStatement(
             "select count(*) exists from Cards where id = ?;"
         )

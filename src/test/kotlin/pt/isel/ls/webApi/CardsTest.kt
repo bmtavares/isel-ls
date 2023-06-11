@@ -18,10 +18,12 @@ import pt.isel.ls.data.mem.MemDataSource
 import pt.isel.ls.data.mem.MemListsData
 import pt.isel.ls.data.mem.MemUsersData
 import pt.isel.ls.tasksServices.TasksServices
+import pt.isel.ls.tasksServices.dtos.ErrorDto
 import pt.isel.ls.tasksServices.dtos.InputBoardListDto
 import pt.isel.ls.tasksServices.dtos.InputCardDto
 import pt.isel.ls.tasksServices.dtos.InputMoveCardDto
 import pt.isel.ls.tasksServices.dtos.OutputIdDto
+import pt.isel.ls.utils.ErrorCodes
 import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -37,13 +39,15 @@ class CardsTest {
     private val context = RequestContexts()
     private val prepare = ApiTestUtils(filters, boardsApi, usersApi, listsApi, context)
 
-    private val app = filters.authFilter.then(
-        routes(
-            "boards/{id}/lists/{lid}/cards" bind Method.POST to unitApi::createCard,
-            "boards/{id}/lists/{lid}/cards" bind Method.GET to unitApi::getCardsFromList,
-            "boards/{id}/cards/{cid}" bind Method.GET to unitApi::getCard,
-            "boards/{id}/cards/{cid}/move" bind Method.GET to unitApi::alterCardListPosition,
-            "boards/{id}/cards/{cid}" bind Method.DELETE to unitApi::deleteCard
+    private val app = filters.logRequest(
+        filters.authFilter.then(
+            routes(
+                "boards/{id}/lists/{lid}/cards" bind Method.POST to unitApi::createCard,
+                "boards/{id}/lists/{lid}/cards" bind Method.GET to unitApi::getCardsFromList,
+                "boards/{id}/cards/{cid}" bind Method.GET to unitApi::getCard,
+                "boards/{id}/cards/{cid}/move" bind Method.GET to unitApi::alterCardListPosition,
+                "boards/{id}/cards/{cid}" bind Method.DELETE to unitApi::deleteCard
+            )
         )
     )
 
@@ -455,9 +459,10 @@ class CardsTest {
                 .body(Json.encodeToString(createDto))
                 .header("Authorization", "Bearer ${user.token}")
         ).let {
-            assertEquals(Status.BAD_REQUEST, it.status)
+            val expectedError = ErrorCodes.CARD_READ_FAIL
+            assertEquals(expectedError.http4kStatus(), it.status)
             assertEquals("application/json", it.header("content-type"))
-            assertEquals("Card not found.", Json.decodeFromString(it.bodyString()))
+            assertEquals(ErrorDto(expectedError.message, expectedError.code), Json.decodeFromString(it.bodyString()))
         }
     }
 }

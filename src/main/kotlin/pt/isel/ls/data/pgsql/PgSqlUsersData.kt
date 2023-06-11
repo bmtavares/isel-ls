@@ -1,17 +1,14 @@
 package pt.isel.ls.data.pgsql
 
-import org.http4k.core.Status
 import org.postgresql.util.PSQLException
 import pt.isel.ls.TaskAppException
-import pt.isel.ls.data.DataException
-import pt.isel.ls.data.EntityAlreadyExistsException
-import pt.isel.ls.data.EntityNotFoundException
 import pt.isel.ls.data.UsersData
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.tasksServices.dtos.CreateUserDto
 import pt.isel.ls.tasksServices.dtos.EditUserDto
 import pt.isel.ls.utils.ErrorCodes
 import java.sql.Connection
+import java.sql.SQLException
 import java.sql.Timestamp
 import java.util.UUID
 
@@ -26,11 +23,13 @@ object PgSqlUsersData : UsersData {
         statement.setInt(2, user.id)
         statement.setTimestamp(3, Timestamp(System.currentTimeMillis()))
 
-        val count = statement.executeUpdate()
-
-        if (count == 0) {
-            throw DataException("Failed to create token.")
+        val count = try {
+            statement.executeUpdate()
+        } catch (ex: SQLException) {
+            TODO()
         }
+
+        if (count == 0) throw TaskAppException(ErrorCodes.TOKEN_GENERATION_FAILED)
         return token.toString()
     }
 
@@ -52,7 +51,7 @@ object PgSqlUsersData : UsersData {
             )
         }
 
-        throw Exception("awdwa") // TODO
+        throw TaskAppException(ErrorCodes.NO_TOKEN_MATCH)
     }
 
     override fun getByEmail(email: String, connection: Connection?): User {
@@ -73,7 +72,7 @@ object PgSqlUsersData : UsersData {
             )
         }
 
-        throw TaskAppException(ErrorCodes.NO_EMAIL_MATCH, Status.UNAUTHORIZED,"Email doesnt exist")
+        throw TaskAppException(ErrorCodes.NO_EMAIL_MATCH)
     }
 
     override fun getById(id: Int, connection: Connection?): User {
@@ -94,7 +93,7 @@ object PgSqlUsersData : UsersData {
             )
         }
 
-        throw EntityNotFoundException("failed to get by id", User::class)
+        throw TaskAppException(ErrorCodes.USER_READ_FAIL)
     }
 
     override fun add(newUser: CreateUserDto, connection: Connection?): User {
@@ -106,22 +105,22 @@ object PgSqlUsersData : UsersData {
         statement.setString(2, newUser.email)
         statement.setString(3, newUser.passwordHash)
         statement.setString(4, newUser.salt)
+
         try {
             val rs = statement.executeQuery()
             while (rs.next()) {
                 val id = rs.getInt("id")
                 return User(id, newUser.name, newUser.email, newUser.passwordHash, newUser.salt)
             }
-            throw DataException("Failed to add user.")
         } catch (e: PSQLException) {
             if (e.sqlState == "23505") {
-                throw EntityAlreadyExistsException("Email already in use.", User::class)
+                throw TaskAppException(ErrorCodes.EMAIL_ALREADY_IN_USE)
             } else {
-                throw DataException("Failed to add user, PSQLException")
+                throw TaskAppException(ErrorCodes.USER_CREATE_FAIL, message = e.message)
             }
-        } catch (e: PSQLException) {
-            throw DataException("Failed to add user.")
         }
+
+        throw TaskAppException(ErrorCodes.USER_CREATE_FAIL)
     }
 
     override fun delete(id: Int, connection: Connection?) {
@@ -133,9 +132,7 @@ object PgSqlUsersData : UsersData {
 
         val count = statement.executeUpdate()
 
-        if (count == 0) {
-            throw DataException("Failed to delete user.")
-        }
+        if (count == 0) throw TaskAppException(ErrorCodes.USER_DELETE_FAIL)
     }
 
     override fun edit(editUser: EditUserDto, connection: Connection?) {
@@ -148,9 +145,7 @@ object PgSqlUsersData : UsersData {
 
         val count = statement.executeUpdate()
 
-        if (count == 0) {
-            throw DataException("Failed to edit user.")
-        }
+        if (count == 0) throw TaskAppException(ErrorCodes.USER_UPDATE_FAIL)
     }
 
     override fun exists(id: Int, connection: Connection?): Boolean {

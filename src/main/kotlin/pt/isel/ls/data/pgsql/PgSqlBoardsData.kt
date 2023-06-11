@@ -1,18 +1,19 @@
 package pt.isel.ls.data.pgsql
 
+import pt.isel.ls.TaskAppException
 import pt.isel.ls.data.BoardsData
-import pt.isel.ls.data.DataException
-import pt.isel.ls.data.EntityNotFoundException
 import pt.isel.ls.data.entities.Board
 import pt.isel.ls.data.entities.User
 import pt.isel.ls.tasksServices.dtos.EditBoardDto
 import pt.isel.ls.tasksServices.dtos.InputBoardDto
 import pt.isel.ls.tasksServices.dtos.SecureOutputUserDto
+import pt.isel.ls.utils.ErrorCodes
 import java.sql.Connection
+import java.sql.SQLException
 
 object PgSqlBoardsData : BoardsData {
     override fun getByName(name: String, connection: Connection?): Board {
-        checkNotNull(connection) { "Connection is need to use DB" }
+        connection ?: throw IllegalConnException()
         val statement = connection.prepareStatement(
             "select * from Boards where name = ?;"
         )
@@ -27,11 +28,11 @@ object PgSqlBoardsData : BoardsData {
             )
         }
 
-        throw EntityNotFoundException("Board not found", Board::class)
+        throw TaskAppException(ErrorCodes.BOARD_READ_FAIL)
     }
 
     override fun getUserBoards(user: User, limit: Int, skip: Int, connection: Connection?): List<Board> {
-        checkNotNull(connection) { "Connection is need to use DB" }
+        connection ?: throw IllegalConnException()
         val statement = connection.prepareStatement(
             "select id, name, description from Boards b join UsersBoards ub on b.id = ub.boardId where ub.userId = ? offset ? limit ?;"
         )
@@ -55,7 +56,7 @@ object PgSqlBoardsData : BoardsData {
     }
 
     override fun getById(id: Int, connection: Connection?): Board {
-        checkNotNull(connection) { "Connection is need to use DB" }
+        connection ?: throw IllegalConnException()
         val statement = connection.prepareStatement(
             "select * from Boards where id = ?;"
         )
@@ -70,29 +71,33 @@ object PgSqlBoardsData : BoardsData {
             )
         }
 
-        throw Exception("SQL exception") // TODO
+        throw TaskAppException(ErrorCodes.BOARD_READ_FAIL)
     }
 
     override fun add(newBoard: InputBoardDto, connection: Connection?): Board {
-        checkNotNull(connection) { "Connection is need to use DB" }
+        connection ?: throw IllegalConnException()
         val statement = connection.prepareStatement(
             "insert into Boards (name, description) values (?, ?) returning id;"
         )
         statement.setString(1, newBoard.name)
         statement.setString(2, newBoard.description)
 
-        val rs = statement.executeQuery()
+        val rs = try {
+            statement.executeQuery()
+        } catch (ex: SQLException) {
+            TODO()
+        }
 
         while (rs.next()) {
             val id = rs.getInt("id")
             return Board(id, newBoard.name, newBoard.description)
         }
 
-        throw DataException("Failed to insert board.")
+        throw TaskAppException(ErrorCodes.BOARD_CREATE_FAIL)
     }
 
     override fun delete(id: Int, connection: Connection?) {
-        checkNotNull(connection) { "Connection is need to use DB" }
+        connection ?: throw IllegalConnException()
         val statement = connection.prepareStatement(
             "delete from Boards where id = ?;"
         )
@@ -100,13 +105,11 @@ object PgSqlBoardsData : BoardsData {
 
         val count = statement.executeUpdate()
 
-        if (count == 0) {
-            throw DataException("Failed to delete board.")
-        }
+        if (count == 0) throw TaskAppException(ErrorCodes.BOARD_DELETE_FAIL)
     }
 
     override fun edit(editBoard: EditBoardDto, connection: Connection?) {
-        checkNotNull(connection) { "Connection is need to use DB" }
+        connection ?: throw IllegalConnException()
         val statement = connection.prepareStatement(
             "update Boards set description = ? where id = ?;"
         )
@@ -115,13 +118,11 @@ object PgSqlBoardsData : BoardsData {
 
         val count = statement.executeUpdate()
 
-        if (count == 0) {
-            throw DataException("Failed to edit board.")
-        }
+        if (count == 0) throw TaskAppException(ErrorCodes.BOARD_UPDATE_FAIL)
     }
 
     override fun exists(id: Int, connection: Connection?): Boolean {
-        checkNotNull(connection) { "Connection is need to use DB" }
+        connection ?: throw IllegalConnException()
         val statement = connection.prepareStatement(
             "select count(*) exists from Boards where id = ?;"
         )
@@ -136,7 +137,7 @@ object PgSqlBoardsData : BoardsData {
     }
 
     override fun addUserToBoard(userId: Int, boardId: Int, connection: Connection?) {
-        checkNotNull(connection) { "Connection is need to use DB" }
+        connection ?: throw IllegalConnException()
         val statement = connection.prepareStatement(
             "insert into usersboards (userid, boardid) values (?,?);"
         )
@@ -146,7 +147,7 @@ object PgSqlBoardsData : BoardsData {
     }
 
     override fun getUsers(boardId: Int, user: User, limit: Int, skip: Int, connection: Connection?): List<SecureOutputUserDto> {
-        checkNotNull(connection) { "Connection is need to use DB" }
+        connection ?: throw IllegalConnException()
         val statement = connection.prepareStatement(
             "select u.id, u.name, u.email from Users u join UsersBoards ub on u.id = ub.userid where ub.boardid = ? offset ? limit ?;"
         )
@@ -169,7 +170,7 @@ object PgSqlBoardsData : BoardsData {
     }
 
     override fun filterByName(user: User, searchField: String, con: Connection?): List<Board> {
-        checkNotNull(con) { "Connection is need to use DB" }
+        con ?: throw IllegalConnException()
         val statement = con.prepareStatement(
             "select b.* from Boards b join usersboards ub on b.id = ub.boardid where ub.userid = ? and LOWER(b.name) like LOWER(?) ;"
         )
@@ -191,7 +192,7 @@ object PgSqlBoardsData : BoardsData {
     }
 
     override fun deleteUserFromBoard(userId: Int, boardId: Int, connection: Connection?) {
-        checkNotNull(connection) { "Connection is need to use DB" }
+        connection ?: throw IllegalConnException()
         val statement = connection.prepareStatement(
             "delete from usersboards where userid=? and boardid=?;"
         )
